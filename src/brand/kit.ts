@@ -39,7 +39,7 @@ export interface KitTokenBinding {
   varName: string;
   /** Resolved value (e.g. "#3b82f6") — empty if not found in variables.json */
   resolvedValue: string;
-  /** Pencil expression to use in fill/stroke: {var.color-brand-600} */
+  /** Pencil variable reference used in batch_design ops (e.g. "$color-brand-600"). */
   pencilExpr: string;
 }
 
@@ -58,7 +58,7 @@ export interface KitPlacement {
 export interface KitVerification {
   /** Minimum number of child nodes expected inside the root frame */
   expectedChildCount: number;
-  /** Pencil fill expression that must be set on the root frame (e.g. "{var.color-brand-600}") */
+  /** Pencil variable reference for the root frame fill (e.g. "$color-brand-600", "$--primary"). */
   primaryFillExpr?: string;
   /** Call get_screenshot and confirm each of these things visually */
   visualChecks: string[];
@@ -81,14 +81,15 @@ export interface KitComponent {
   tokenBindings: KitTokenBinding[];
   /** Suggested placement for the component frame on the canvas */
   placement: KitPlacement;
-  /**
+    /**
    * Ready-to-execute Pencil batch_design operations for the default state.
    * Pass this string directly to batch_design(filePath, operations).
    * "document" is the canvas root — valid without substitution.
-   * DO NOT rewrite these operations or replace token expressions with hex values.
+   * Fill, stroke, and color values use Pencil variable references ($--primary, $color-brand-600, etc.).
+   * Run nib_brand_push before executing these ops so variables are loaded in Pencil.
    */
   batchDesignOps: string;
-  /**
+    /**
    * What to verify after executing batchDesignOps.
    * Check all items before moving to the next component.
    */
@@ -132,10 +133,10 @@ export interface KitRecipe {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/** Convert a DTCG token value (possibly wrapped in braces) to a Pencil variable expression. */
-function tokenToExpr(tokenValue: string): string {
+/** Convert a DTCG token value (possibly wrapped in braces) to a Pencil variable reference ($varname). */
+function tokenToRef(tokenValue: string): string {
   const token = tokenValue.replace(/^\{|\}$/g, "");
-  return `{var.${token.replace(/\./g, "-")}}`;
+  return `$${token.replace(/\./g, "-")}`;
 }
 
 /** Convert a DTCG token path to a Pencil variable name. */
@@ -148,13 +149,27 @@ function isTextPart(part: string): boolean {
   return /^(label|text|title|caption|description|placeholder|helper.?text|value|content|heading)/i.test(part);
 }
 
-/** Flatten pencil variables.json to a simple key → value map. */
+/** Pencil variable value — flat or themed (light/dark array). */
+type PencilVarValue =
+  | string
+  | number
+  | Array<{ value: string | number; theme: Record<string, string> }>;
+
+/**
+ * Flatten pencil variables.json to a simple key → value map.
+ * For themed variables (light/dark arrays), uses the first (light-mode) value.
+ */
 function flattenPencilVars(
-  raw: Record<string, { type: string; value: string | number }>,
+  raw: Record<string, { type: string; value: PencilVarValue }>,
 ): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(raw)) {
-    out[k] = String(v.value);
+    if (Array.isArray(v.value)) {
+      const first = v.value[0];
+      if (first) out[k] = String(first.value);
+    } else {
+      out[k] = String(v.value);
+    }
   }
   return out;
 }
@@ -164,14 +179,18 @@ function tokenString(v: unknown): string | undefined {
   return typeof v === "string" && v.length > 0 ? v : undefined;
 }
 
+
 /**
  * Generate batch_design operation strings for a component's default state.
- * All fills/colors use {var.xxx} expressions — never hardcoded hex values.
+ * Fills, strokes, and colors use Pencil variable references ($--primary, $color-brand-600, etc.).
+ * Requires nib_brand_push to be run first so variables are loaded in Pencil.
+ * Stroke uses the Pencil object format: {align: "inside", fill: "$varname", thickness: 1}.
  */
 function buildComponentOps(
   name: string,
   contract: ComponentContract,
   placement: KitPlacement,
+  _pencilVars: Record<string, string>,
 ): string {
   const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "_");
   const { widgetType } = contract;
@@ -195,15 +214,10 @@ function buildComponentOps(
     `padding: 10`,
     `cornerRadius: [6,6,6,6]`,
   ];
-  if (rootFill) rootAttrs.push(`fill: "${tokenToExpr(rootFill)}"`);
-  if (rootBorder) {
-    rootAttrs.push(`stroke: "${tokenToExpr(rootBorder)}"`, `strokeThickness: 1`);
-  } else {
-    // Always add a visible border so the frame isn't invisible on a dark canvas.
-    // Use the border token expression if available; otherwise fall back to a
-    // neutral stroke so the component outline is always visible.
-    rootAttrs.push(`stroke: "#888888"`, `strokeThickness: 1`);
-  }
+  if (rootFill) rootAttrs.push(`fill: "${tokenToRef(rootFill)}"`);
+  // Stroke: Pencil requires an object — {align, fill, thickness} — not a bare hex string.
+  const strokeRef = rootBorder ? tokenToRef(rootBorder) : "$--border";
+  rootAttrs.push(`stroke: {align: "inside", fill: "${strokeRef}", thickness: 1}`);
 
   lines.push(`${id}_root=I(document, {${rootAttrs.join(", ")}})`);
 
@@ -221,12 +235,12 @@ function buildComponentOps(
         `fontSize: 14`,
         `fontWeight: "500"`,
       ];
-      if (colorToken) textAttrs.push(`color: "${tokenToExpr(colorToken)}"`);
+      if (colorToken) textAttrs.push(`color: "${tokenToRef(colorToken)}"`);
       lines.push(`${partId}=I(${id}_root, {${textAttrs.join(", ")}})`);
     } else {
       const partFill = tokenString(partTokens["fill"]) ?? tokenString(partTokens["background"]);
       const partAttrs: string[] = [`type: "frame"`, `name: "${part}"`];
-      if (partFill) partAttrs.push(`fill: "${tokenToExpr(partFill)}"`);
+      if (partFill) partAttrs.push(`fill: "${tokenToRef(partFill)}"`);
       lines.push(`${partId}=I(${id}_root, {${partAttrs.join(", ")}})`);
     }
   }
@@ -238,11 +252,11 @@ function buildComponentOps(
 function buildVerification(
   name: string,
   contract: ComponentContract,
-  pencilVars: Record<string, string>,
+  _pencilVars: Record<string, string>,
 ): KitVerification {
   const rootTokens = contract.tokens["root"]?.["default"] ?? {};
   const rootFillToken = tokenString(rootTokens["fill"]) ?? tokenString(rootTokens["background"]);
-  const primaryFillExpr = rootFillToken ? tokenToExpr(rootFillToken) : undefined;
+  const primaryFillExpr = rootFillToken ? tokenToRef(rootFillToken) : undefined;
 
   const nonRootParts = Object.keys(contract.anatomy).filter(p => p !== "root");
   const visualChecks: string[] = [
@@ -250,21 +264,18 @@ function buildVerification(
   ];
 
   if (primaryFillExpr) {
-    const varKey = primaryFillExpr.slice(5, -1); // strip {var. and }
-    const resolved = pencilVars[varKey] ?? pencilVars[`$${varKey}`] ?? "resolved value";
-    visualChecks.push(`Root fill is brand color ${resolved} — verify it uses ${primaryFillExpr}, not a hardcoded hex`);
+    visualChecks.push(`Root fill uses variable ${primaryFillExpr} — verify the brand color is visible (not black)`);
   }
 
   for (const part of nonRootParts) {
     const partTokens = contract.tokens[part]?.["default"] ?? {};
     const colorToken = tokenString(partTokens["color"]) ?? tokenString(partTokens["textColor"]);
     if (colorToken) {
-      const expr = tokenToExpr(colorToken);
-      visualChecks.push(`"${part}" color uses ${expr} — not a hardcoded hex value`);
+      visualChecks.push(`"${part}" uses color ${tokenToRef(colorToken)} — verify visually`);
     }
   }
 
-  visualChecks.push(`No hardcoded hex values anywhere — if any node has fill: "#xxxxxx" instead of fill: "{var.xxx}", fix it with a batch_design Update operation`);
+  visualChecks.push(`All fills use Pencil variable references ($--primary, $color-brand-600, etc.) — if any appear black, run nib_brand_push first`);
 
   return {
     expectedChildCount: nonRootParts.length,
@@ -295,16 +306,16 @@ function groupVarsByCategory(pencilVars: Record<string, string>): {
   };
 }
 
-/** Find a usable text color expression for section headings. */
-function headingColorExpr(pencilVars: Record<string, string>): string {
+/** Resolve a usable text hex color for section headings. */
+function headingColorHex(pencilVars: Record<string, string>): string {
   const key = Object.keys(pencilVars).find(k => /(\$--|^--)?(text-?primary|foreground)$/.test(k));
-  return key ? `{var.${key}}` : "#1a1a1a";
+  return (key ? pencilVars[key] : undefined) ?? "#1a1a1a";
 }
 
-/** Find a usable background expression for section backgrounds. */
-function bgColorExpr(pencilVars: Record<string, string>): string {
+/** Resolve a usable background hex color for section backgrounds. */
+function bgColorHex(pencilVars: Record<string, string>): string {
   const key = Object.keys(pencilVars).find(k => /^(\$--|--)?background$/.test(k));
-  return key ? `{var.${key}}` : "#f5f5f5";
+  return (key ? pencilVars[key] : undefined) ?? "#f5f5f5";
 }
 
 /**
@@ -324,7 +335,7 @@ function buildFoundationsOps(
   const SECTION_PADDING = 24;
   const SECTION_TITLE_HEIGHT = 40;
   const SECTION_GAP = 48;
-  const headingColor = headingColorExpr(pencilVars);
+  const headingColor = headingColorHex(pencilVars);
 
   let y = startsAtY;
   const groups = groupVarsByCategory(pencilVars);
@@ -353,7 +364,7 @@ function buildFoundationsOps(
       const rowWidth = entries.length * (SWATCH_SIZE + SWATCH_GAP) - SWATCH_GAP + SECTION_PADDING * 2;
 
       lines.push(
-        `color_group_${groupId}=I(document, {type: "frame", name: "Colors / ${groupName}", x: ${CANVAS_X}, y: ${y}, width: ${rowWidth}, height: ${ROW_HEIGHT + SECTION_TITLE_HEIGHT + SECTION_PADDING * 2}, layout: "vertical", gap: 8, padding: ${SECTION_PADDING}, cornerRadius: [8,8,8,8], fill: "${bgColorExpr(pencilVars)}"})`,
+        `color_group_${groupId}=I(document, {type: "frame", name: "Colors / ${groupName}", x: ${CANVAS_X}, y: ${y}, width: ${rowWidth}, height: ${ROW_HEIGHT + SECTION_TITLE_HEIGHT + SECTION_PADDING * 2}, layout: "vertical", gap: 8, padding: ${SECTION_PADDING}, cornerRadius: [8,8,8,8], fill: "${bgColorHex(pencilVars)}"})`,
       );
       lines.push(
         `color_group_${groupId}_label=I(color_group_${groupId}, {type: "text", name: "group-label", content: "${groupName}", fontSize: 12, fontWeight: "600", color: "${headingColor}"})`,
@@ -371,7 +382,7 @@ function buildFoundationsOps(
           `${swatchId}=I(color_swatches_${groupId}, {type: "frame", name: "${displayName}", width: ${SWATCH_SIZE}, layout: "vertical", gap: 4})`,
         );
         lines.push(
-          `${swatchId}_color=I(${swatchId}, {type: "frame", name: "color", width: ${SWATCH_SIZE}, height: ${SWATCH_SIZE}, cornerRadius: [6,6,6,6], fill: "{var.${varKey}}"})`,
+          `${swatchId}_color=I(${swatchId}, {type: "frame", name: "color", width: ${SWATCH_SIZE}, height: ${SWATCH_SIZE}, cornerRadius: [6,6,6,6], fill: "${hexValue}"})`,
         );
         lines.push(
           `${swatchId}_hex=I(${swatchId}, {type: "text", name: "hex", content: "${hexValue}", fontSize: 10, color: "${headingColor}"})`,
@@ -404,7 +415,7 @@ function buildFoundationsOps(
   y += SECTION_TITLE_HEIGHT + 8;
 
   lines.push(
-    `type_section=I(document, {type: "frame", name: "Typography / Specimen", x: ${CANVAS_X}, y: ${y}, width: 700, layout: "vertical", gap: 12, padding: ${SECTION_PADDING}, cornerRadius: [8,8,8,8], fill: "${bgColorExpr(pencilVars)}"})`,
+    `type_section=I(document, {type: "frame", name: "Typography / Specimen", x: ${CANVAS_X}, y: ${y}, width: 700, layout: "vertical", gap: 12, padding: ${SECTION_PADDING}, cornerRadius: [8,8,8,8], fill: "${bgColorHex(pencilVars)}"})`,
   );
 
   for (const step of typeSteps) {
@@ -432,7 +443,7 @@ function buildFoundationsOps(
   y += SECTION_TITLE_HEIGHT + 8;
 
   lines.push(
-    `spacing_section=I(document, {type: "frame", name: "Spacing / Scale", x: ${CANVAS_X}, y: ${y}, width: 700, layout: "vertical", gap: 8, padding: ${SECTION_PADDING}, cornerRadius: [8,8,8,8], fill: "${bgColorExpr(pencilVars)}"})`,
+    `spacing_section=I(document, {type: "frame", name: "Spacing / Scale", x: ${CANVAS_X}, y: ${y}, width: 700, layout: "vertical", gap: 8, padding: ${SECTION_PADDING}, cornerRadius: [8,8,8,8], fill: "${bgColorHex(pencilVars)}"})`,
   );
 
   for (const step of spacingSteps) {
@@ -441,8 +452,9 @@ function buildFoundationsOps(
     const spacingVarKey = Object.keys(pencilVars).find(k =>
       new RegExp(`spacing[.-]?0?${step}$|space[.-]?0?${step}$`).test(k.replace(/^\$--/, ""))
     );
-    const barFill = spacingVarKey ? `{var.${spacingVarKey}}` :
-      (groups.interactives[0] ? `{var.${groups.interactives[0][0]}}` : "#3b82f6");
+    const barFill = spacingVarKey
+      ? (pencilVars[spacingVarKey] ?? "#3b82f6")
+      : (groups.interactives[0] ? groups.interactives[0][1] : "#3b82f6");
 
     lines.push(
       `${stepId}_row=I(spacing_section, {type: "frame", name: "${step}px", layout: "horizontal", gap: 12, width: "fill_container"})`,
@@ -475,14 +487,18 @@ function buildInstruction(components: KitComponent[]): string {
   return [
     `## Drawing the ${components.length} component(s) + foundation pages`,
     "",
+    "PREREQUISITE: nib_brand_push must be run before executing these ops.",
+    "Fills and strokes use Pencil variable references ($--primary, $color-brand-600, etc.).",
+    "Without brand variables loaded, all fills will render as black.",
+    "",
     "STEP 1 — Components (execute one at a time, verify before continuing):",
     "For each component in the recipe:",
     "  a. Call batch_design(filePath, component.batchDesignOps) — use the operations VERBATIM.",
-    "     DO NOT rewrite them. DO NOT replace {var.xxx} expressions with hex values.",
+    "     DO NOT rewrite them. Fill and stroke values use Pencil variable references.",
     "  b. Call snapshot_layout — confirm the frame is placed correctly with no clipping.",
     "  c. Call get_screenshot(nodeId) on the frame — check every item in component.verification.visualChecks.",
-    "  d. If any fill/color is a hardcoded hex instead of {var.xxx}, fix it immediately with a",
-    "     batch_design Update operation before moving to the next component.",
+    "  d. If fills appear black, brand variables are not loaded — run nib_brand_push first.",
+    "     Use batch_design Update operations to fix any layout or visibility issues.",
     "",
     "STEP 2 — Foundation pages (after all components):",
     "  Call batch_design(filePath, foundations.batchDesignOps) to create the color palette,",
@@ -490,8 +506,8 @@ function buildInstruction(components: KitComponent[]): string {
     "  Then call get_screenshot to visually verify the foundations page looks correct.",
     "",
     "STEP 3 — Final report:",
-    "  Report: component names, frame nodeIds, any unresolved tokens or visual issues.",
-    "  If any token expression shows as a literal string instead of a colour, report it.",
+    "  Report: component names, frame nodeIds, any unresolved variable references or visual issues.",
+    "  If any fill appears black instead of a colour, report it — variables may not be loaded.",
   ].join("\n");
 }
 
@@ -530,12 +546,12 @@ function buildKitComponent(
         const varName = tokenToVarName(token);
         if (seen.has(varName)) continue;
         seen.add(varName);
-        const resolvedValue = pencilVars[varName] ?? pencilVars[`$${varName}`] ?? "";
+        const resolvedValue = pencilVars[varName] ?? "";
         tokenBindings.push({
           token,
           varName,
           resolvedValue,
-          pencilExpr: `{var.${varName}}`,
+          pencilExpr: `$${varName}`,
         });
       }
     }
@@ -548,7 +564,7 @@ function buildKitComponent(
     states,
     tokenBindings,
     placement,
-    batchDesignOps: buildComponentOps(name, contract, placement),
+    batchDesignOps: buildComponentOps(name, contract, placement, pencilVars),
     verification: buildVerification(name, contract, pencilVars),
   };
 }
@@ -564,7 +580,7 @@ async function loadPencilVars(
   try {
     const raw = JSON.parse(await readFile(pencilPath, "utf-8")) as Record<
       string,
-      { type: string; value: string | number }
+      { type: string; value: PencilVarValue }
     >;
     return flattenPencilVars(raw);
   } catch {

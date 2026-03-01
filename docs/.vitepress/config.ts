@@ -71,6 +71,7 @@ export default defineConfig({
           text: "Tools",
           items: [
             { text: "Brand System", link: "/guide/brand" },
+            { text: "Theming & Dark Mode", link: "/guide/theming" },
             { text: "Prototypes", link: "/guide/prototypes" },
           ],
         },

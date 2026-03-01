@@ -413,14 +413,21 @@ export default {
   await writeOutput(outputPath, preset);
 }
 
-/** Build Pencil.dev variables JSON */
+/** Pencil variable value — flat or themed (light/dark array). */
+type PencilVarValue =
+  | string
+  | number
+  | Array<{ value: string | number; theme: Record<string, string> }>;
+
+/** Build Pencil.dev variables JSON with light/dark theming for semantic colors. */
 export async function buildPencilVariables(
   tokensDir: string,
   outputPath: string,
 ): Promise<void> {
-  const [primitives, semanticLight, typography, spacing, pSizing, pBorderWidth, pOpacity, pZIndex, pBreakpoint] = await Promise.all([
+  const [primitives, semanticLight, semanticDark, typography, spacing, pSizing, pBorderWidth, pOpacity, pZIndex, pBreakpoint] = await Promise.all([
     readTokenFile(join(tokensDir, "color", "primitives.tokens.json")),
     readTokenFile(join(tokensDir, "color", "semantic-light.tokens.json")),
+    readTokenFile(join(tokensDir, "color", "semantic-dark.tokens.json")),
     readTokenFile(join(tokensDir, "typography.tokens.json")),
     readTokenFile(join(tokensDir, "spacing.tokens.json")),
     readTokenFile(join(tokensDir, "sizing.tokens.json")),
@@ -430,11 +437,12 @@ export async function buildPencilVariables(
     readTokenFile(join(tokensDir, "breakpoints.tokens.json")),
   ]);
 
-  const variables: Record<string, { type: string; value: string | number }> = {};
+  const variables: Record<string, { type: string; value: PencilVarValue }> = {};
 
   // Flatten all token sets
   const flatColors = flattenTokens(primitives);
   const flatSemantic = flattenTokens(semanticLight);
+  const flatSemanticDark = flattenTokens(semanticDark);
   const flatTypo = flattenTokens(typography);
   const flatSpacing = flattenTokens(spacing);
   const flatPSizing = flattenTokens(pSizing);
@@ -453,17 +461,36 @@ export async function buildPencilVariables(
     }
   }
 
-  // Semantic colors — resolve references to hex values
+  // Semantic colors — resolve to hex; emit themed array when light ≠ dark.
+  // Any frame with theme: {"mode": "dark"} will automatically use the dark value.
   for (const [key, { value, type }] of Object.entries(flatSemantic)) {
     if (type === "color" && typeof value === "string") {
-      variables[key] = { type: "color", value: resolveToValue(value, lookup) };
+      const lightHex = resolveToValue(value, lookup);
+      const darkEntry = flatSemanticDark[key];
+      if (darkEntry && typeof darkEntry.value === "string") {
+        const darkHex = resolveToValue(darkEntry.value, lookup);
+        if (lightHex !== darkHex) {
+          variables[key] = {
+            type: "color",
+            value: [
+              { value: lightHex, theme: { mode: "light" } },
+              { value: darkHex, theme: { mode: "dark" } },
+            ],
+          };
+        } else {
+          variables[key] = { type: "color", value: lightHex };
+        }
+      } else {
+        variables[key] = { type: "color", value: lightHex };
+      }
     }
   }
 
-  // Typography values — fontFamily as string, numeric values as number
+  // Typography values — fontFamily as string (first font only, strip fallback stack), numeric values as number
   for (const [key, { value, type }] of Object.entries(flatTypo)) {
     if (type === "fontFamily" && typeof value === "string") {
-      variables[key] = { type: "string", value };
+      const fontName = value.split(",")[0]!.trim();
+      variables[key] = { type: "string", value: fontName };
     } else if (typeof value === "string") {
       const num = parseFloat(value);
       variables[key] = Number.isNaN(num)

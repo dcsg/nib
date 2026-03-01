@@ -15,7 +15,7 @@ Brand Input → Algorithmic Derivation → DTCG Tokens → Platform Outputs
                                                   components.md
                                                          ↓
                                               Style Guide Bridge
-                                            ($-- standard variables)
+                                            (-- standard variables)
                                                          ↓
                                               Pencil style guides
                                               "just work" on-brand
@@ -293,30 +293,36 @@ Responsive design breakpoints matching common device widths:
 
 ## Pencil Style Guide Bridge
 
-When you push tokens to a `.pen` file, nib automatically creates **`$--` standard variables** — a set of well-known variable names that Pencil style guides reference. This means any Pencil style guide you apply will use your brand tokens by default.
+When you push tokens to a `.pen` file, nib automatically creates **`--` standard variables** — a set of well-known variable names that Pencil style guides reference. This means any Pencil style guide you apply will use your brand tokens by default.
 
 ### How It Works
 
-Pencil style guides are built against a standard set of `$--` variables (e.g., `$--background`, `$--primary`, `$--foreground`). When nib pushes tokens, it maps your semantic tokens to these standard names so designs "just work" with your brand.
+Pencil style guides reference standard `--` variables (e.g., `--background`, `--primary`, `--foreground`) in their component fills and strokes. When nib pushes tokens, it maps your semantic tokens to these standard names so designs "just work" with your brand.
+
+::: tip Variable naming convention
+Variable **key names** are plain strings without a `$` prefix: `--background`, `--primary`, etc. The `$` is only used in design property **values** as a reference sigil — e.g. a fill set to `"$--background"` looks up the variable named `--background`. See [ADR-005](../architecture/decisions/ADR-005-pencil-variable-naming.md) for the full convention.
+:::
 
 ### Key Mappings
 
 | Pencil Variable | nib Token | Category |
 |---|---|---|
-| `$--background` | `color-background-primary` | Background |
-| `$--surface` | `color-surface-primary` | Background |
-| `$--foreground` | `color-text-primary` | Text |
-| `$--foreground-secondary` | `color-text-secondary` | Text |
-| `$--primary` | `color-interactive-default` | Brand |
-| `$--primary-hover` | `color-interactive-hover` | Brand |
-| `$--primary-foreground` | `color-text-inverse` | Brand |
-| `$--error` | `color-feedback-error` | Feedback |
-| `$--border` | `color-border-primary` | Border |
-| `$--font-primary` | `fontFamily-sans` | Typography |
-| `$--space-m` | `spacing-md` | Spacing |
-| `$--radius-m` | `borderRadius-md` | Radius |
+| `--background` | `color-background-primary` | Background |
+| `--surface` | `color-surface-primary` | Background |
+| `--foreground` | `color-text-primary` | Text |
+| `--foreground-secondary` | `color-text-secondary` | Text |
+| `--primary` | `color-interactive-default` | Brand |
+| `--primary-hover` | `color-interactive-hover` | Brand |
+| `--primary-foreground` | `color-text-inverse` | Brand |
+| `--error` | `color-feedback-error` | Feedback |
+| `--border` | `color-border-primary` | Border |
+| `--font-primary` | `font-family-sans` | Typography |
+| `--space-m` | `spacing-md` | Spacing |
+| `--radius-m` | `border-radius-md` | Radius |
 
-The full bridge includes 27 standard variables across backgrounds, text, interactive, feedback, border, typography, spacing, and radius categories.
+The full bridge maps 27 standard variables across backgrounds, text, interactive, feedback, border, typography, spacing, and radius categories.
+
+Color variables that differ between light and dark mode are pushed as **themed arrays** — Pencil automatically creates a `mode` axis with `light` and `dark` values and resolves the correct value per frame. See [Theming & Dark Mode](/guide/theming) for full details.
 
 ### Using `brand style`
 
@@ -333,7 +339,7 @@ nib brand style --tags minimal,webapp,developer
 nib brand style --name "Modern Dashboard"
 ```
 
-The fetched style guide references `$--` variables, so every component in the design automatically uses your brand colors, typography, and spacing.
+The fetched style guide components use `$--` reference syntax in their fill and stroke values (e.g. `fill: "$--background"`), which resolve to the `--background` variable you pushed — your brand colors, typography, and spacing, automatically.
 
 ## Try It Yourself
 
@@ -395,7 +401,7 @@ Prints available Pencil style guide tags you can use.
 bun src/cli/index.ts brand style --tags minimal,webapp,developer
 ```
 
-Fetches a matching style guide and pushes it (with `$--` mappings) to your `.pen` file.
+Fetches a matching style guide and pushes it (with `--` standard variable mappings) to your `.pen` file.
 
 ::: warning MCP Required
 Steps 5–6 require a running Pencil.dev instance with its MCP server accessible. Steps 1–4 work fully offline.
@@ -407,7 +413,7 @@ Steps 5–6 require a running Pencil.dev instance with its MCP server accessible
 bun src/cli/index.ts brand push my-design.pen
 ```
 
-Pushes all nib tokens plus `$--` standard variables to the `.pen` file.
+Pushes all nib tokens plus `--` standard variables to the `.pen` file.
 
 ### 8. Inspect the Tailwind preset
 
@@ -472,7 +478,7 @@ Sync generated tokens into a `.pen` file's variables:
 nib brand push my-design.pen
 ```
 
-This opens the `.pen` file via MCP and sets all nib tokens (color, typography, spacing, sizing, border-width, opacity, z-index, breakpoints) as Pencil.dev variables — plus `$--` standard variable mappings so any Pencil style guide works with your brand out of the box.
+This opens the `.pen` file via MCP and sets all nib tokens (color, typography, spacing, sizing, border-width, opacity, z-index, breakpoints) as Pencil.dev variables — plus `--` standard variable mappings so any Pencil style guide works with your brand out of the box.
 
 ## Rebuild Platform Outputs
 
@@ -511,3 +517,9 @@ The primary artifact for AI coding agents. It's a structured markdown file that 
 After `nib brand init`, nib automatically injects a `## nib Brand System` section into every AI agent config file it finds in your project — `CLAUDE.md`, `.cursorrules`, `.windsurfrules`, `.github/copilot-instructions.md`, and `.cursor/rules/nib.md` — and always creates `AI_CONTEXT.md` as a universal fallback.
 
 Every future agent session — Claude, Cursor, Windsurf, Copilot, or any tool that reads project context — builds on-brand by default, without you prompting it every time.
+
+## Next Steps
+
+- [Theming & Dark Mode](/guide/theming) — how light/dark mode works in CSS and Pencil.dev, and how to apply themes to frames
+- [Framework Integration](/guide/framework-integration) — using the Tailwind preset and CSS variables with shadcn/ui, Radix, Chakra, and more
+- [Updating Tokens](/guide/updating-tokens) — editing token files and rebuilding platform outputs

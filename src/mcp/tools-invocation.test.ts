@@ -758,7 +758,7 @@ describe("nib_kit — batchDesignOps and foundations", () => {
     await writeFile(kitConfigPath, JSON.stringify(kitConfig, null, 2));
   });
 
-  it("returns batchDesignOps with {var.xxx} token expressions", async () => {
+  it("returns batchDesignOps with Pencil variable references", async () => {
     const { client } = await createTestPair();
     const result = await client.callTool({
       name: "nib_kit",
@@ -773,9 +773,11 @@ describe("nib_kit — batchDesignOps and foundations", () => {
     const button = recipe.components[0] as { batchDesignOps: string };
     expect(typeof button.batchDesignOps).toBe("string");
     expect(button.batchDesignOps.length).toBeGreaterThan(0);
-    // Operations must use token expressions — not hardcoded hex
-    expect(button.batchDesignOps).toContain("{var.");
-    expect(button.batchDesignOps).not.toMatch(/fill: "#[0-9a-fA-F]/);
+    // Operations use Pencil variable references ($varname) — not {var.xxx} or bare hex values
+    expect(button.batchDesignOps).toMatch(/fill: "\$[a-z]/);
+    expect(button.batchDesignOps).not.toContain("{var.");
+    // Stroke uses the Pencil object format, not a bare hex string
+    expect(button.batchDesignOps).toContain("stroke: {align:");
   });
 
   it("batchDesignOps inserts root frame into document", async () => {
@@ -844,11 +846,11 @@ describe("nib_kit — batchDesignOps and foundations", () => {
     expect(button.verification).toBeDefined();
     expect(Array.isArray(button.verification.visualChecks)).toBe(true);
     expect(button.verification.visualChecks.length).toBeGreaterThan(0);
-    // Must include the hardcoded-hex guard check
-    expect(button.verification.visualChecks.some((c) => c.includes("hardcoded hex"))).toBe(true);
+    // Must include a check referencing Pencil variable references ($varname)
+    expect(button.verification.visualChecks.some((c) => c.includes("$"))).toBe(true);
   });
 
-  it("instruction text references batch_design and {var.xxx}", async () => {
+  it("instruction text references batch_design and Pencil variable references", async () => {
     const { client } = await createTestPair();
     const result = await client.callTool({
       name: "nib_kit",
@@ -860,7 +862,7 @@ describe("nib_kit — batchDesignOps and foundations", () => {
 
     expect(typeof recipe.instruction).toBe("string");
     expect(recipe.instruction).toContain("batch_design");
-    expect(recipe.instruction).toContain("{var.xxx}");
+    expect(recipe.instruction).toContain("variable references");
   });
 });
 

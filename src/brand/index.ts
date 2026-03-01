@@ -290,7 +290,8 @@ export async function brandPush(options: BrandPushOptions): Promise<BrandPushRes
   }
 
   const content = await readFile(pencilVarsPath, "utf-8");
-  const rawVariables = JSON.parse(content) as Record<string, { type: string; value: string | number }>;
+  type PencilVarValue = string | number | Array<{ value: string | number; theme: Record<string, string> }>;
+  const rawVariables = JSON.parse(content) as Record<string, { type: string; value: PencilVarValue }>;
 
   // Always include Pencil standard variable mappings
   const { buildPencilStandardVariables } = await import("./pencil-bridge.js");
