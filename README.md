@@ -22,9 +22,13 @@
 
 ## What is nib?
 
-nib sits between your brand, your design tools, your codebase, and your AI agents. It provides two connected pipelines:
+AI coding agents are great at writing UI — but they don't know your brand. They pick their own colors, invent spacing values, and ignore your design system. Every component needs fixing.
 
-**Brand pipeline** — from guidelines to design tokens, CSS, Tailwind, and AI context:
+nib is the design control plane that closes that gap. It generates `brand.md` — a structured context file that Claude, Cursor, and any MCP-compatible agent reads before writing a single line of UI. It also turns brand guidelines into a complete DTCG token system and exports Pencil.dev designs into shareable HTML prototypes.
+
+Two connected pipelines:
+
+**Brand pipeline** — from guidelines to tokens, CSS, Tailwind, Pencil variables, and AI context:
 ```
 Brand Guidelines → DTCG Tokens → CSS / Tailwind / Pencil Variables → brand.md
 ```
@@ -33,6 +37,14 @@ Brand Guidelines → DTCG Tokens → CSS / Tailwind / Pencil Variables → brand
 ```
 Pencil.dev .pen → DesignDocument JSON → Clickable HTML Prototype
 ```
+
+One source of truth. Every tool, teammate, and AI agent builds from the same system.
+
+## Who Is This For?
+
+**Software engineers and founders** building UI without a dedicated designer, and **UX designers** at small product teams who need tokens, prototypes, and handoff specs without ceremony.
+
+→ [Full workflow guide](https://usenib.dev/guide/who-is-nib-for)
 
 ## Quick Start
 
@@ -117,11 +129,11 @@ bun run typecheck
 bun src/cli/index.ts --help
 ```
 
-Before making architectural changes, read the ADRs in `.dof/architecture/decisions/` and invariants in `.dof/architecture/invariants/`. Open an issue first for significant changes so we can align on approach before you invest time in a PR.
+Before making architectural changes, read the ADRs in `docs/architecture/decisions/` and invariants in `docs/architecture/invariants/`. Open an issue first for significant changes so we can align on approach before you invest time in a PR.
 
 PRs should:
 - Pass `bun run typecheck` and `bun test`
-- Include tests for new behaviour (see `INV-007` in `.dof/architecture/invariants/`)
+- Include tests for new behaviour (see `INV-007` in `docs/architecture/invariants/`)
 - Not break the `DesignDocument` contract or the DTCG token format
 
 ## License
