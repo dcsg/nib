@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.tgz
+.DS_Store
+.claude/
+docs/.vitepress/cache/
+.nib/.status.json
+docs/design/system/design-system.pen
+
+# Test directories
+my-design-system/
+
+# Internal planning and governance — private DOF skill, kept in Obsidian
+.dof/

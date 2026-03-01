@@ -1,0 +1,99 @@
+/**
+ * WAI-ARIA template: tabs
+ *
+ * Keyboard: ArrowLeft/Right → navigate tabs; Home/End → first/last tab; Tab → move to tabpanel
+ * Focus behavior: roving tabindex on tablist
+ * Reference: https://www.w3.org/WAI/ARIA/apg/patterns/tabs/
+ */
+
+import type { ComponentContract } from "../../../types/brand.js";
+
+export const tabsTemplate: Partial<ComponentContract> = {
+  description: "A set of layered sections of content — only one section is visible at a time",
+  widgetType: "tabs",
+  anatomy: {
+    root: "The outer container element",
+    tablist: "The container element for the tab triggers (role=tablist)",
+    tab: "An individual tab trigger (role=tab)",
+    tabpanel: "The content panel associated with a tab (role=tabpanel)",
+    indicator: "The visual underline or highlight on the active tab",
+  },
+  variants: {
+    underline: "Tabs with an underline indicator (default)",
+    pill: "Tabs rendered as pill buttons",
+    boxed: "Tabs with a bordered box around the tablist",
+  },
+  states: {
+    default: { description: "Inactive tab — not selected" },
+    selected: { description: "Active tab — its tabpanel is visible" },
+    focused: { description: "Keyboard focus on a tab trigger", focusRing: true },
+    disabled: { description: "Tab is present but not activatable", ariaDisabled: true },
+  },
+  interaction: {
+    activationKeys: ["ArrowLeft", "ArrowRight", "Home", "End", "Tab"],
+    role: "tab",
+  },
+  a11y: {
+    role: "tab",
+    keyboard: {
+      ArrowRight: "Move focus to the next tab; wraps to first",
+      ArrowLeft: "Move focus to the previous tab; wraps to last",
+      Home: "Move focus to the first tab",
+      End: "Move focus to the last tab",
+      Tab: "Move focus into the active tabpanel",
+      "Shift+Tab": "Move focus back to the active tab from the tabpanel",
+      Enter: "Activates the focused tab (if tabs are manually activated)",
+      Space: "Activates the focused tab (if tabs are manually activated)",
+    },
+    focusBehavior: "roving-tabindex",
+    focusTrap: false,
+    focusReturnTarget: null,
+    minimumTouchTarget: { ios: "44pt", android: "48dp", web: "24px" },
+    ariaAttributes: [
+      "aria-selected",
+      "aria-controls",
+      "aria-labelledby",
+      "aria-disabled",
+    ],
+    requiredLabel: true,
+    labelStrategy: "visible-text-or-aria-label",
+  },
+  slots: {
+    tabLabel: {
+      description: "Label for each tab trigger — keep short and scannable",
+      required: true,
+      accepts: "text",
+      maxLength: 30,
+      truncatable: true,
+    },
+    tabIcon: {
+      description: "Optional icon before or instead of the tab label",
+      required: false,
+      accepts: "icon",
+    },
+    tabPanel: {
+      description: "Content associated with each tab — any structured content",
+      required: true,
+      accepts: "component",
+    },
+  },
+  tokens: {
+    tab: {
+      default: {
+        color: "tab.text",
+        background: "transparent",
+      },
+      selected: {
+        color: "tab.text.selected",
+        "border-color": "tab.indicator",
+      },
+      focused: {
+        "outline-color": "color.focus.ring",
+        "outline-width": "2px",
+      },
+      disabled: {
+        color: "color.text.disabled",
+      },
+    },
+  },
+};

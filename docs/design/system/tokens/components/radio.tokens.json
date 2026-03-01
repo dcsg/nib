@@ -1,0 +1,114 @@
+{
+  "radio": {
+    "$description": "Component tokens for Radio",
+    "radio": {
+      "default": {
+        "background": {
+          "$type": "color",
+          "$value": "{radio.bg}",
+          "$description": "Radio radio background in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Radio"
+            }
+          }
+        },
+        "border-color": {
+          "$type": "color",
+          "$value": "{radio.border}",
+          "$description": "Radio radio border-color in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Radio"
+            }
+          }
+        },
+        "border-radius": {
+          "$type": "dimension",
+          "$value": "{radio.radius}",
+          "$description": "Radio radio border-radius in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Radio"
+            }
+          }
+        }
+      },
+      "selected": {
+        "background": {
+          "$type": "color",
+          "$value": "{radio.bg.selected}",
+          "$description": "Radio radio background in selected state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Radio"
+            }
+          }
+        },
+        "border-color": {
+          "$type": "color",
+          "$value": "{radio.border.selected}",
+          "$description": "Radio radio border-color in selected state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Radio"
+            }
+          }
+        }
+      },
+      "focused": {
+        "outline-color": {
+          "$type": "color",
+          "$value": "{color.focus.ring}",
+          "$description": "Radio radio outline-color in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Radio"
+            }
+          }
+        },
+        "outline-width": {
+          "$type": "dimension",
+          "$value": "{2px}",
+          "$description": "Radio radio outline-width in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Radio"
+            }
+          }
+        }
+      },
+      "disabled": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.surface.disabled}",
+          "$description": "Radio radio background in disabled state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Radio"
+            }
+          }
+        },
+        "border-color": {
+          "$type": "color",
+          "$value": "{color.border.disabled}",
+          "$description": "Radio radio border-color in disabled state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Radio"
+            }
+          }
+        }
+      }
+    }
+  }
+}

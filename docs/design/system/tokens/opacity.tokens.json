@@ -1,0 +1,65 @@
+{
+  "opacity": {
+    "$type": "number",
+    "disabled": {
+      "$value": 0.38,
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "hover": {
+      "$value": 0.08,
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "pressed": {
+      "$value": 0.12,
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "overlay": {
+      "$value": 0.5,
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "loading": {
+      "$value": 0.3,
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    }
+  }
+}

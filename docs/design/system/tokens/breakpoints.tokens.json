@@ -1,0 +1,77 @@
+{
+  "breakpoint": {
+    "$type": "dimension",
+    "xs": {
+      "$value": "0px",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "sm": {
+      "$value": "480px",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "md": {
+      "$value": "768px",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "lg": {
+      "$value": "1024px",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "xl": {
+      "$value": "1280px",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "2xl": {
+      "$value": "1536px",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,147 @@
+/**
+ * Foundation doc: motion.md
+ *
+ * Documents motion principles, duration scale, easing catalog,
+ * entrance/feedback semantics, and reduced motion handling.
+ */
+
+import type { NibBrandConfig } from "../../types/brand.js";
+
+const DATE = new Date().toISOString().split("T")[0];
+
+/** Generate motion.md */
+export function generateMotionDoc(_config: NibBrandConfig): string {
+  return `# Motion System
+<!-- nib-foundation: motion | generated: ${DATE} | do not edit manually -->
+
+## Motion Principles
+
+1. **Motion communicates, never decorates.** Every animation must convey state change, causality, or spatial context. If removing an animation doesn't make the UI harder to understand, remove it.
+
+2. **Instant is the baseline.** UI should feel responsive without animation. Motion enhances understanding; it must not block or delay interaction.
+
+3. **Respect user preferences.** All motion must be suppressed or reduced when \`prefers-reduced-motion: reduce\` is set. See the Reduced Motion section.
+
+4. **Physics over magic.** Ease-out for entering elements (decelerating into place). Ease-in for exiting elements (accelerating away). Ease-in-out for elements that both enter and exit (panels, drawers).
+
+---
+
+## Duration Scale
+
+| Token | Value | When to use |
+|-------|-------|-------------|
+| \`duration.instant\` | 0ms | No transition (programmatic state changes, reduced motion) |
+| \`duration.fast\` | 100ms | Micro-interactions: hover, focus, small state changes (color, opacity, border) |
+| \`duration.normal\` | 200ms | Default UI transitions: dropdown open, popover, badge toggle |
+| \`duration.slow\` | 300ms | Panel slides, modal entrance, page-level section reveal |
+| \`duration.slower\` | 500ms | Onboarding flows, celebration animations, long loading states |
+
+**Rule of thumb:** If the element is small or the change is subtle → use \`fast\`. If the element is large or covers significant screen area → use \`slow\` or \`slower\`.
+
+---
+
+## Easing Catalog
+
+| Token | Curve | When to use |
+|-------|-------|-------------|
+| \`easing.default\` | cubic-bezier(0.4, 0, 0.2, 1) | Standard transitions with no strong directionality |
+| \`easing.in\` | cubic-bezier(0.4, 0, 1, 1) | Elements that exit the screen (accelerate out) |
+| \`easing.out\` | cubic-bezier(0, 0, 0.2, 1) | Elements that enter the screen (decelerate into place) |
+| \`easing.ease-in-out\` | cubic-bezier(0.4, 0, 0.2, 1) | Elements that both enter and exit in the same transition (drawers, panels) |
+| \`easing.spring\` | cubic-bezier(0.175, 0.885, 0.32, 1.275) | Playful/bouncy micro-interactions (only if brand personality supports it) |
+
+---
+
+## Transition Composite Tokens
+
+Pre-composed transition shorthands for common scenarios:
+
+| Token | Duration | Easing | Use for |
+|-------|----------|--------|---------|
+| \`transition.micro\` | fast (100ms) | ease-out | Hover/focus state changes |
+| \`transition.default\` | normal (200ms) | default | Standard UI element transitions |
+| \`transition.page\` | slow (300ms) | ease-in-out | Large element movements, page transitions |
+
+### CSS Usage
+
+\`\`\`css
+.button {
+  transition: background-color var(--duration-fast) cubic-bezier(0, 0, 0.2, 1),
+              border-color var(--duration-fast) cubic-bezier(0, 0, 0.2, 1);
+}
+
+.modal {
+  transition: opacity var(--duration-normal) cubic-bezier(0.4, 0, 0.2, 1),
+              transform var(--duration-normal) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drawer {
+  transition: transform var(--duration-slow) cubic-bezier(0.4, 0, 0.2, 1);
+}
+\`\`\`
+
+---
+
+## Entrance Semantics
+
+How elements should enter the screen:
+
+| Element type | Enter | Exit |
+|-------------|-------|------|
+| Dropdown / popover | Fade in + scale from 95% | Fade out (no scale) |
+| Modal / dialog | Fade in + translate-y up 8px | Fade out |
+| Drawer (bottom) | Translate-y from 100% | Translate-y to 100% |
+| Drawer (side) | Translate-x from ±100% | Translate-x to ±100% |
+| Toast / snackbar | Translate-y from 100% + fade | Fade out |
+| Tooltip | Fade in (no transform — too small) | Fade out |
+| Page transition | Fade + subtle translate-x | Same in reverse |
+
+---
+
+## Feedback Semantics
+
+How the UI responds to user actions:
+
+| Action | Motion response |
+|--------|----------------|
+| Button click / press | Scale to 0.97 (fast, spring easing) |
+| Form submit success | Success icon morphs in (fast) |
+| Form submit error | Shake animation (only if brand supports) |
+| Loading → content | Skeleton fade out, content fade in (default) |
+| Delete / destructive | Element collapses height to 0 (slow) |
+| Drag and drop | Scale to 1.05 while dragging (spring) |
+
+---
+
+## Reduced Motion
+
+Always wrap motion in a reduced-motion check:
+
+\`\`\`css
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+\`\`\`
+
+**What to keep under reduced motion:**
+- Opacity transitions (fade in/out is generally acceptable — check with users)
+- Instant state changes (no animation at all)
+
+**What to remove under reduced motion:**
+- All translate/scale/rotate transforms
+- Parallax scrolling
+- Auto-playing videos and GIFs
+- Spinning/pulsing loading indicators (replace with static ones)
+
+---
+
+*Generated by nib. Run \`nib brand build\` to regenerate.*
+`;
+}

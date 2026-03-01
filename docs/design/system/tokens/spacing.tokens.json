@@ -1,0 +1,303 @@
+{
+  "spacing": {
+    "0": {
+      "$value": "0px",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "4": {
+      "$value": "4px",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "8": {
+      "$value": "8px",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "12": {
+      "$value": "12px",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "16": {
+      "$value": "16px",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "20": {
+      "$value": "20px",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "24": {
+      "$value": "24px",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "32": {
+      "$value": "32px",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "40": {
+      "$value": "40px",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "48": {
+      "$value": "48px",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "64": {
+      "$value": "64px",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "80": {
+      "$value": "80px",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "96": {
+      "$value": "96px",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "none": {
+      "$value": "{spacing.0}",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "2xs": {
+      "$value": "{spacing.4}",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "xs": {
+      "$value": "{spacing.8}",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "sm": {
+      "$value": "{spacing.12}",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "md": {
+      "$value": "{spacing.16}",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "lg": {
+      "$value": "{spacing.24}",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "xl": {
+      "$value": "{spacing.32}",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "2xl": {
+      "$value": "{spacing.48}",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "3xl": {
+      "$value": "{spacing.64}",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    },
+    "4xl": {
+      "$value": "{spacing.96}",
+      "$type": "dimension",
+      "$extensions": {
+        "nib": {
+          "auditStatus": "unaudited",
+          "owner": "design-systems",
+          "deprecated": false,
+          "migrateTo": null,
+          "generatedAt": "2026-03-01T00:45:14.086Z"
+        }
+      }
+    }
+  }
+}

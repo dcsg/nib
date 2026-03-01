@@ -1,0 +1,53 @@
+{
+  "alert": {
+    "$description": "Component tokens for Alert",
+    "root": {
+      "default": {
+        "background": {
+          "$type": "color",
+          "$value": "{alert.bg}",
+          "$description": "Alert root background in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Alert"
+            }
+          }
+        },
+        "border-color": {
+          "$type": "color",
+          "$value": "{alert.border}",
+          "$description": "Alert root border-color in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Alert"
+            }
+          }
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{alert.text}",
+          "$description": "Alert root color in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Alert"
+            }
+          }
+        },
+        "border-radius": {
+          "$type": "dimension",
+          "$value": "{alert.radius}",
+          "$description": "Alert root border-radius in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Alert"
+            }
+          }
+        }
+      }
+    }
+  }
+}

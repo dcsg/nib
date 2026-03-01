@@ -1,0 +1,53 @@
+{
+  "tooltip": {
+    "$description": "Component tokens for Tooltip",
+    "root": {
+      "visible": {
+        "background": {
+          "$type": "color",
+          "$value": "{tooltip.bg}",
+          "$description": "Tooltip root background in visible state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Tooltip"
+            }
+          }
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{tooltip.text}",
+          "$description": "Tooltip root color in visible state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Tooltip"
+            }
+          }
+        },
+        "border-radius": {
+          "$type": "dimension",
+          "$value": "{tooltip.radius}",
+          "$description": "Tooltip root border-radius in visible state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Tooltip"
+            }
+          }
+        },
+        "shadow": {
+          "$type": "shadow",
+          "$value": "{tooltip.shadow}",
+          "$description": "Tooltip root shadow in visible state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Tooltip"
+            }
+          }
+        }
+      }
+    }
+  }
+}

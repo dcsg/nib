@@ -1,0 +1,59 @@
+{
+  "toast": {
+    "$description": "Component tokens for Toast",
+    "root": {
+      "visible": {
+        "background": {
+          "$type": "color",
+          "$value": "{toast.bg}",
+          "$description": "Toast root background in visible state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Toast"
+            }
+          }
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{toast.text}",
+          "$description": "Toast root color in visible state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Toast"
+            }
+          }
+        },
+        "border-radius": {
+          "$type": "dimension",
+          "$value": "{toast.radius}",
+          "$description": "Toast root border-radius in visible state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Toast"
+            }
+          }
+        },
+        "shadow": {
+          "$type": "shadow",
+          "$value": {
+            "offsetX": "0px",
+            "offsetY": "4px",
+            "blur": "16px",
+            "spread": "0px",
+            "color": "{color.shadow.default}"
+          },
+          "$description": "Toast root shadow in visible state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Toast"
+            }
+          }
+        }
+      }
+    }
+  }
+}

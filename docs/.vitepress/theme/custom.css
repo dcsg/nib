@@ -1,0 +1,65 @@
+/* Force hero to full width and center everything */
+.VPHero .container {
+  max-width: 100% !important;
+}
+
+.VPHero .main {
+  max-width: 100% !important;
+  width: 100% !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+/* Replace hero name text with logo SVG */
+.VPHero .name {
+  visibility: hidden;
+  position: relative;
+  line-height: 0;
+  height: 140px;
+  margin-bottom: 24px;
+}
+
+.VPHero .name::before {
+  content: "";
+  visibility: visible;
+  display: block;
+  width: 480px;
+  height: 140px;
+  background: url("/logo-dark.svg") no-repeat center center;
+  background-size: contain;
+}
+
+.dark .VPHero .name::before {
+  background-image: url("/logo-light.svg");
+}
+
+.VPHero .name .clip {
+  display: none;
+}
+
+/* Center and size the heading */
+.VPHero .text {
+  font-size: 40px !important;
+  line-height: 1.2 !important;
+  max-width: 600px !important;
+}
+
+/* Center and size the tagline */
+.VPHero .tagline {
+  font-size: 18px !important;
+  line-height: 1.5 !important;
+  max-width: 600px !important;
+}
+
+/* Center the action buttons */
+.VPHero .actions {
+  justify-content: center !important;
+}
+
+/* Bigger navbar logo */
+.VPNavBarTitle .logo {
+  height: 32px !important;
+  width: auto !important;
+}

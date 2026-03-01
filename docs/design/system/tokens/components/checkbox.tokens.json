@@ -1,0 +1,114 @@
+{
+  "checkbox": {
+    "$description": "Component tokens for Checkbox",
+    "control": {
+      "default": {
+        "background": {
+          "$type": "color",
+          "$value": "{checkbox.bg}",
+          "$description": "Checkbox control background in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Checkbox"
+            }
+          }
+        },
+        "border-color": {
+          "$type": "color",
+          "$value": "{checkbox.border}",
+          "$description": "Checkbox control border-color in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Checkbox"
+            }
+          }
+        },
+        "border-radius": {
+          "$type": "dimension",
+          "$value": "{checkbox.radius}",
+          "$description": "Checkbox control border-radius in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Checkbox"
+            }
+          }
+        }
+      },
+      "checked": {
+        "background": {
+          "$type": "color",
+          "$value": "{checkbox.bg.checked}",
+          "$description": "Checkbox control background in checked state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Checkbox"
+            }
+          }
+        },
+        "border-color": {
+          "$type": "color",
+          "$value": "{checkbox.border.checked}",
+          "$description": "Checkbox control border-color in checked state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Checkbox"
+            }
+          }
+        }
+      },
+      "focused": {
+        "outline-color": {
+          "$type": "color",
+          "$value": "{color.focus.ring}",
+          "$description": "Checkbox control outline-color in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Checkbox"
+            }
+          }
+        },
+        "outline-width": {
+          "$type": "dimension",
+          "$value": "{2px}",
+          "$description": "Checkbox control outline-width in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Checkbox"
+            }
+          }
+        }
+      },
+      "disabled": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.surface.disabled}",
+          "$description": "Checkbox control background in disabled state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Checkbox"
+            }
+          }
+        },
+        "border-color": {
+          "$type": "color",
+          "$value": "{color.border.disabled}",
+          "$description": "Checkbox control border-color in disabled state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Checkbox"
+            }
+          }
+        }
+      }
+    }
+  }
+}

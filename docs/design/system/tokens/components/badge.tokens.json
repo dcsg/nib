@@ -1,0 +1,42 @@
+{
+  "badge": {
+    "$description": "Component tokens for Badge",
+    "root": {
+      "default": {
+        "background": {
+          "$type": "color",
+          "$value": "{badge.bg.neutral}",
+          "$description": "Badge root background in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Badge"
+            }
+          }
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{badge.text.neutral}",
+          "$description": "Badge root color in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Badge"
+            }
+          }
+        },
+        "border-radius": {
+          "$type": "dimension",
+          "$value": "{badge.radius}",
+          "$description": "Badge root border-radius in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Badge"
+            }
+          }
+        }
+      }
+    }
+  }
+}

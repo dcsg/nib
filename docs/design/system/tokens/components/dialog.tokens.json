@@ -1,0 +1,63 @@
+{
+  "dialog": {
+    "$description": "Component tokens for Dialog",
+    "root": {
+      "open": {
+        "background": {
+          "$type": "color",
+          "$value": "{dialog.bg}",
+          "$description": "Dialog root background in open state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Dialog"
+            }
+          }
+        },
+        "border-radius": {
+          "$type": "dimension",
+          "$value": "{dialog.radius}",
+          "$description": "Dialog root border-radius in open state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Dialog"
+            }
+          }
+        },
+        "shadow": {
+          "$type": "shadow",
+          "$value": {
+            "offsetX": "0px",
+            "offsetY": "8px",
+            "blur": "24px",
+            "spread": "0px",
+            "color": "{color.shadow.default}"
+          },
+          "$description": "Dialog root shadow in open state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Dialog"
+            }
+          }
+        }
+      }
+    },
+    "backdrop": {
+      "open": {
+        "background": {
+          "$type": "dimension",
+          "$value": "{dialog.backdrop}",
+          "$description": "Dialog backdrop background in open state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Dialog"
+            }
+          }
+        }
+      }
+    }
+  }
+}

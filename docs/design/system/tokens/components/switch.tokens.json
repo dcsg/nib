@@ -1,0 +1,109 @@
+{
+  "switch": {
+    "$description": "Component tokens for Switch",
+    "track": {
+      "default": {
+        "background": {
+          "$type": "color",
+          "$value": "{switch.track.bg}",
+          "$description": "Switch track background in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Switch"
+            }
+          }
+        },
+        "border-radius": {
+          "$type": "dimension",
+          "$value": "{switch.track.radius}",
+          "$description": "Switch track border-radius in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Switch"
+            }
+          }
+        }
+      },
+      "on": {
+        "background": {
+          "$type": "color",
+          "$value": "{switch.track.bg.on}",
+          "$description": "Switch track background in on state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Switch"
+            }
+          }
+        }
+      },
+      "focused": {
+        "outline-color": {
+          "$type": "color",
+          "$value": "{color.focus.ring}",
+          "$description": "Switch track outline-color in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Switch"
+            }
+          }
+        },
+        "outline-width": {
+          "$type": "dimension",
+          "$value": "{2px}",
+          "$description": "Switch track outline-width in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Switch"
+            }
+          }
+        }
+      },
+      "disabled": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.surface.disabled}",
+          "$description": "Switch track background in disabled state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Switch"
+            }
+          }
+        }
+      }
+    },
+    "thumb": {
+      "default": {
+        "background": {
+          "$type": "color",
+          "$value": "{switch.thumb.bg}",
+          "$description": "Switch thumb background in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Switch"
+            }
+          }
+        }
+      },
+      "on": {
+        "background": {
+          "$type": "color",
+          "$value": "{switch.thumb.bg.on}",
+          "$description": "Switch thumb background in on state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Switch"
+            }
+          }
+        }
+      }
+    }
+  }
+}

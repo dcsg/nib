@@ -1,0 +1,160 @@
+{
+  "combobox": {
+    "$description": "Component tokens for Combobox",
+    "input": {
+      "default": {
+        "background": {
+          "$type": "color",
+          "$value": "{combobox.bg}",
+          "$description": "Combobox input background in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Combobox"
+            }
+          }
+        },
+        "border-color": {
+          "$type": "color",
+          "$value": "{combobox.border}",
+          "$description": "Combobox input border-color in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Combobox"
+            }
+          }
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{combobox.text}",
+          "$description": "Combobox input color in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Combobox"
+            }
+          }
+        },
+        "border-radius": {
+          "$type": "dimension",
+          "$value": "{combobox.radius}",
+          "$description": "Combobox input border-radius in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Combobox"
+            }
+          }
+        }
+      },
+      "focused": {
+        "border-color": {
+          "$type": "color",
+          "$value": "{combobox.border.focus}",
+          "$description": "Combobox input border-color in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Combobox"
+            }
+          }
+        },
+        "outline-color": {
+          "$type": "color",
+          "$value": "{color.focus.ring}",
+          "$description": "Combobox input outline-color in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Combobox"
+            }
+          }
+        },
+        "outline-width": {
+          "$type": "dimension",
+          "$value": "{2px}",
+          "$description": "Combobox input outline-width in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Combobox"
+            }
+          }
+        }
+      },
+      "disabled": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.surface.disabled}",
+          "$description": "Combobox input background in disabled state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Combobox"
+            }
+          }
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{color.text.disabled}",
+          "$description": "Combobox input color in disabled state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Combobox"
+            }
+          }
+        }
+      }
+    },
+    "popup": {
+      "open": {
+        "background": {
+          "$type": "color",
+          "$value": "{combobox.popup.bg}",
+          "$description": "Combobox popup background in open state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Combobox"
+            }
+          }
+        },
+        "border-color": {
+          "$type": "color",
+          "$value": "{combobox.popup.border}",
+          "$description": "Combobox popup border-color in open state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Combobox"
+            }
+          }
+        },
+        "border-radius": {
+          "$type": "dimension",
+          "$value": "{combobox.popup.radius}",
+          "$description": "Combobox popup border-radius in open state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Combobox"
+            }
+          }
+        },
+        "shadow": {
+          "$type": "shadow",
+          "$value": "{combobox.popup.shadow}",
+          "$description": "Combobox popup shadow in open state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Combobox"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "tabs": {
+    "$description": "Component tokens for Tabs",
+    "tab": {
+      "default": {
+        "color": {
+          "$type": "color",
+          "$value": "{tab.text}",
+          "$description": "Tabs tab color in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Tabs"
+            }
+          }
+        },
+        "background": {
+          "$type": "dimension",
+          "$value": "{transparent}",
+          "$description": "Tabs tab background in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Tabs"
+            }
+          }
+        }
+      },
+      "selected": {
+        "color": {
+          "$type": "color",
+          "$value": "{tab.text.selected}",
+          "$description": "Tabs tab color in selected state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Tabs"
+            }
+          }
+        },
+        "border-color": {
+          "$type": "dimension",
+          "$value": "{tab.indicator}",
+          "$description": "Tabs tab border-color in selected state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Tabs"
+            }
+          }
+        }
+      },
+      "focused": {
+        "outline-color": {
+          "$type": "color",
+          "$value": "{color.focus.ring}",
+          "$description": "Tabs tab outline-color in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Tabs"
+            }
+          }
+        },
+        "outline-width": {
+          "$type": "dimension",
+          "$value": "{2px}",
+          "$description": "Tabs tab outline-width in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Tabs"
+            }
+          }
+        }
+      },
+      "disabled": {
+        "color": {
+          "$type": "color",
+          "$value": "{color.text.disabled}",
+          "$description": "Tabs tab color in disabled state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Tabs"
+            }
+          }
+        }
+      }
+    }
+  }
+}

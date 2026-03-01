@@ -1,0 +1,114 @@
+{
+  "button": {
+    "$description": "Component tokens for Button",
+    "root": {
+      "default": {
+        "background": {
+          "$type": "color",
+          "$value": "{button.bg.primary}",
+          "$description": "Button root background in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Button"
+            }
+          }
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{button.text.primary}",
+          "$description": "Button root color in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Button"
+            }
+          }
+        },
+        "border-radius": {
+          "$type": "dimension",
+          "$value": "{button.radius}",
+          "$description": "Button root border-radius in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Button"
+            }
+          }
+        },
+        "border-color": {
+          "$type": "dimension",
+          "$value": "{transparent}",
+          "$description": "Button root border-color in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Button"
+            }
+          }
+        }
+      },
+      "hover": {
+        "background": {
+          "$type": "color",
+          "$value": "{button.bg.primary.hover}",
+          "$description": "Button root background in hover state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Button"
+            }
+          }
+        }
+      },
+      "focused": {
+        "outline-color": {
+          "$type": "color",
+          "$value": "{color.focus.ring}",
+          "$description": "Button root outline-color in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Button"
+            }
+          }
+        },
+        "outline-width": {
+          "$type": "dimension",
+          "$value": "{2px}",
+          "$description": "Button root outline-width in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Button"
+            }
+          }
+        }
+      },
+      "disabled": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.surface.disabled}",
+          "$description": "Button root background in disabled state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Button"
+            }
+          }
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{color.text.disabled}",
+          "$description": "Button root color in disabled state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "Button"
+            }
+          }
+        }
+      }
+    }
+  }
+}

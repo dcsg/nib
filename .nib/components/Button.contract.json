@@ -1,0 +1,122 @@
+{
+  "$schema": "https://nibjs.dev/schemas/component-contract.v1.json",
+  "name": "Button",
+  "description": "Triggers an action or event",
+  "widgetType": "button",
+  "anatomy": {
+    "root": "The outer interactive element",
+    "label": "The visible text content",
+    "leadingIcon": "Optional icon before label",
+    "trailingIcon": "Optional icon after label",
+    "loadingSpinner": "Shown during loading state"
+  },
+  "states": {
+    "default": {
+      "description": "Resting state"
+    },
+    "hover": {
+      "description": "Pointer device over element"
+    },
+    "focused": {
+      "description": "Keyboard or programmatic focus",
+      "focusRing": true
+    },
+    "active": {
+      "description": "Being pressed"
+    },
+    "disabled": {
+      "description": "Not interactive",
+      "ariaDisabled": true
+    },
+    "loading": {
+      "description": "Async action in progress",
+      "ariaLabel": "Loading…",
+      "ariaDisabled": true
+    }
+  },
+  "a11y": {
+    "role": "button",
+    "keyboard": {
+      "Enter": "Activates the button",
+      "Space": "Activates the button"
+    },
+    "focusBehavior": "receives-focus",
+    "focusTrap": false,
+    "focusReturnTarget": null,
+    "minimumTouchTarget": {
+      "ios": "44pt",
+      "android": "48dp",
+      "web": "24px"
+    },
+    "ariaAttributes": [
+      "aria-label",
+      "aria-disabled",
+      "aria-pressed"
+    ],
+    "requiredLabel": true,
+    "labelStrategy": "visible-text-or-aria-label"
+  },
+  "tokens": {
+    "root": {
+      "default": {
+        "background": "button.bg.primary",
+        "color": "button.text.primary",
+        "border-radius": "button.radius",
+        "border-color": "transparent"
+      },
+      "hover": {
+        "background": "button.bg.primary.hover"
+      },
+      "focused": {
+        "outline-color": "color.focus.ring",
+        "outline-width": "2px"
+      },
+      "disabled": {
+        "background": "color.surface.disabled",
+        "color": "color.text.disabled"
+      }
+    }
+  },
+  "variants": {
+    "primary": "High-emphasis action, one per view",
+    "secondary": "Medium-emphasis, supporting action",
+    "ghost": "Low-emphasis, destructive or tertiary",
+    "danger": "Destructive actions only"
+  },
+  "sizes": {
+    "sm": {
+      "height": "32px",
+      "padding-x": "12px",
+      "font-size": "{font-size.label}"
+    },
+    "md": {
+      "height": "40px",
+      "padding-x": "16px",
+      "font-size": "{font-size.body}"
+    },
+    "lg": {
+      "height": "48px",
+      "padding-x": "20px",
+      "font-size": "{font-size.body-lg}"
+    }
+  },
+  "interaction": {
+    "activationKeys": [
+      "Enter",
+      "Space"
+    ],
+    "role": "button",
+    "submitsForm": false
+  },
+  "responsive": {
+    "compact": {
+      "fullWidth": true
+    },
+    "medium": {
+      "fullWidth": false
+    },
+    "expanded": {
+      "fullWidth": false
+    }
+  }
+}

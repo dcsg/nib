@@ -1,0 +1,136 @@
+{
+  "textinput": {
+    "$description": "Component tokens for TextInput",
+    "input": {
+      "default": {
+        "background": {
+          "$type": "color",
+          "$value": "{input.bg}",
+          "$description": "TextInput input background in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "TextInput"
+            }
+          }
+        },
+        "border-color": {
+          "$type": "color",
+          "$value": "{input.border}",
+          "$description": "TextInput input border-color in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "TextInput"
+            }
+          }
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{input.text}",
+          "$description": "TextInput input color in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "TextInput"
+            }
+          }
+        },
+        "border-radius": {
+          "$type": "dimension",
+          "$value": "{input.radius}",
+          "$description": "TextInput input border-radius in default state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "TextInput"
+            }
+          }
+        }
+      },
+      "focused": {
+        "border-color": {
+          "$type": "color",
+          "$value": "{input.border.focus}",
+          "$description": "TextInput input border-color in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "TextInput"
+            }
+          }
+        },
+        "outline-color": {
+          "$type": "color",
+          "$value": "{color.focus.ring}",
+          "$description": "TextInput input outline-color in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "TextInput"
+            }
+          }
+        },
+        "outline-width": {
+          "$type": "dimension",
+          "$value": "{2px}",
+          "$description": "TextInput input outline-width in focused state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "TextInput"
+            }
+          }
+        }
+      },
+      "disabled": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.surface.disabled}",
+          "$description": "TextInput input background in disabled state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "TextInput"
+            }
+          }
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{color.text.disabled}",
+          "$description": "TextInput input color in disabled state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "TextInput"
+            }
+          }
+        },
+        "border-color": {
+          "$type": "color",
+          "$value": "{color.border.disabled}",
+          "$description": "TextInput input border-color in disabled state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "TextInput"
+            }
+          }
+        }
+      },
+      "invalid": {
+        "border-color": {
+          "$type": "color",
+          "$value": "{color.feedback.error}",
+          "$description": "TextInput input border-color in invalid state",
+          "$extensions": {
+            "nib": {
+              "tier": "component",
+              "component": "TextInput"
+            }
+          }
+        }
+      }
+    }
+  }
+}
