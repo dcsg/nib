@@ -8,7 +8,7 @@
 
 import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { join, resolve, basename } from "node:path";
+import { resolve } from "node:path";
 import type { NibBrandConfig, ComponentContract } from "../types/brand.js";
 
 /** Frame dimensions per widget type (px) */
@@ -51,6 +51,19 @@ export interface KitPlacement {
   height: number;
 }
 
+/**
+ * What the agent must verify after executing batchDesignOps.
+ * These are concrete checks — not suggestions.
+ */
+export interface KitVerification {
+  /** Minimum number of child nodes expected inside the root frame */
+  expectedChildCount: number;
+  /** Pencil fill expression that must be set on the root frame (e.g. "{var.color-brand-600}") */
+  primaryFillExpr?: string;
+  /** Call get_screenshot and confirm each of these things visually */
+  visualChecks: string[];
+}
+
 /** A single component in the kit recipe. */
 export interface KitComponent {
   /** Component name (e.g. "Button") */
@@ -68,6 +81,33 @@ export interface KitComponent {
   tokenBindings: KitTokenBinding[];
   /** Suggested placement for the component frame on the canvas */
   placement: KitPlacement;
+  /**
+   * Ready-to-execute Pencil batch_design operations for the default state.
+   * Pass this string directly to batch_design(filePath, operations).
+   * "document" is the canvas root — valid without substitution.
+   * DO NOT rewrite these operations or replace token expressions with hex values.
+   */
+  batchDesignOps: string;
+  /**
+   * What to verify after executing batchDesignOps.
+   * Check all items before moving to the next component.
+   */
+  verification: KitVerification;
+}
+
+/** Foundation pages included in every kit recipe. */
+export interface KitFoundations {
+  /** How many color swatches will be created */
+  colorCount: number;
+  /** How many typography scale steps will be shown */
+  typographySteps: number;
+  /** Y position on canvas where foundations start (below all components) */
+  startsAtY: number;
+  /**
+   * Ready-to-execute Pencil batch_design operations for all foundation pages.
+   * Execute this in a separate batch_design call after all components are drawn.
+   */
+  batchDesignOps: string;
 }
 
 /** Full kit recipe returned by nib_kit. */
@@ -79,16 +119,33 @@ export interface KitRecipe {
   /** Requested components (or all if none specified) */
   components: KitComponent[];
   /**
-   * Step-by-step instruction for Claude to draw the kit using Pencil tools.
-   * Include this verbatim in your plan before calling batch_design.
+   * Foundation pages — colors, typography, spacing.
+   * Always included regardless of component filter.
+   */
+  foundations: KitFoundations;
+  /**
+   * Step-by-step instruction for Claude to draw the kit.
+   * Follow this exactly — do not improvise.
    */
   instruction: string;
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/** Convert a DTCG token value (possibly wrapped in braces) to a Pencil variable expression. */
+function tokenToExpr(tokenValue: string): string {
+  const token = tokenValue.replace(/^\{|\}$/g, "");
+  return `{var.${token.replace(/\./g, "-")}}`;
+}
+
 /** Convert a DTCG token path to a Pencil variable name. */
 function tokenToVarName(token: string): string {
-  // "color.brand.600" → "color-brand-600"
   return token.replace(/\./g, "-");
+}
+
+/** True if an anatomy part name suggests a text node rather than a frame. */
+function isTextPart(part: string): boolean {
+  return /^(label|text|title|caption|description|placeholder|helper.?text|value|content|heading)/i.test(part);
 }
 
 /** Flatten pencil variables.json to a simple key → value map. */
@@ -102,58 +159,336 @@ function flattenPencilVars(
   return out;
 }
 
-/** Build the kit instruction text included in the recipe. */
+/** Return a token value only if it is a plain string reference. */
+function tokenString(v: unknown): string | undefined {
+  return typeof v === "string" && v.length > 0 ? v : undefined;
+}
+
+/**
+ * Generate batch_design operation strings for a component's default state.
+ * All fills/colors use {var.xxx} expressions — never hardcoded hex values.
+ */
+function buildComponentOps(
+  name: string,
+  contract: ComponentContract,
+  placement: KitPlacement,
+): string {
+  const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+  const { widgetType } = contract;
+  const frameSize = FRAME_SIZES[widgetType] ?? FRAME_SIZES["generic"]!;
+  const lines: string[] = [];
+
+  // Root frame
+  const rootTokens = contract.tokens["root"]?.["default"] ?? {};
+  const rootFill = tokenString(rootTokens["fill"]) ?? tokenString(rootTokens["background"]) ?? tokenString(rootTokens["backgroundColor"]);
+  const rootBorder = tokenString(rootTokens["border"]) ?? tokenString(rootTokens["borderColor"]) ?? tokenString(rootTokens["stroke"]);
+
+  const rootAttrs: string[] = [
+    `type: "frame"`,
+    `name: "${name} / Default"`,
+    `x: ${placement.x}`,
+    `y: ${placement.y}`,
+    `width: ${frameSize.width}`,
+    `height: ${frameSize.height}`,
+    `layout: "horizontal"`,
+    `gap: 8`,
+    `padding: 10`,
+    `cornerRadius: [6,6,6,6]`,
+  ];
+  if (rootFill) rootAttrs.push(`fill: "${tokenToExpr(rootFill)}"`);
+  if (rootBorder) rootAttrs.push(`stroke: "${tokenToExpr(rootBorder)}"`, `strokeThickness: 1`);
+
+  lines.push(`${id}_root=I(document, {${rootAttrs.join(", ")}})`);
+
+  // Anatomy children (non-root parts)
+  for (const part of Object.keys(contract.anatomy).filter(p => p !== "root")) {
+    const partId = `${id}_${part.replace(/[^a-z0-9]+/g, "_")}`;
+    const partTokens = contract.tokens[part]?.["default"] ?? {};
+
+    if (isTextPart(part)) {
+      const colorToken = tokenString(partTokens["color"]) ?? tokenString(partTokens["textColor"]);
+      const textAttrs: string[] = [
+        `type: "text"`,
+        `name: "${part}"`,
+        `content: "${name}"`,
+        `fontSize: 14`,
+        `fontWeight: "500"`,
+      ];
+      if (colorToken) textAttrs.push(`color: "${tokenToExpr(colorToken)}"`);
+      lines.push(`${partId}=I(${id}_root, {${textAttrs.join(", ")}})`);
+    } else {
+      const partFill = tokenString(partTokens["fill"]) ?? tokenString(partTokens["background"]);
+      const partAttrs: string[] = [`type: "frame"`, `name: "${part}"`];
+      if (partFill) partAttrs.push(`fill: "${tokenToExpr(partFill)}"`);
+      lines.push(`${partId}=I(${id}_root, {${partAttrs.join(", ")}})`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
+/** Build the verification checklist for a component. */
+function buildVerification(
+  name: string,
+  contract: ComponentContract,
+  pencilVars: Record<string, string>,
+): KitVerification {
+  const rootTokens = contract.tokens["root"]?.["default"] ?? {};
+  const rootFillToken = tokenString(rootTokens["fill"]) ?? tokenString(rootTokens["background"]);
+  const primaryFillExpr = rootFillToken ? tokenToExpr(rootFillToken) : undefined;
+
+  const nonRootParts = Object.keys(contract.anatomy).filter(p => p !== "root");
+  const visualChecks: string[] = [
+    `Frame named "${name} / Default" exists at x=80`,
+  ];
+
+  if (primaryFillExpr) {
+    const varKey = primaryFillExpr.slice(5, -1); // strip {var. and }
+    const resolved = pencilVars[varKey] ?? pencilVars[`$${varKey}`] ?? "resolved value";
+    visualChecks.push(`Root fill is brand color ${resolved} — verify it uses ${primaryFillExpr}, not a hardcoded hex`);
+  }
+
+  for (const part of nonRootParts) {
+    const partTokens = contract.tokens[part]?.["default"] ?? {};
+    const colorToken = tokenString(partTokens["color"]) ?? tokenString(partTokens["textColor"]);
+    if (colorToken) {
+      const expr = tokenToExpr(colorToken);
+      visualChecks.push(`"${part}" color uses ${expr} — not a hardcoded hex value`);
+    }
+  }
+
+  visualChecks.push(`No hardcoded hex values anywhere — if any node has fill: "#xxxxxx" instead of fill: "{var.xxx}", fix it with a batch_design Update operation`);
+
+  return {
+    expectedChildCount: nonRootParts.length,
+    primaryFillExpr,
+    visualChecks,
+  };
+}
+
+// ── Foundation pages ──────────────────────────────────────────────────────────
+
+/** Group pencil variable entries by semantic category. */
+function groupVarsByCategory(pencilVars: Record<string, string>): {
+  backgrounds: [string, string][];
+  texts: [string, string][];
+  interactives: [string, string][];
+  feedbacks: [string, string][];
+  borders: [string, string][];
+} {
+  const norm = (k: string) => k.replace(/^\$--/, "").replace(/^--/, "").replace(/^color-/, "");
+  const entries = Object.entries(pencilVars).filter(([, v]) => /^#[0-9a-fA-F]{3,8}$/.test(v));
+
+  return {
+    backgrounds: entries.filter(([k]) => /^background/.test(norm(k))),
+    texts: entries.filter(([k]) => /^(text|foreground)/.test(norm(k))),
+    interactives: entries.filter(([k]) => /^interactive/.test(norm(k))),
+    feedbacks: entries.filter(([k]) => /^(error|warning|success|info|feedback)/.test(norm(k))),
+    borders: entries.filter(([k]) => /^border/.test(norm(k))),
+  };
+}
+
+/** Find a usable text color expression for section headings. */
+function headingColorExpr(pencilVars: Record<string, string>): string {
+  const key = Object.keys(pencilVars).find(k => /(\$--|^--)?(text-?primary|foreground)$/.test(k));
+  return key ? `{var.${key}}` : "#1a1a1a";
+}
+
+/** Find a usable background expression for section backgrounds. */
+function bgColorExpr(pencilVars: Record<string, string>): string {
+  const key = Object.keys(pencilVars).find(k => /^(\$--|--)?background$/.test(k));
+  return key ? `{var.${key}}` : "#f5f5f5";
+}
+
+/**
+ * Build foundation page operations — color swatches, typography specimen, spacing scale.
+ * Returns batch_design operation strings ready to execute.
+ */
+function buildFoundationsOps(
+  brandName: string,
+  pencilVars: Record<string, string>,
+  startsAtY: number,
+): { ops: string; foundations: KitFoundations } {
+  const lines: string[] = [];
+  const CANVAS_X = 80;
+  const SWATCH_SIZE = 64;
+  const SWATCH_GAP = 12;
+  const ROW_HEIGHT = SWATCH_SIZE + 28; // swatch + label
+  const SECTION_PADDING = 24;
+  const SECTION_TITLE_HEIGHT = 40;
+  const SECTION_GAP = 48;
+  const headingColor = headingColorExpr(pencilVars);
+
+  let y = startsAtY;
+  const groups = groupVarsByCategory(pencilVars);
+
+  // ── Color palette page ─────────────────────────────────────────────────────
+
+  const colorGroups: [string, [string, string][]][] = [
+    ["Backgrounds", groups.backgrounds],
+    ["Text", groups.texts],
+    ["Interactive", groups.interactives],
+    ["Feedback", groups.feedbacks],
+    ["Borders", groups.borders],
+  ].filter(([, entries]) => (entries as [string, string][]).length > 0) as [string, [string, string][]][];
+
+  const totalSwatches = colorGroups.reduce((sum, [, e]) => sum + e.length, 0);
+
+  if (colorGroups.length > 0) {
+    // Section title
+    lines.push(
+      `color_page_title=I(document, {type: "text", name: "Color Palette", content: "Color Palette", x: ${CANVAS_X}, y: ${y}, fontSize: 28, fontWeight: "700", color: "${headingColor}"})`,
+    );
+    y += SECTION_TITLE_HEIGHT + 8;
+
+    for (const [groupName, entries] of colorGroups) {
+      const groupId = groupName.toLowerCase().replace(/\s+/g, "_");
+      const rowWidth = entries.length * (SWATCH_SIZE + SWATCH_GAP) - SWATCH_GAP + SECTION_PADDING * 2;
+
+      lines.push(
+        `color_group_${groupId}=I(document, {type: "frame", name: "Colors / ${groupName}", x: ${CANVAS_X}, y: ${y}, width: ${rowWidth}, height: ${ROW_HEIGHT + SECTION_TITLE_HEIGHT + SECTION_PADDING * 2}, layout: "vertical", gap: 8, padding: ${SECTION_PADDING}, cornerRadius: [8,8,8,8], fill: "${bgColorExpr(pencilVars)}"})`,
+      );
+      lines.push(
+        `color_group_${groupId}_label=I(color_group_${groupId}, {type: "text", name: "group-label", content: "${groupName}", fontSize: 12, fontWeight: "600", color: "${headingColor}"})`,
+      );
+      lines.push(
+        `color_swatches_${groupId}=I(color_group_${groupId}, {type: "frame", name: "swatches", layout: "horizontal", gap: ${SWATCH_GAP}})`,
+      );
+
+      for (let i = 0; i < entries.length; i++) {
+        const [varKey, hexValue] = entries[i]!;
+        const swatchId = `swatch_${groupId}_${i}`;
+        const displayName = varKey.replace(/^\$--/, "").replace(/^--/, "");
+
+        lines.push(
+          `${swatchId}=I(color_swatches_${groupId}, {type: "frame", name: "${displayName}", width: ${SWATCH_SIZE}, layout: "vertical", gap: 4})`,
+        );
+        lines.push(
+          `${swatchId}_color=I(${swatchId}, {type: "frame", name: "color", width: ${SWATCH_SIZE}, height: ${SWATCH_SIZE}, cornerRadius: [6,6,6,6], fill: "{var.${varKey}}"})`,
+        );
+        lines.push(
+          `${swatchId}_hex=I(${swatchId}, {type: "text", name: "hex", content: "${hexValue}", fontSize: 10, color: "${headingColor}"})`,
+        );
+      }
+
+      y += ROW_HEIGHT + SECTION_TITLE_HEIGHT + SECTION_PADDING * 2 + SECTION_GAP;
+    }
+  }
+
+  y += SECTION_GAP;
+
+  // ── Typography specimen ────────────────────────────────────────────────────
+
+  const typeSteps: { label: string; fontSize: number; fontWeight: string; content: string }[] = [
+    { label: "Display", fontSize: 48, fontWeight: "700", content: "Display Heading" },
+    { label: "H1", fontSize: 36, fontWeight: "700", content: "Heading 1" },
+    { label: "H2", fontSize: 28, fontWeight: "600", content: "Heading 2" },
+    { label: "H3", fontSize: 22, fontWeight: "600", content: "Heading 3" },
+    { label: "H4", fontSize: 18, fontWeight: "600", content: "Heading 4" },
+    { label: "Body Large", fontSize: 16, fontWeight: "400", content: "Body text, large. Use for introductory paragraphs." },
+    { label: "Body", fontSize: 14, fontWeight: "400", content: "Body text, default. Use for most UI text content." },
+    { label: "Caption", fontSize: 12, fontWeight: "400", content: "Caption or helper text, smaller labels." },
+    { label: "Code", fontSize: 13, fontWeight: "400", content: "const token = '{var.color-brand-600}';" },
+  ];
+
+  lines.push(
+    `type_page_title=I(document, {type: "text", name: "Typography Scale", content: "Typography Scale", x: ${CANVAS_X}, y: ${y}, fontSize: 28, fontWeight: "700", color: "${headingColor}"})`,
+  );
+  y += SECTION_TITLE_HEIGHT + 8;
+
+  lines.push(
+    `type_section=I(document, {type: "frame", name: "Typography / Specimen", x: ${CANVAS_X}, y: ${y}, width: 700, layout: "vertical", gap: 12, padding: ${SECTION_PADDING}, cornerRadius: [8,8,8,8], fill: "${bgColorExpr(pencilVars)}"})`,
+  );
+
+  for (const step of typeSteps) {
+    const stepId = `type_${step.label.toLowerCase().replace(/\s+/g, "_")}`;
+    lines.push(
+      `${stepId}_row=I(type_section, {type: "frame", name: "${step.label}", layout: "horizontal", gap: 16, width: "fill_container"})`,
+    );
+    lines.push(
+      `${stepId}_meta=I(${stepId}_row, {type: "text", name: "meta", content: "${step.label} / ${step.fontSize}px", fontSize: 11, fontWeight: "500", color: "${headingColor}", width: 100})`,
+    );
+    lines.push(
+      `${stepId}_text=I(${stepId}_row, {type: "text", name: "specimen", content: "${step.content}", fontSize: ${step.fontSize}, fontWeight: "${step.fontWeight}", color: "${headingColor}"})`,
+    );
+  }
+
+  y += typeSteps.length * 60 + SECTION_PADDING * 2 + SECTION_GAP * 2;
+
+  // ── Spacing scale ──────────────────────────────────────────────────────────
+
+  const spacingSteps = [2, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128];
+
+  lines.push(
+    `spacing_page_title=I(document, {type: "text", name: "Spacing Scale", content: "Spacing Scale", x: ${CANVAS_X}, y: ${y}, fontSize: 28, fontWeight: "700", color: "${headingColor}"})`,
+  );
+  y += SECTION_TITLE_HEIGHT + 8;
+
+  lines.push(
+    `spacing_section=I(document, {type: "frame", name: "Spacing / Scale", x: ${CANVAS_X}, y: ${y}, width: 700, layout: "vertical", gap: 8, padding: ${SECTION_PADDING}, cornerRadius: [8,8,8,8], fill: "${bgColorExpr(pencilVars)}"})`,
+  );
+
+  for (const step of spacingSteps) {
+    const stepId = `spacing_${step}`;
+    // Find matching spacing variable if it exists
+    const spacingVarKey = Object.keys(pencilVars).find(k =>
+      new RegExp(`spacing[.-]?0?${step}$|space[.-]?0?${step}$`).test(k.replace(/^\$--/, ""))
+    );
+    const barFill = spacingVarKey ? `{var.${spacingVarKey}}` :
+      (groups.interactives[0] ? `{var.${groups.interactives[0][0]}}` : "#3b82f6");
+
+    lines.push(
+      `${stepId}_row=I(spacing_section, {type: "frame", name: "${step}px", layout: "horizontal", gap: 12, width: "fill_container"})`,
+    );
+    lines.push(
+      `${stepId}_label=I(${stepId}_row, {type: "text", name: "label", content: "${step}px", fontSize: 12, fontWeight: "500", color: "${headingColor}", width: 48})`,
+    );
+    lines.push(
+      `${stepId}_bar=I(${stepId}_row, {type: "frame", name: "bar", width: ${step * 2}, height: 20, cornerRadius: [4,4,4,4], fill: "${barFill}"})`,
+    );
+  }
+
+  const ops = lines.join("\n");
+
+  return {
+    ops,
+    foundations: {
+      colorCount: totalSwatches,
+      typographySteps: typeSteps.length,
+      startsAtY,
+      batchDesignOps: ops,
+    },
+  };
+}
+
+// ── Instruction ───────────────────────────────────────────────────────────────
+
+/** Build the directive instruction text for the agent. */
 function buildInstruction(components: KitComponent[]): string {
-  const names = components.map((c) => c.name).join(", ");
   return [
-    `You are about to scaffold ${components.length} component frame(s) in Pencil: ${names}.`,
+    `## Drawing the ${components.length} component(s) + foundation pages`,
     "",
-    "## How to draw the kit",
+    "STEP 1 — Components (execute one at a time, verify before continuing):",
+    "For each component in the recipe:",
+    "  a. Call batch_design(filePath, component.batchDesignOps) — use the operations VERBATIM.",
+    "     DO NOT rewrite them. DO NOT replace {var.xxx} expressions with hex values.",
+    "  b. Call snapshot_layout — confirm the frame is placed correctly with no clipping.",
+    "  c. Call get_screenshot(nodeId) on the frame — check every item in component.verification.visualChecks.",
+    "  d. If any fill/color is a hardcoded hex instead of {var.xxx}, fix it immediately with a",
+    "     batch_design Update operation before moving to the next component.",
     "",
-    "1. For each component in the recipe:",
-    "   a. Create a frame at the suggested placement (x, y, width, height) using batch_design.",
-    "   b. Inside the frame, add child nodes matching the component anatomy parts.",
-    "   c. Apply token bindings using Pencil variable expressions.",
-    "      Example fill: { fill: '{var.color-brand-600}' }",
-    "   d. After inserting each component, call snapshot_layout to check placement.",
-    "      If any frames overlap, adjust the y offset and update.",
+    "STEP 2 — Foundation pages (after all components):",
+    "  Call batch_design(filePath, foundations.batchDesignOps) to create the color palette,",
+    "  typography specimen, and spacing scale pages below the components.",
+    "  Then call get_screenshot to visually verify the foundations page looks correct.",
     "",
-    "2. After all components are drawn, call get_screenshot to visually confirm.",
-    "   - If a component looks wrong (wrong size, clipped, missing token colour), fix it in place",
-    "     using batch_design Update operations before moving on.",
-    "",
-    "3. Token expressions:",
-    "   - All variable names are listed in pencilVariables.",
-    "   - Use the pencilExpr field from each tokenBinding directly in the node property.",
-    "   - For text colour use the 'color' property; for backgrounds use 'fill'.",
-    "",
-    "4. States:",
-    "   - Create one frame per component state (e.g. default, hover, disabled).",
-    "   - Space states 16px apart horizontally within the parent frame.",
-    "   - Label each state frame with the state name in a top-aligned text node.",
-    "",
-    "5. When done, report: component name, frame nodeId, placement, and any unresolved tokens.",
+    "STEP 3 — Final report:",
+    "  Report: component names, frame nodeIds, any unresolved tokens or visual issues.",
+    "  If any token expression shows as a literal string instead of a colour, report it.",
   ].join("\n");
 }
 
-/** Load and flatten pencil variables from the platform output path. */
-async function loadPencilVars(
-  config: NibBrandConfig,
-): Promise<Record<string, string>> {
-  const pencilPath = config.platforms.pencil;
-  if (!existsSync(pencilPath)) {
-    return {};
-  }
-  try {
-    const raw = JSON.parse(await readFile(pencilPath, "utf-8")) as Record<
-      string,
-      { type: string; value: string | number }
-    >;
-    return flattenPencilVars(raw);
-  } catch {
-    return {};
-  }
-}
+// ── Core builder ──────────────────────────────────────────────────────────────
 
 /** Build a KitComponent from a contract and resolved variables. */
 function buildKitComponent(
@@ -182,13 +517,13 @@ function buildKitComponent(
   for (const [, partTokens] of Object.entries(contract.tokens)) {
     for (const [, stateTokens] of Object.entries(partTokens)) {
       for (const [, tokenValue] of Object.entries(stateTokens)) {
-        if (typeof tokenValue !== "string") continue;
-        // Strip DTCG reference braces if present: {color.brand.600} → color.brand.600
-        const token = tokenValue.replace(/^\{|\}$/g, "");
+        const strValue = tokenString(tokenValue);
+        if (!strValue) continue;
+        const token = strValue.replace(/^\{|\}$/g, "");
         const varName = tokenToVarName(token);
         if (seen.has(varName)) continue;
         seen.add(varName);
-        const resolvedValue = pencilVars[varName] ?? "";
+        const resolvedValue = pencilVars[varName] ?? pencilVars[`$${varName}`] ?? "";
         tokenBindings.push({
           token,
           varName,
@@ -206,7 +541,28 @@ function buildKitComponent(
     states,
     tokenBindings,
     placement,
+    batchDesignOps: buildComponentOps(name, contract, placement),
+    verification: buildVerification(name, contract, pencilVars),
   };
+}
+
+/** Load and flatten pencil variables from the platform output path. */
+async function loadPencilVars(
+  config: NibBrandConfig,
+): Promise<Record<string, string>> {
+  const pencilPath = config.platforms.pencil;
+  if (!existsSync(pencilPath)) {
+    return {};
+  }
+  try {
+    const raw = JSON.parse(await readFile(pencilPath, "utf-8")) as Record<
+      string,
+      { type: string; value: string | number }
+    >;
+    return flattenPencilVars(raw);
+  } catch {
+    return {};
+  }
 }
 
 /** Options for buildKitRecipe */
@@ -283,12 +639,26 @@ export async function buildKitRecipe(
     );
   }
 
+  // Foundation pages start below all components
+  const lastComponent = components[components.length - 1]!;
+  const lastFrameSize = FRAME_SIZES[lastComponent.widgetType] ?? FRAME_SIZES["generic"]!;
+  const foundationsStartY = lastComponent.placement.y + lastFrameSize.height + 120;
+
+  const { ops: foundationsOps, foundations } = buildFoundationsOps(
+    config.brand.name,
+    pencilVars,
+    foundationsStartY,
+  );
+  // Attach batchDesignOps to the returned foundations object
+  const foundationsWithOps: KitFoundations = { ...foundations, batchDesignOps: foundationsOps };
+
   const instruction = buildInstruction(components);
 
   return {
     brandName: config.brand.name,
     pencilVariables: pencilVars,
     components,
+    foundations: foundationsWithOps,
     instruction,
   };
 }

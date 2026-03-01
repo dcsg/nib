@@ -2,8 +2,8 @@
  * File writer — generates DTCG JSON token files, brand.md, and brand.config.json.
  */
 
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, join, relative, resolve } from "node:path";
 import type {
   BrandAiEnhancement,
   BrandInput,
@@ -197,6 +197,118 @@ export function generateComponentsMd(input: BrandInput): string {
 **Border radius:** full (circle)
 **Sizes:** 24px (sm), 32px (md), 40px (lg), 48px (xl)
 `;
+}
+
+// ── AI agent context injection ────────────────────────────────────────────────
+
+const NIB_CONTEXT_START = "<!-- nib-context:start -->";
+const NIB_CONTEXT_END = "<!-- nib-context:end -->";
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Build the nib brand context snippet to inject into any AI agent config file.
+ * Uses relative paths so the snippet is portable.
+ */
+function buildContextSnippet(config: NibBrandConfig): string {
+  const cwd = process.cwd();
+  const rel = (p: string) => relative(cwd, p);
+
+  return [
+    NIB_CONTEXT_START,
+    "",
+    "## nib Brand System",
+    "",
+    `This project uses [nib](https://usenib.com) for its brand design system — **${config.brand.name}**.`,
+    "",
+    "**Before writing any UI, components, or styles, read:**",
+    `- \`${rel(join(config.output, "brand.md"))}\` — brand identity, color rules, typography`,
+    `- \`${rel(join(config.output, "components.md"))}\` — component styling patterns`,
+    "",
+    "**Token files:**",
+    `- CSS variables: \`${rel(config.platforms.css)}\` — use \`var(--token-name)\``,
+    `- Tailwind preset: \`${rel(config.platforms.tailwind)}\` — import in tailwind.config`,
+    "",
+    "Never use hardcoded colors — always reference semantic design tokens.",
+    "",
+    NIB_CONTEXT_END,
+  ].join("\n");
+}
+
+/** Inject (or update) the nib section in a single agent config file. */
+async function injectIntoFile(filePath: string, snippet: string): Promise<void> {
+  let existing = "";
+  try {
+    existing = await readFile(filePath, "utf-8");
+  } catch {
+    // File doesn't exist — will be created
+  }
+
+  let updated: string;
+  if (existing.includes(NIB_CONTEXT_START)) {
+    updated = existing.replace(
+      new RegExp(`${escapeRegex(NIB_CONTEXT_START)}[\\s\\S]*?${escapeRegex(NIB_CONTEXT_END)}`),
+      snippet,
+    );
+  } else {
+    updated = existing ? `${existing.trimEnd()}\n\n${snippet}\n` : `${snippet}\n`;
+  }
+
+  await writeText(filePath, updated);
+}
+
+/**
+ * Inject the nib brand context into every AI agent config file found in the project,
+ * plus always write `AI_CONTEXT.md` as a universal fallback.
+ *
+ * Supports: Claude Code (CLAUDE.md), Cursor (.cursorrules, .cursor/rules/nib.md),
+ * Windsurf (.windsurfrules), GitHub Copilot (.github/copilot-instructions.md).
+ *
+ * Returns the list of files written so the caller can report them.
+ */
+export async function injectAgentContext(config: NibBrandConfig): Promise<string[]> {
+  const { existsSync } = await import("node:fs");
+  const cwd = process.cwd();
+  const snippet = buildContextSnippet(config);
+
+  // Files to update only if they already exist
+  const conditionalTargets: Array<{ path: string; label: string }> = [
+    { path: join(cwd, "CLAUDE.md"), label: "CLAUDE.md" },
+    { path: join(cwd, ".cursorrules"), label: ".cursorrules" },
+    { path: join(cwd, ".windsurfrules"), label: ".windsurfrules" },
+    { path: join(cwd, ".github", "copilot-instructions.md"), label: ".github/copilot-instructions.md" },
+  ];
+
+  // If .cursor/ dir exists, write a dedicated rules file for modern Cursor
+  const cursorRulesPath = join(cwd, ".cursor", "rules", "nib.md");
+  const hasCursorDir = existsSync(join(cwd, ".cursor"));
+
+  // Always write AI_CONTEXT.md as the universal fallback
+  const alwaysTargets: Array<{ path: string; label: string }> = [
+    { path: join(cwd, "AI_CONTEXT.md"), label: "AI_CONTEXT.md" },
+    ...(hasCursorDir ? [{ path: cursorRulesPath, label: ".cursor/rules/nib.md" }] : []),
+  ];
+
+  const targets = [
+    ...conditionalTargets.filter(t => existsSync(t.path)),
+    ...alwaysTargets,
+  ];
+
+  const written: string[] = [];
+  await Promise.all(
+    targets.map(async ({ path: filePath, label }) => {
+      try {
+        await injectIntoFile(filePath, snippet);
+        written.push(label);
+      } catch {
+        // Non-critical — skip files we can't write
+      }
+    }),
+  );
+
+  return written;
 }
 
 /** Write brand.md and components.md */

@@ -10,8 +10,8 @@ Building a product alone — no dedicated designer. You want consistent UI witho
 You have an existing Pencil design system. You need DTCG tokens, component specs, clickable prototypes, and WCAG reports for dev handoff. → [Your path](/guide/who-is-nib-for#the-ux-designer-at-a-product-team)
 :::
 
-::: info Using an AI coding agent
-You're using [Claude Code](https://claude.ai/code?utm_source=nib&utm_medium=docs), [Cursor](https://cursor.com?utm_source=nib&utm_medium=docs), or another MCP-compatible agent to generate UI. nib's MCP server gives it brand context, component specs, and validation tools. → [Your path](/guide/who-is-nib-for)
+::: info Using an AI coding agent (recommended)
+You're using [Claude Code](https://claude.ai/code?utm_source=nib&utm_medium=docs), [Cursor](https://cursor.com?utm_source=nib&utm_medium=docs), [Windsurf](https://codeium.com/windsurf?utm_source=nib&utm_medium=docs), or another MCP-compatible agent. Configure nib once and your agent runs the full pipeline — brand interview, token generation, WCAG audit, and Pencil scaffolding — without you typing a single command. → [MCP Setup](/guide/mcp-setup) · [Your path](/guide/who-is-nib-for)
 :::
 
 ## Prerequisites
@@ -56,6 +56,10 @@ nib brand init --from brand-guidelines.md
 nib brand init --from https://your-company.com
 ```
 
+::: tip Using an AI agent? Let it interview you
+With the [nib MCP server configured](/guide/mcp-setup), just say: *"Set up a nib brand system for my project. I don't have brand guidelines yet — interview me."* Your agent asks for your colors, font, and personality one step at a time, shows you what it detected, asks you to confirm, then runs the full pipeline automatically — no commands needed.
+:::
+
 ::: tip No AI key? Use --no-ai
 By default, `nib brand init` uses [Anthropic](https://www.anthropic.com?utm_source=nib&utm_medium=docs) (`ANTHROPIC_API_KEY`). nib also supports [OpenAI](https://openai.com?utm_source=nib&utm_medium=docs) and local [Ollama](https://ollama.ai?utm_source=nib&utm_medium=docs) — see the [AI Enhancement section](/guide/brand#ai-enhancement) for all providers. Or skip AI entirely and still get 77+ tokens from pure algorithmic derivation:
 
@@ -68,7 +72,7 @@ nib brand init --from brand.md --no-ai
 This generates:
 - **Design tokens** (W3C DTCG format) — color primitives, semantic light/dark themes, typography, spacing, elevation, motion
 - **CSS custom properties** + **Tailwind preset** — ready to drop into any project
-- **`brand.md`** — a structured context file that AI coding agents read to generate on-brand UI
+- **`brand.md`** — a structured context file injected automatically into all AI agent config files (`CLAUDE.md`, `.cursorrules`, `.windsurfrules`, `AI_CONTEXT.md`, etc.)
 - **WCAG audit** — every color pair checked for AA contrast compliance
 
 See the [Brand System guide](/guide/brand) for details.

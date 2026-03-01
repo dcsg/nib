@@ -4,7 +4,7 @@ import { tabsMarkdownPlugin } from "vitepress-plugin-tabs";
 export default defineConfig({
   title: "nib",
   description:
-    "Your design control plane — brand systems, design tokens, interactive prototypes & AI-agent context",
+    "Describe your brand once — nib generates design tokens and injects brand context into Claude, Cursor, Copilot, and Windsurf so every AI builds on-brand UI by default.",
   cleanUrls: true,
   base: "/",
 
@@ -18,7 +18,7 @@ export default defineConfig({
       {
         property: "og:description",
         content:
-          "Your design control plane — brand systems, design tokens, interactive prototypes & AI-agent context from a single CLI",
+          "Describe your brand once — nib injects brand context into Claude, Cursor, Copilot, and Windsurf. Every AI that writes your UI builds on-brand by default.",
       },
     ],
     ["meta", { property: "og:image", content: "https://usenib.dev/og-image.png" }],

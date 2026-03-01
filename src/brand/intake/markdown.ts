@@ -18,7 +18,7 @@ const PERSONALITY_KEYWORDS: Record<BrandPersonality, string[]> = {
 };
 
 /** Extract hex colors from text */
-function extractColors(text: string): string[] {
+export function extractColors(text: string): string[] {
   const hexPattern = /#[0-9a-fA-F]{6}\b/g;
   const matches = text.match(hexPattern) ?? [];
   // Deduplicate
@@ -44,7 +44,7 @@ function isFontDescription(text: string): boolean {
 }
 
 /** Extract font family names from text */
-function extractFonts(text: string): string[] {
+export function extractFonts(text: string): string[] {
   const fonts: string[] = [];
   let match;
 
@@ -84,7 +84,7 @@ function extractFonts(text: string): string[] {
 }
 
 /** Extract brand name from text */
-function extractBrandName(text: string): string | null {
+export function extractBrandName(text: string): string | null {
   // Try "Brand Name:\nValue" or "## Brand Name\nValue" (value on next line)
   const nextLinePattern =
     /(?:^#{1,3}\s*)?(?:brand|company|organization)\s*(?:name)?\s*$/im;
@@ -170,7 +170,7 @@ function extractIndustry(text: string): string | null {
 }
 
 /** Detect personality traits from text content */
-function detectPersonality(text: string): BrandPersonality[] {
+export function detectPersonality(text: string): BrandPersonality[] {
   const lower = text.toLowerCase();
   const detected: BrandPersonality[] = [];
 
@@ -184,10 +184,10 @@ function detectPersonality(text: string): BrandPersonality[] {
 }
 
 /** Extract brand input from a markdown/text file */
-export async function markdownIntake(filePath: string): Promise<BrandInput> {
+export async function markdownIntake(filePath: string, brandNameOverride?: string): Promise<BrandInput> {
   const content = await readFile(filePath, "utf-8");
 
-  const brandName = extractBrandName(content);
+  const brandName = brandNameOverride ?? extractBrandName(content);
   const colors = extractColors(content);
   const fonts = extractFonts(content);
   const personality = detectPersonality(content);

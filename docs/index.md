@@ -4,7 +4,7 @@ layout: home
 hero:
   name: nib
   text: Your Design Control Plane
-  tagline: One source of truth for your brand — design tokens, AI-agent context, and clickable prototypes in a single workflow. Every AI that touches your UI builds on-brand by default.
+  tagline: Describe your brand once — nib generates design tokens, audits WCAG contrast, and injects brand context into Claude, Cursor, Copilot, and Windsurf automatically. Every AI that writes your UI builds on-brand by default.
 
   actions:
     - theme: brand
@@ -15,8 +15,8 @@ hero:
       link: /guide/who-is-nib-for
 
 features:
-  - title: AI Agents Build On-Brand
-    details: nib generates brand.md — a structured context file any AI coding agent reads before writing UI. Claude, Cursor, and Copilot produce on-brand components first time, without manual prompting.
+  - title: AI Agents Build On-Brand, Automatically
+    details: After brand init, nib injects brand context into every AI agent config file it finds — CLAUDE.md, .cursorrules, .windsurfrules, copilot-instructions.md. Claude, Cursor, Copilot, and Windsurf all read your brand before writing UI, without you prompting them every time.
   - title: Brand System in Minutes
     details: Turn a URL, PDF, or brand brief into 77+ design tokens — color scales, dark mode, typography, spacing, and WCAG-checked contrast. Algorithmic derivation or AI-enhanced, your choice.
   - title: Clickable Prototypes, No Deploy

@@ -20,9 +20,39 @@ export function registerBrandTools(server: McpServer): void {
     "nib_brand_init",
     {
       description:
-        "Generate a complete brand system (design tokens, docs, platform outputs) from a brand guidelines source file or URL. Requires a `from` parameter — interactive mode is not available via MCP.",
+        "Initialize a brand system from a source file, URL, or direct parameters. " +
+        "ALWAYS use preview: true first when a source file is available — it shows what was detected so you can confirm with the user before committing. " +
+        "When no file is available (verbal brief), provide brandName + primaryColor directly. " +
+        "Generates design tokens, CSS variables, Tailwind preset, and AI agent context files.",
       inputSchema: {
-        from: z.string().min(1, "from is required — provide a path to a .md/.txt/.pdf file or a URL").describe("Path to .md/.txt/.pdf file, or a URL"),
+        from: z
+          .string()
+          .optional()
+          .describe("Path to .md/.txt/.pdf file, or a URL with brand guidelines. Omit if providing params directly."),
+        preview: z
+          .boolean()
+          .optional()
+          .describe(
+            "Detect brand values from the source WITHOUT writing any files. " +
+            "Returns { detected, confidence, missing } so you can confirm with the user first. " +
+            "Always use this before committing when a source file is available.",
+          ),
+        brandName: z
+          .string()
+          .optional()
+          .describe("Brand name. Required when `from` is omitted. Overrides detection from file."),
+        primaryColor: z
+          .string()
+          .optional()
+          .describe("Primary brand color as hex (e.g. #3b82f6). Required when `from` is omitted."),
+        secondaryColor: z.string().optional().describe("Secondary brand color as hex."),
+        accentColor: z.string().optional().describe("Accent color as hex."),
+        personality: z
+          .array(z.enum(["professional", "playful", "warm", "bold", "minimal", "elegant", "technical", "friendly"]))
+          .optional()
+          .describe("Brand personality traits. Overrides detection from file."),
+        industry: z.string().optional().describe("Industry or sector (e.g. 'fintech', 'healthcare')."),
+        description: z.string().optional().describe("Short brand description or tagline."),
         output: z.string().optional().describe("Output directory (default: docs/design/system)"),
         ai: z
           .enum(["anthropic", "openai", "ollama"])
@@ -41,63 +71,228 @@ export function registerBrandTools(server: McpServer): void {
         openWorldHint: false,
       },
     },
-    async ({ from, output, ai, noAi }) => {
+    async ({ from, preview, brandName, primaryColor, secondaryColor, accentColor, personality, industry, description, output, ai, noAi }) => {
       try {
-        let input;
-        if (from.startsWith("http://") || from.startsWith("https://")) {
-          const { urlIntake } = await import("../../brand/intake/url.js");
-          input = await urlIntake(from);
-        } else {
-          // File path — validate it exists and is a file, not a directory
-          const { statSync } = await import("node:fs");
-          const path = validateProjectPath(from);
-          let stat;
-          try {
-            stat = statSync(path);
-          } catch {
-            return errorResult(
-              `File not found: "${from}". Provide a path to a .md, .txt, or .pdf file, or a URL.`,
-            );
-          }
-          if (stat.isDirectory()) {
-            return errorResult(
-              `"${from}" is a directory, not a file. Provide a path to a .md, .txt, or .pdf file, or a URL.`,
-            );
-          }
+        // ── Resolve BrandInput ────────────────────────────────────────────
+        type RawInput = {
+          name: string | null;
+          colors: { primary: string | null; secondary?: string; accent?: string };
+          fonts: string[];
+          personality: string[];
+          description: string | null;
+          industry: string | null;
+        };
 
-          if (from.endsWith(".pdf")) {
-            const { pdfIntake } = await import("../../brand/intake/pdf.js");
-            input = await pdfIntake(path);
+        let rawInput: RawInput;
+        let sourceText = "";
+
+        if (from) {
+          if (from.startsWith("http://") || from.startsWith("https://")) {
+            const { urlIntake } = await import("../../brand/intake/url.js");
+            const urlResult = await urlIntake(from);
+            rawInput = {
+              name: urlResult.name,
+              colors: { primary: urlResult.colors.primary, secondary: urlResult.colors.secondary, accent: urlResult.colors.accent },
+              fonts: urlResult.typography.fontFamily ? [urlResult.typography.fontFamily] : [],
+              personality: urlResult.personality ?? ["professional"],
+              description: urlResult.description ?? null,
+              industry: urlResult.industry ?? null,
+            };
           } else {
-            const { markdownIntake } = await import("../../brand/intake/markdown.js");
-            input = await markdownIntake(path);
+            const { statSync, readFileSync } = await import("node:fs");
+            const path = validateProjectPath(from);
+            let stat;
+            try {
+              stat = statSync(path);
+            } catch {
+              return errorResult(`File not found: "${from}". Provide a path to a .md, .txt, or .pdf file, or a URL.`);
+            }
+            if (stat.isDirectory()) {
+              return errorResult(`"${from}" is a directory, not a file.`);
+            }
+
+            if (from.endsWith(".pdf")) {
+              const { pdfIntake } = await import("../../brand/intake/pdf.js");
+              const pdfResult = await pdfIntake(path);
+              rawInput = {
+                name: pdfResult.name,
+                colors: { primary: pdfResult.colors.primary, secondary: pdfResult.colors.secondary, accent: pdfResult.colors.accent },
+                fonts: pdfResult.typography.fontFamily ? [pdfResult.typography.fontFamily] : [],
+                personality: pdfResult.personality ?? ["professional"],
+                description: pdfResult.description ?? null,
+                industry: pdfResult.industry ?? null,
+              };
+            } else {
+              // Markdown/text — use extraction helpers for both preview and full init
+              const {
+                extractBrandName,
+                extractColors,
+                extractFonts,
+                detectPersonality,
+              } = await import("../../brand/intake/markdown.js");
+              sourceText = readFileSync(path, "utf-8");
+              const detectedColors = extractColors(sourceText);
+              rawInput = {
+                name: extractBrandName(sourceText),
+                colors: {
+                  primary: detectedColors[0] ?? null,
+                  secondary: detectedColors[1],
+                  accent: detectedColors[2],
+                },
+                fonts: extractFonts(sourceText),
+                personality: detectPersonality(sourceText),
+                description: null,
+                industry: null,
+              };
+            }
           }
+        } else {
+          // Direct brief mode — no source file
+          if (!brandName || !primaryColor) {
+            return errorResult(
+              "Either `from` (file/URL) or both `brandName` and `primaryColor` are required. " +
+              "If the user hasn't provided a brand guidelines file, ask them for: (1) brand name, (2) primary color (hex), (3) personality words.",
+            );
+          }
+          rawInput = {
+            name: brandName,
+            colors: { primary: primaryColor, secondary: secondaryColor, accent: accentColor },
+            fonts: [],
+            personality: personality ?? ["professional"],
+            description: description ?? null,
+            industry: industry ?? null,
+          };
         }
 
+        // ── Apply overrides ───────────────────────────────────────────────
+        if (brandName) rawInput.name = brandName;
+        if (primaryColor) rawInput.colors.primary = primaryColor;
+        if (secondaryColor) rawInput.colors.secondary = secondaryColor;
+        if (accentColor) rawInput.colors.accent = accentColor;
+        if (personality) rawInput.personality = personality;
+        if (industry) rawInput.industry = industry;
+        if (description) rawInput.description = description;
+
+        // ── Compute confidence (guides agent on what to confirm with user) ─
+        const confidence: Record<string, string> = {};
+        if (from) {
+          confidence["brandName"] = brandName
+            ? "overridden"
+            : rawInput.name
+              ? "detected"
+              : "missing";
+          const colorCountInSource = sourceText
+            ? (sourceText.match(/#[0-9a-fA-F]{6}\b/g) ?? []).length
+            : 0;
+          confidence["primaryColor"] = primaryColor
+            ? "overridden"
+            : !sourceText
+              ? "detected"
+              : colorCountInSource === 1
+                ? "high"
+                : colorCountInSource > 1
+                  ? "medium — multiple colors found, using first"
+                  : "missing";
+          confidence["personality"] = personality ? "overridden" : "inferred from text";
+        }
+
+        const missing: string[] = [];
+        if (!rawInput.name) missing.push("brandName");
+        if (!rawInput.colors.primary) missing.push("primaryColor");
+
+        // ── Preview mode — return detected values, write nothing ──────────
+        if (preview) {
+          const nextStepParts: string[] = [
+            "Show these detected values to the user and ask them to confirm:",
+          ];
+          if (rawInput.name) nextStepParts.push(`  • Brand name: "${rawInput.name}"`);
+          else nextStepParts.push(`  • Brand name: NOT FOUND — ask the user`);
+          if (rawInput.colors.primary) nextStepParts.push(`  • Primary color: ${rawInput.colors.primary}`);
+          else nextStepParts.push(`  • Primary color: NOT FOUND — ask the user for a hex value`);
+          nextStepParts.push(`  • Personality: ${rawInput.personality.join(", ")}`);
+          if (rawInput.colors.secondary) nextStepParts.push(`  • Secondary color: ${rawInput.colors.secondary}`);
+          if (rawInput.industry) nextStepParts.push(`  • Industry: ${rawInput.industry}`);
+          if (missing.length > 0) nextStepParts.push(`Missing required values: ${missing.join(", ")} — ask the user before proceeding.`);
+          nextStepParts.push(
+            missing.length === 0
+              ? `Once confirmed, call nib_brand_init again with the confirmed values (and preview omitted or false).`
+              : `Do NOT call nib_brand_init until all missing values are provided by the user.`,
+          );
+
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                preview: true,
+                detected: {
+                  brandName: rawInput.name,
+                  primaryColor: rawInput.colors.primary,
+                  secondaryColor: rawInput.colors.secondary ?? null,
+                  accentColor: rawInput.colors.accent ?? null,
+                  personality: rawInput.personality,
+                  fonts: rawInput.fonts,
+                  industry: rawInput.industry,
+                  description: rawInput.description,
+                },
+                confidence,
+                missing,
+                nextStep: nextStepParts.join("\n"),
+              }, null, 2),
+            }],
+          };
+        }
+
+        // ── Validate required fields before full init ─────────────────────
+        if (missing.length > 0) {
+          return errorResult(
+            `Cannot initialize: missing required values — ${missing.join(", ")}. ` +
+            `Call nib_brand_init with preview: true first to see what was detected, then ask the user for the missing values.`,
+          );
+        }
+
+        // ── Build final BrandInput and run init ───────────────────────────
         const { init } = await import("../../brand/index.js");
-        const config = await init(input, { from, output, ai, noAi: noAi ?? false });
+        const brandInput = {
+          name: rawInput.name!,
+          personality: rawInput.personality as import("../../types/brand.js").BrandPersonality[],
+          colors: {
+            primary: rawInput.colors.primary!,
+            secondary: rawInput.colors.secondary,
+            accent: rawInput.colors.accent,
+          },
+          typography: {
+            fontFamily: rawInput.fonts[0] ?? "Inter",
+            monoFontFamily: rawInput.fonts.find(f => /mono|code|consolas|fira|jetbrains/i.test(f)),
+          },
+          description: rawInput.description ?? undefined,
+          industry: rawInput.industry ?? undefined,
+        };
+
+        const config = await init(brandInput, { from, output, ai, noAi: noAi ?? false });
+
+        // Inject nib context into all detected AI agent config files
+        const { injectAgentContext } = await import("../../brand/writer.js");
+        const contextFiles = await injectAgentContext(config).catch(() => [] as string[]);
 
         return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  brand: config.brand.name,
-                  tokens: config.tokens,
-                  output: config.output,
-                  platforms: config.platforms,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              brand: config.brand.name,
+              tokens: config.tokens,
+              output: config.output,
+              platforms: config.platforms,
+              contextFilesUpdated: contextFiles,
+              nextStep:
+                "Call nib_brand_audit to verify WCAG AA compliance. If it passes, call nib_brand_push to create the Pencil design file. " +
+                (contextFiles.length > 0
+                  ? `AI agent context injected into: ${contextFiles.join(", ")} — future sessions will automatically read brand.md before writing UI.`
+                  : "No AI agent config files found — consider adding CLAUDE.md, .cursorrules, or .github/copilot-instructions.md so agents use brand tokens automatically."),
+            }, null, 2),
+          }],
         };
       } catch (err) {
-        return errorResult(
-          err instanceof Error ? err.message : String(err),
-        );
+        return errorResult(err instanceof Error ? err.message : String(err));
       }
     },
   );
@@ -167,8 +362,12 @@ export function registerBrandTools(server: McpServer): void {
       try {
         const { brandAudit } = await import("../../brand/index.js");
         const report = await brandAudit({ config, level: level ?? "AA" });
+        const auditPassed = report.failed === 0;
+        const nextStep = auditPassed
+          ? "All pairs pass. Call nib_brand_push to create or update the Pencil design file with these tokens."
+          : `${report.failed} pair(s) fail WCAG ${level ?? "AA"}. Fix the failing tokens (adjust lightness/darkness), then re-run nib_brand_audit before pushing.`;
         return {
-          content: [{ type: "text", text: JSON.stringify(report, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify({ ...report, nextStep }, null, 2) }],
         };
       } catch (err) {
         return errorResult(
@@ -270,12 +469,12 @@ export function registerBrandTools(server: McpServer): void {
         const result = await brandPush({ file, config });
         const msg = result.created
           ? [
-              `Created ${result.penFile} (first-time setup).`,
-              `Pencil has opened the file with your tokens loaded.`,
-              `Save it now: Cmd+S in Pencil.`,
-              `This is your canonical design file — use it with nib_capture to build prototypes.`,
+              `Created ${result.penFile} — brand tokens loaded as Pencil variables (150+ tokens: colors, typography, spacing).`,
+              `The canvas is empty by design: nib only sets variables, not visual frames.`,
+              `Save the file now in Pencil (Cmd+S), then call nib_kit to get component recipes`,
+              `and use Pencil's batch_design tool to scaffold the component frames into this file.`,
             ].join(" ")
-          : `Tokens pushed to ${result.penFile}. Save the file in Pencil.dev (Cmd+S) to persist changes.`;
+          : `Tokens pushed to ${result.penFile}. Save the file in Pencil (Cmd+S) to persist changes.`;
         return {
           content: [{ type: "text", text: msg }],
         };

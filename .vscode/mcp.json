@@ -2,8 +2,8 @@
   "servers": {
     "nib": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "nib@latest", "--mcp"]
+      "command": "nib",
+      "args": ["--mcp"]
     }
   }
 }

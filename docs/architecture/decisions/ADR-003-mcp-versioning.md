@@ -37,12 +37,19 @@ The `version` field in `McpServer({ name: "nib", version: X })` tracks the nib p
 
 ### 5. Agent Config Pinning
 
-Default agent configs use `nib@latest` for auto-updates:
+The npm package is `usenib` and the CLI binary is `nib`. Default agent configs use the globally installed binary:
 ```json
-"args": ["-y", "nib@latest", "--mcp"]
+"command": "nib",
+"args": ["--mcp"]
 ```
 
-Projects that need stability can pin: `nib@0.2.0`. This is the consumer's choice, not something nib enforces.
+This requires `npm install -g usenib` (or bun/pnpm equivalent). Projects that need a specific version can install it pinned: `npm install -g usenib@0.2.0`.
+
+The npx form is also supported. Both binary names work since `usenib` is a registered alias:
+```json
+"command": "npx",
+"args": ["-y", "usenib@latest", "--mcp"]
+```
 
 ## Consequences
 

@@ -15,6 +15,8 @@ nib brand init [OPTIONS]
 | `--output` | `string` | `docs/design/system` | Output directory |
 | `--no-ai` | `boolean` | `false` | Skip AI enhancement |
 
+**Outputs:** DTCG token files, CSS variables, Tailwind preset, `brand.md` (AI context file), WCAG audit. Also injects a `## nib Brand System` section into every AI agent config file found in the project (`CLAUDE.md`, `.cursorrules`, `.windsurfrules`, `.github/copilot-instructions.md`, `.cursor/rules/nib.md`) and always writes `AI_CONTEXT.md` — so every agent session builds on-brand by default.
+
 **Examples:**
 
 ```sh

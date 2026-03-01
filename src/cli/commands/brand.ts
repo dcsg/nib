@@ -77,6 +77,12 @@ const initCommand = defineCommand({
     console.log(pc.dim(`  Docs     → ${config.output}`));
     console.log(pc.dim(`  Pencil   → ${config.platforms.penFile}`));
     console.log(pc.dim(`  Config   → .nib/brand.config.json`));
+
+    const { injectAgentContext } = await import("../../brand/writer.js");
+    const contextFiles = await injectAgentContext(config).catch(() => [] as string[]);
+    if (contextFiles.length > 0) {
+      console.log(pc.dim(`  AI context → ${contextFiles.join(", ")}`));
+    }
   },
 });
 

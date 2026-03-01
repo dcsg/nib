@@ -89,8 +89,8 @@ Copy this, fill in your values, and save it as `brand.md` in your project root. 
 nib brand init --from brand.md
 ```
 
-::: tip Using an AI agent?
-Ask Claude to interview you: *"Set up a nib brand system. I don't have brand guidelines yet — interview me."* Claude will ask about your colors, font, and personality, then write `brand.md` and run the full pipeline automatically.
+::: tip Using an AI coding agent?
+Ask your agent to interview you: *"Set up a nib brand system. I don't have brand guidelines yet — interview me."* The agent will ask about your colors, font, and personality one step at a time, then run `nib_brand_init` → `nib_brand_audit` → `nib_brand_push` automatically. Works with Claude Code, Cursor, Windsurf, and any MCP-compatible agent — see [MCP Setup](/guide/mcp-setup).
 :::
 
 ## Input Sources
@@ -508,4 +508,6 @@ The primary artifact for AI coding agents. It's a structured markdown file that 
 ...button, card, form, badge patterns...
 ```
 
-Drop it into your project root, reference it in your `CLAUDE.md` (your [Claude Code](https://docs.anthropic.com/en/docs/claude-code?utm_source=nib&utm_medium=docs) context file), and every AI-generated component follows your brand.
+After `nib brand init`, nib automatically injects a `## nib Brand System` section into every AI agent config file it finds in your project — `CLAUDE.md`, `.cursorrules`, `.windsurfrules`, `.github/copilot-instructions.md`, and `.cursor/rules/nib.md` — and always creates `AI_CONTEXT.md` as a universal fallback.
+
+Every future agent session — Claude, Cursor, Windsurf, Copilot, or any tool that reads project context — builds on-brand by default, without you prompting it every time.

@@ -26,14 +26,53 @@ export function createNibMcpServer(): McpServer {
   const server = new McpServer(
     { name: "nib", version: NIB_VERSION },
     {
-      instructions: [
-        "nib is the design control plane — brand systems, design tokens, prototypes.",
-        "Use nib_status to check the current project state before other operations.",
-        "Brand tools (nib_brand_*) manage design token generation, validation, and import.",
-        "Component tools (nib_component_*) manage component contracts and registry.",
-        "Prototype tools (nib_capture, nib_build_prototype) convert .pen designs to HTML.",
-        "nib_kit returns a component recipe for Pencil scaffolding (read-only).",
-      ].join(" "),
+      instructions: `nib is the design control plane — brand tokens, WCAG audits, Pencil design files, and HTML prototypes.
+
+ALWAYS call nib_status first to understand the current project state, then follow the appropriate workflow below. Tell the user what step you are on and what was produced.
+
+── NEW PROJECT (hasBrandConfig: false) ──────────────────────────────
+INTERVIEW FIRST — never run full init without confirming with the user.
+
+If the user has a brand guidelines file or URL:
+  1a. nib_brand_init(from: <file/URL>, preview: true)
+      → Shows what was detected (brand name, colors, personality) with confidence levels.
+  1b. Show the user the detected values. Ask them to confirm or correct each one.
+      Pay special attention to any field marked "missing" or "medium" confidence.
+  1c. nib_brand_init(from: <file/URL>, <all confirmed overrides>) — commit
+
+If the user has no file (verbal brief):
+  1a. Ask: (1) Brand name? (2) Primary color (hex)? (3) 1-2 personality words?
+      Ask about secondary/accent colors and industry if relevant.
+  1b. nib_brand_init(brandName: <name>, primaryColor: <hex>, personality: [...])
+
+2. nib_brand_audit — verify WCAG AA compliance
+3. nib_brand_push — creates the Pencil .pen file; canvas starts empty (expected — tokens are variables)
+4. nib_kit — returns component recipes; use Pencil batch_design to scaffold frames into the .pen file
+
+After init, nib automatically injects brand context into all AI agent config files found
+(CLAUDE.md, .cursorrules, .windsurfrules, .github/copilot-instructions.md, AI_CONTEXT.md).
+Every future agent session — regardless of which AI tool is used — will read brand.md before writing UI.
+
+── EXISTING PROJECT (hasBrandConfig: true) ──────────────────────────
+1. nib_status → check lastBuild / lastAudit timestamps
+2. nib_brand_build if tokens need rebuilding after manual edits
+3. nib_brand_audit to check for new WCAG regressions
+4. nib_brand_push to sync updated tokens into the .pen file
+
+── IMPORT FROM PENCIL ───────────────────────────────────────────────
+1. nib_brand_import(file: <path to .pen>) — extracts variables → DTCG tokens
+2. nib_brand_build → nib_brand_audit
+
+── PROTOTYPE ────────────────────────────────────────────────────────
+1. Open the target .pen file in Pencil
+2. nib_capture → snapshots the open file
+3. nib_build_prototype → generates shareable HTML with hotspot navigation
+
+── COMPONENT CONTRACTS ──────────────────────────────────────────────
+nib_component_init — define token slots, states, and ARIA patterns for a component
+nib_kit — get a visual recipe to scaffold components in Pencil
+
+If the user asks what nib does, how to start, or what they can do next — call nib_help first.`,
     },
   );
 

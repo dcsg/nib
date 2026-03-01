@@ -182,7 +182,7 @@ Restart [Windsurf](https://codeium.com/windsurf?utm_source=nib&utm_medium=docs) 
 
 Ask your agent: *"What nib tools do you have available?"*
 
-It should list the 12 nib MCP tools. If it doesn't, check that:
+It should list the 13 nib MCP tools. If it doesn't, check that:
 
 1. `nib` is on your system `PATH` — run `nib --version` in a terminal to confirm
 2. The config file is saved in the correct location
@@ -194,17 +194,18 @@ It should list the 12 nib MCP tools. If it doesn't, check that:
 
 | Tool | What it does | Who uses it |
 |---|---|---|
-| `nib_brand_init` | Generate a brand system from a brief, URL, PDF, or interactive prompts | Both |
+| `nib_help` | Plain-English guide to workflows and tools — start here when unsure | Both |
+| `nib_status` | Current project state: brand config, last build/audit timestamps, component count | Both |
+| `nib_brand_init` | Generate a brand system from a file, URL, or brief | Both |
 | `nib_brand_build` | Rebuild CSS variables, Tailwind preset, and Pencil variables from token files | Both |
-| `nib_brand_push` | Push all nib tokens into a `.pen` file as Pencil variables | Both |
-| `nib_brand_import` | Import existing Pencil variables into DTCG token files | UX designer |
 | `nib_brand_audit` | WCAG contrast audit — reports every failing token pair with fix suggestions | Both |
 | `nib_brand_validate` | Validate token files for broken references and schema errors | UX designer |
-| `nib_brand_status` | Show current brand system state and output paths | Both |
-| `nib_brand_style` | Fetch and apply a Pencil style guide pre-wired to your brand tokens | Solo builder |
+| `nib_brand_push` | Push all nib tokens into a `.pen` file as Pencil variables | Both |
+| `nib_brand_import` | Import existing Pencil variables into DTCG token files | UX designer |
 | `nib_capture` | Capture a `.pen` file to a `.design.json` snapshot (Pencil must be open) | Both |
 | `nib_build_prototype` | Build an HTML prototype from a `.design.json` snapshot with hotspot links | Both |
 | `nib_component_init` | Create a component contract (token slots, interactive states, ARIA patterns) | UX designer |
+| `nib_component_list` | List all registered component contracts | Both |
 | `nib_kit` | Return a recipe of branded component frames for drawing into Pencil | Both |
 
 ---
@@ -233,5 +234,5 @@ Add the Pencil MCP alongside nib in your config:
 Refer to the [Pencil.dev docs](https://pencil.dev?utm_source=nib&utm_medium=docs) for its MCP setup instructions.
 
 ::: tip Brand pipeline works without Pencil MCP
-`nib_brand_init`, `nib_brand_build`, `nib_brand_audit`, `nib_brand_validate`, `nib_build_prototype`, and `nib_brand_status` all work without Pencil open — they only need the nib MCP server.
+`nib_help`, `nib_status`, `nib_brand_init`, `nib_brand_build`, `nib_brand_audit`, `nib_brand_validate`, and `nib_build_prototype` all work without Pencil open — they only need the nib MCP server.
 :::

@@ -28,7 +28,7 @@ describe("MCP Server", () => {
     expect(server).toBeDefined();
   });
 
-  test("lists all 12 tools", async () => {
+  test("lists all 13 tools", async () => {
     const { client } = await createTestPair();
     const result = await client.listTools();
     const toolNames = result.tools.map((t) => t.name).sort();
@@ -44,6 +44,7 @@ describe("MCP Server", () => {
       "nib_capture",
       "nib_component_init",
       "nib_component_list",
+      "nib_help",
       "nib_kit",
       "nib_status",
     ]);

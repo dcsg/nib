@@ -4,7 +4,8 @@
   "description": "Your design control plane — brand systems, design tokens, interactive prototypes, and AI-agent context from a single CLI",
   "type": "module",
   "bin": {
-    "nib": "./dist/cli.js"
+    "nib": "./dist/cli.js",
+    "usenib": "./dist/cli.js"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
