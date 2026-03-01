@@ -7,7 +7,7 @@
  */
 
 import { defineCommand } from "citty";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { execFile } from "node:child_process";
@@ -157,7 +157,7 @@ function checkNibMcpServer(): CheckResult {
   for (const { path, key } of nibMcpLocations) {
     if (!existsSync(path)) continue;
     try {
-      const raw = require("node:fs").readFileSync(path, "utf-8") as string;
+      const raw = readFileSync(path, "utf-8");
       const config = JSON.parse(raw) as Record<string, Record<string, unknown>>;
       const servers = config[key];
       if (servers && "nib" in servers) {
