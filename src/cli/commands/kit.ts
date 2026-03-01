@@ -77,6 +77,11 @@ export const kitCommand = defineCommand({
       description: "Skip brand init — use existing .nib/brand.config.json",
       default: false,
     },
+    json: {
+      type: "boolean",
+      description: "Output result as JSON envelope (machine-readable). In --recipe mode, outputs the recipe JSON.",
+      default: false,
+    },
     recipe: {
       type: "boolean",
       description:
@@ -86,11 +91,6 @@ export const kitCommand = defineCommand({
     component: {
       type: "string",
       description: "With --recipe: comma-separated component names to include (default: all)",
-    },
-    json: {
-      type: "boolean",
-      description: "With --recipe: output as JSON envelope",
-      default: false,
     },
     config: {
       type: "string",
@@ -166,13 +166,16 @@ export const kitCommand = defineCommand({
     const skipInit = args["skip-init"] as boolean;
     const outputDir = args.output as string | undefined;
     const aiProvider = args.ai as AiProviderName | undefined;
+    const json = args.json as boolean;
 
     const configFile = resolve(".nib", "brand.config.json");
     const alreadyInitialized = existsSync(configFile);
 
-    console.log();
-    console.log(pc.bold("nib kit"), pc.dim("— bootstrapping your design system"));
-    console.log();
+    if (!json) {
+      console.log();
+      console.log(pc.bold("nib kit"), pc.dim("— bootstrapping your design system"));
+      console.log();
+    }
 
     // -------------------------------------------------------------------------
     // Step 1: Brand init
@@ -185,9 +188,9 @@ export const kitCommand = defineCommand({
         process.exitCode = 1;
         return;
       }
-      console.log(pc.dim("  ─ Brand config found — skipping init"));
+      if (!json) console.log(pc.dim("  ─ Brand config found — skipping init"));
     } else {
-      console.log(pc.cyan("  1/3"), pc.bold("Brand init"));
+      if (!json) console.log(pc.cyan("  1/3"), pc.bold("Brand init"));
 
       const { init } = await import("../../brand/index.js");
       let input;
@@ -207,28 +210,34 @@ export const kitCommand = defineCommand({
       }
 
       const config = await init(input, { from, ai: aiProvider, output: outputDir, noAi });
-      console.log(
-        pc.green("  ✓"),
-        `Brand system generated for ${pc.bold(config.brand.name)}`,
-        pc.dim(`(${config.tokens})`),
-      );
+      if (!json) {
+        console.log(
+          pc.green("  ✓"),
+          `Brand system generated for ${pc.bold(config.brand.name)}`,
+          pc.dim(`(${config.tokens})`),
+        );
+      }
     }
 
     // -------------------------------------------------------------------------
     // Step 2: Brand build
     // -------------------------------------------------------------------------
-    console.log();
-    console.log(pc.cyan("  2/3"), pc.bold("Brand build"));
+    if (!json) {
+      console.log();
+      console.log(pc.cyan("  2/3"), pc.bold("Brand build"));
+    }
 
     const { brandBuild } = await import("../../brand/index.js");
     await brandBuild({});
-    console.log(pc.green("  ✓"), "Platform outputs generated", pc.dim("(CSS / Tailwind / Pencil)"));
+    if (!json) console.log(pc.green("  ✓"), "Platform outputs generated", pc.dim("(CSS / Tailwind / Pencil)"));
 
     // -------------------------------------------------------------------------
     // Step 3: Scaffold base component kit
     // -------------------------------------------------------------------------
-    console.log();
-    console.log(pc.cyan("  3/3"), pc.bold("Component kit"));
+    if (!json) {
+      console.log();
+      console.log(pc.cyan("  3/3"), pc.bold("Component kit"));
+    }
 
     const { scaffoldContract, detectWidgetType } = await import("../../brand/components/scaffold.js");
     const { generateComponentDoc } = await import("../../brand/components/docs.js");
@@ -277,11 +286,13 @@ export const kitCommand = defineCommand({
       await writeFile(join(docsComponentsDir, `${name}.md`), componentDoc);
 
       scaffolded.push({ name, contract, widgetType });
-      console.log(
-        pc.green("     ✓"),
-        pc.bold(name),
-        pc.dim(`(${widgetType})`),
-      );
+      if (!json) {
+        console.log(
+          pc.green("     ✓"),
+          pc.bold(name),
+          pc.dim(`(${widgetType})`),
+        );
+      }
     }
 
     // Update brand.config.json registry with all newly scaffolded components
@@ -343,6 +354,26 @@ export const kitCommand = defineCommand({
     // -------------------------------------------------------------------------
     // Summary
     // -------------------------------------------------------------------------
+    let penFile = "design.pen";
+    if (existsSync(configFile)) {
+      try {
+        const raw = await readFile(configFile, "utf-8");
+        const cfg = JSON.parse(raw) as { platforms?: { penFile?: string } };
+        if (cfg.platforms?.penFile) penFile = cfg.platforms.penFile;
+      } catch { /* use default */ }
+    }
+
+    if (json) {
+      writeResult("kit", {
+        outputDir: systemOutputDir,
+        componentsDir,
+        scaffolded: scaffolded.map((c) => ({ name: c.name, widgetType: c.widgetType })),
+        skipped,
+        penFile,
+      }, { json: true });
+      return;
+    }
+
     console.log();
     console.log(pc.green("✓"), pc.bold("Kit ready"));
     console.log();
@@ -360,15 +391,6 @@ export const kitCommand = defineCommand({
     console.log(pc.dim(`    .nib/components/`));
     console.log();
 
-    // Pencil push reminder
-    let penFile = "design.pen";
-    if (existsSync(configFile)) {
-      try {
-        const raw = await readFile(configFile, "utf-8");
-        const cfg = JSON.parse(raw) as { platforms?: { penFile?: string } };
-        if (cfg.platforms?.penFile) penFile = cfg.platforms.penFile;
-      } catch { /* use default */ }
-    }
     console.log(pc.bold("  → Sync to Pencil:"));
     console.log(pc.cyan(`     nib brand push --file ${penFile}`));
     console.log();

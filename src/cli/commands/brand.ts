@@ -35,32 +35,38 @@ const initCommand = defineCommand({
       description: "Skip AI enhancement, use only algorithmic derivation",
       default: false,
     },
+    json: {
+      type: "boolean",
+      description: "Output as JSON envelope (machine-readable)",
+      default: false,
+    },
   },
   async run({ args }) {
     const { init } = await import("../../brand/index.js");
     const from = args.from as string | undefined;
     const noAi = args["no-ai"] as boolean;
+    const json = args.json as boolean;
 
     let input;
 
     if (!from) {
       // Interactive mode
-      console.log(pc.cyan("nib brand init"), pc.dim("(interactive)"));
+      if (!json) console.log(pc.cyan("nib brand init"), pc.dim("(interactive)"));
       const { interactiveIntake } = await import("../../brand/intake/interactive.js");
       input = await interactiveIntake();
     } else if (from.startsWith("http://") || from.startsWith("https://")) {
       // URL mode
-      console.log(pc.cyan("nib brand init"), pc.dim(`from ${from}`));
+      if (!json) console.log(pc.cyan("nib brand init"), pc.dim(`from ${from}`));
       const { urlIntake } = await import("../../brand/intake/url.js");
       input = await urlIntake(from);
     } else if (from.endsWith(".pdf")) {
       // PDF mode
-      console.log(pc.cyan("nib brand init"), pc.dim(`from ${from}`));
+      if (!json) console.log(pc.cyan("nib brand init"), pc.dim(`from ${from}`));
       const { pdfIntake } = await import("../../brand/intake/pdf.js");
       input = await pdfIntake(from);
     } else {
       // Markdown/text mode
-      console.log(pc.cyan("nib brand init"), pc.dim(`from ${from}`));
+      if (!json) console.log(pc.cyan("nib brand init"), pc.dim(`from ${from}`));
       const { markdownIntake } = await import("../../brand/intake/markdown.js");
       input = await markdownIntake(from);
     }
@@ -72,14 +78,19 @@ const initCommand = defineCommand({
       noAi,
     });
 
+    const { injectAgentContext } = await import("../../brand/writer.js");
+    const contextFiles = await injectAgentContext(config).catch(() => [] as string[]);
+
+    if (json) {
+      writeResult("brand init", { ...config, contextFiles }, { json: true });
+      return;
+    }
+
     console.log(pc.green("✓"), `Brand system generated for ${pc.bold(config.brand.name)}`);
     console.log(pc.dim(`  Tokens   → ${config.tokens}`));
     console.log(pc.dim(`  Docs     → ${config.output}`));
     console.log(pc.dim(`  Pencil   → ${config.platforms.penFile}`));
     console.log(pc.dim(`  Config   → .nib/brand.config.json`));
-
-    const { injectAgentContext } = await import("../../brand/writer.js");
-    const contextFiles = await injectAgentContext(config).catch(() => [] as string[]);
     if (contextFiles.length > 0) {
       console.log(pc.dim(`  AI context → ${contextFiles.join(", ")}`));
     }
@@ -96,12 +107,31 @@ const buildBrandCommand = defineCommand({
       type: "string",
       description: "Path to brand.config.json (default: .nib/brand.config.json)",
     },
+    json: {
+      type: "boolean",
+      description: "Output as JSON envelope (machine-readable)",
+      default: false,
+    },
   },
   async run({ args }) {
-    console.log(pc.cyan("nib brand build"));
+    const json = args.json as boolean;
+    if (!json) console.log(pc.cyan("nib brand build"));
 
-    const { brandBuild } = await import("../../brand/index.js");
+    const { brandBuild, loadBrandConfig } = await import("../../brand/index.js");
     await brandBuild({ config: args.config as string | undefined });
+
+    if (json) {
+      const cfg = await loadBrandConfig(args.config as string | undefined);
+      writeResult("brand build", {
+        config: ".nib/brand.config.json",
+        outputs: {
+          css: cfg.platforms.css,
+          tailwind: cfg.platforms.tailwind,
+          pencil: cfg.platforms.pencil,
+        },
+      }, { json: true });
+      return;
+    }
 
     console.log(pc.green("✓"), "Built platform outputs");
   },
