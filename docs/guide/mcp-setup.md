@@ -40,7 +40,42 @@ nib --version
 
 ---
 
+## Global vs project-scoped
+
+MCP servers can be configured at two levels:
+
+| Scope | Config file | When to use |
+|---|---|---|
+| **Global (recommended)** | `~/.claude.json`, `~/.cursor/mcp.json`, etc. | You want nib in every project — set it up once |
+| **Project-scoped** | `.mcp.json` in project root | You want nib only in specific projects, or need per-project config |
+
+**nib is a global tool.** Install it once and configure it globally — then it's available in every project you open, with no per-project setup.
+
+---
+
 ## Claude Code
+
+::::tabs
+== Global (recommended)
+
+Add `nib` to the `mcpServers` section of `~/.claude.json`:
+
+```json
+{
+  "mcpServers": {
+    "nib": {
+      "command": "nib",
+      "args": ["--mcp"]
+    }
+  }
+}
+```
+
+If `~/.claude.json` doesn't exist yet, create it with the content above.
+
+**Restart Claude Code** after saving — user-level MCP configs are loaded on session start. Type `/mcp` to confirm nib appears under **User MCPs**.
+
+== Project-scoped
 
 Add a `.mcp.json` file to your project root:
 
@@ -55,13 +90,18 @@ Add a `.mcp.json` file to your project root:
 }
 ```
 
-**Restart Claude Code** after saving the file — project MCP configs are only read on session start. Then type `/mcp` to confirm nib appears in the server list under **Project MCPs**.
+**Restart Claude Code** after saving — project MCP configs are only read on session start. Type `/mcp` to confirm nib appears under **Project MCPs**.
+
+::::
 
 ---
 
 ## Cursor
 
-Add to `.cursor/mcp.json` in your project root (create the file if it doesn't exist):
+::::tabs
+== Global (recommended)
+
+Add `nib` to `~/.cursor/mcp.json` (create the file if it doesn't exist):
 
 ```json
 {
@@ -74,13 +114,35 @@ Add to `.cursor/mcp.json` in your project root (create the file if it doesn't ex
 }
 ```
 
-Restart [Cursor](https://cursor.com?utm_source=nib&utm_medium=docs) after saving the file.
+Restart [Cursor](https://cursor.com?utm_source=nib&utm_medium=docs) after saving.
+
+== Project-scoped
+
+Add to `.cursor/mcp.json` in your project root:
+
+```json
+{
+  "mcpServers": {
+    "nib": {
+      "command": "nib",
+      "args": ["--mcp"]
+    }
+  }
+}
+```
+
+Restart [Cursor](https://cursor.com?utm_source=nib&utm_medium=docs) after saving.
+
+::::
 
 ---
 
 ## Windsurf
 
-Add to `.windsurf/mcp.json` in your project root (create the file if it doesn't exist):
+::::tabs
+== Global (recommended)
+
+Add `nib` to `~/.codeium/windsurf/mcp_config.json` (create the file if it doesn't exist):
 
 ```json
 {
@@ -93,7 +155,26 @@ Add to `.windsurf/mcp.json` in your project root (create the file if it doesn't 
 }
 ```
 
-Restart [Windsurf](https://codeium.com/windsurf?utm_source=nib&utm_medium=docs) after saving the file.
+Restart [Windsurf](https://codeium.com/windsurf?utm_source=nib&utm_medium=docs) after saving.
+
+== Project-scoped
+
+Add to `.windsurf/mcp.json` in your project root:
+
+```json
+{
+  "mcpServers": {
+    "nib": {
+      "command": "nib",
+      "args": ["--mcp"]
+    }
+  }
+}
+```
+
+Restart [Windsurf](https://codeium.com/windsurf?utm_source=nib&utm_medium=docs) after saving.
+
+::::
 
 ---
 
@@ -104,8 +185,8 @@ Ask your agent: *"What nib tools do you have available?"*
 It should list the 12 nib MCP tools. If it doesn't, check that:
 
 1. `nib` is on your system `PATH` — run `nib --version` in a terminal to confirm
-2. The config file (`.mcp.json` or equivalent) is in your project root
-3. Your agent was restarted after the config was saved
+2. The config file is saved in the correct location
+3. Your agent was **restarted** after the config was saved — this is the most common cause
 
 ---
 
@@ -142,8 +223,8 @@ Add the Pencil MCP alongside nib in your config:
       "args": ["--mcp"]
     },
     "pencil": {
-      "command": "pencil",
-      "args": ["--mcp"]
+      "command": "/Applications/Pencil.app/Contents/Resources/app.asar.unpacked/out/mcp-server-darwin-arm64",
+      "args": ["--app", "desktop"]
     }
   }
 }
