@@ -55,7 +55,7 @@ Add a `.mcp.json` file to your project root:
 }
 ```
 
-Verify by typing `/mcp` in [Claude Code](https://claude.ai/code?utm_source=nib&utm_medium=docs) — nib should appear in the server list with all tools available.
+**Restart Claude Code** after saving the file — project MCP configs are only read on session start. Then type `/mcp` to confirm nib appears in the server list under **Project MCPs**.
 
 ---
 
