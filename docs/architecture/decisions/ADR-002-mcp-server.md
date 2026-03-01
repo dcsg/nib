@@ -10,14 +10,14 @@
 
 nib's soul.md describes it as "a CLI tool, library, and MCP server." The MCP server does not exist. nib is currently an MCP *client* only — it connects to Pencil.dev's MCP server to read/write `.pen` files.
 
-The [strategic audit](../../product/strategic-audit.md) identified this as the single most important gap: AI coding agents (Claude Code, Cursor, GitHub Copilot, Windsurf, Continue.dev, Cline, Zed) cannot discover or call nib's tools natively. They can only use nib through fragile subprocess calls with no discoverability, no structured output, and no tool contracts.
+The strategic audit identified this as the single most important gap: AI coding agents (Claude Code, Cursor, GitHub Copilot, Windsurf, Continue.dev, Cline, Zed) cannot discover or call nib's tools natively. They can only use nib through fragile subprocess calls with no discoverability, no structured output, and no tool contracts.
 
 MCP has become the universal integration surface for AI coding tools. One MCP server implementation gives nib native integration with 7+ tools without per-agent adaptation.
 
 ### Research Inputs
 
-- [MCP Server Best Practices research](../../../30%20-%20Resources/MCP%20Server%20Best%20Practices.md) — tool design, transport modes, real-world examples
-- [CLI Best Practices research](../../../30%20-%20Resources/CLI%20Best%20Practices%20for%20Developer%20Tools.md) — `--json`, exit codes, CI patterns
+- MCP Server Best Practices research — tool design, transport modes, real-world examples
+- CLI Best Practices research — `--json`, exit codes, CI patterns
 - ESLint MCP server (`@eslint/mcp`) — the most relevant CLI-to-MCP precedent
 
 ---

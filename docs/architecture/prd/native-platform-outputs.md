@@ -4,7 +4,7 @@
 **Phase:** 7
 **Milestone:** Token outputs reach native mobile platforms
 **Target users:** Cross-platform product teams building React Native, Flutter, iOS, or Android apps alongside a web product
-**References:** [../roadmap.md](../roadmap.md#phase-7--ship-everywhere), [../gap-analysis.md](../gap-analysis.md)
+**References:** roadmap.md, gap-analysis.md
 **Depends on:** Phase 2 — DTCG composite types (shadow, typography, transition); Phase 3 — component token tier
 
 ---

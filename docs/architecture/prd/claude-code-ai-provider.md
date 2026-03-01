@@ -4,7 +4,7 @@
 **Phase:** 3.3
 **Milestone:** Claude Code users get AI brand enhancement with no API key required
 **Target users:** Anyone running nib inside Claude Code — the primary developer audience
-**References:** [roadmap.md](../roadmap.md#phase-33--zero-config-ai-for-claude-code-users), [gap-analysis.md](../gap-analysis.md)
+**References:** roadmap.md, gap-analysis.md
 **Depends on:** Phase 3.2 (kit complete), `claude` CLI binary available (installed with Claude Code)
 
 ---

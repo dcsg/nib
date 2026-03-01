@@ -4,7 +4,7 @@
 **Phase:** 3
 **Milestone:** Teams can define components with contracts that encode tokens, states, variants, and a11y rules
 **Target users:** Developer-led teams who have completed Phase 2; teams building accessible UI component libraries
-**References:** [roadmap.md](../roadmap.md#phase-3--you-have-a-component-system), [gap-analysis.md](../gap-analysis.md)
+**References:** roadmap.md, gap-analysis.md
 **Depends on:** Phase 2 — `$extensions.nib` token infrastructure, `brand.config.json` structure
 
 ---

@@ -4,7 +4,7 @@
 **Phase:** 4
 **Milestone:** Teams can detect design drift and get actionable CI reports
 **Target users:** Developer-led teams with CI pipelines; design system maintainers tracking divergence between design and code
-**References:** [../roadmap.md](../roadmap.md#phase-4--the-loop-is-closed), [../gap-analysis.md](../gap-analysis.md)
+**References:** roadmap.md, gap-analysis.md
 **Depends on:** Phase 3 — component contracts, component registry, component token tier
 
 ---

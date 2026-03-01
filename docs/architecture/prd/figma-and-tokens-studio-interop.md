@@ -4,7 +4,7 @@
 **Phase:** 6
 **Milestone:** Figma-first teams and other tool ecosystems can adopt nib without switching tools
 **Target users:** Designer-led teams using Figma + Tokens Studio; organizations migrating from Figma to Pencil.dev
-**References:** [../roadmap.md](../roadmap.md#phase-6--everyone-can-use-it), [../gap-analysis.md](../gap-analysis.md)
+**References:** roadmap.md, gap-analysis.md
 **Depends on:** Phase 2 — DTCG compliance; Phase 4 — DesignDocument schema
 
 ---

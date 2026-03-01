@@ -4,7 +4,7 @@
 **Phase:** 8
 **Milestone:** Prototypes become research instruments with usability metrics
 **Target users:** UX researchers, product designers, and developers who run usability studies; teams that use prototypes for user testing, not just stakeholder demos
-**References:** [../roadmap.md](../roadmap.md#phase-8--research-as-a-feature), [../gap-analysis.md](../gap-analysis.md)
+**References:** roadmap.md, gap-analysis.md
 **Depends on:** Phase 1 — prototype pipeline (capture/build/export); Phase 4 — DesignDocument interaction declarations
 
 ---

@@ -4,7 +4,7 @@
 **Phase:** 2
 **Milestone:** Teams can validate their system passes quality gates and read foundation docs
 **Target users:** Developer-led teams using Pencil.dev or React/Tailwind + CI pipelines
-**References:** [roadmap.md](../roadmap.md#phase-2--your-design-system-has-meaning), [gap-analysis.md](../gap-analysis.md)
+**References:** roadmap.md, gap-analysis.md
 
 ---
 

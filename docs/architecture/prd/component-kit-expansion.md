@@ -4,7 +4,7 @@
 **Phase:** 3.2
 **Milestone:** Teams get a real component kit on day one — 12 components with design API slots
 **Target users:** All teams running `nib kit` for the first time; design system maintainers defining component contracts
-**References:** [roadmap.md](../roadmap.md#phase-32--a-complete-starting-kit), [gap-analysis.md](../gap-analysis.md)
+**References:** roadmap.md, gap-analysis.md
 **Depends on:** Phase 3.1 (`nib kit` command), Phase 3 (`nib component init`, contract schema)
 
 ---
@@ -176,7 +176,7 @@ New state added: `selected — A value has been chosen and is displayed in the i
 
 ## Phase 4+ Contract Schema Backlog
 
-These are documented in [roadmap.md Phase 4+ section](../roadmap.md#phase-4--planned-contract-schema-additions) and are **not** in scope for Phase 3.2:
+These are documented in roadmap.md and are **not** in scope for Phase 3.2:
 
 | Field | Purpose | Blocked on |
 |-------|---------|-----------|

@@ -4,7 +4,7 @@
 **Phase:** 5
 **Milestone:** Teams can scaffold complete screens from pre-built patterns
 **Target users:** Developer-led and designer-led teams building product UIs; teams moving from "we have a component library" to "we can ship screens"
-**References:** [../roadmap.md](../roadmap.md#phase-5--patterns-and-templates), [../gap-analysis.md](../gap-analysis.md)
+**References:** roadmap.md, gap-analysis.md
 **Depends on:** Phase 3 — component contracts and registry; Phase 2 — window size class grid primitives
 
 ---
