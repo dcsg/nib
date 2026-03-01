@@ -13,6 +13,7 @@ import { registerComponentTools } from "./tools/component.js";
 import { registerPrototypeTools } from "./tools/prototype.js";
 import { registerStatusTool } from "./tools/status.js";
 import { registerKitTool } from "./tools/kit.js";
+import { registerKitBootstrapTool } from "./tools/kit-bootstrap.js";
 import { registerBrandResources } from "./resources/brand.js";
 import { registerTokenResources } from "./resources/tokens.js";
 import { registerComponentResources } from "./resources/components.js";
@@ -47,7 +48,8 @@ If the user has no file (verbal brief):
 
 2. nib_brand_audit — verify WCAG AA compliance
 3. nib_brand_push — creates the Pencil .pen file; canvas starts empty (expected — tokens are variables)
-4. nib_kit — returns component recipes; use Pencil batch_design to scaffold frames into the .pen file
+4. nib_kit_bootstrap — scaffolds the standard 12-component kit and returns a Pencil recipe
+5. Pass the recipe to Pencil's batch_design to draw component frames into the .pen file
 
 After init, nib automatically injects brand context into all AI agent config files found
 (CLAUDE.md, .cursorrules, .windsurfrules, .github/copilot-instructions.md, AI_CONTEXT.md).
@@ -69,8 +71,9 @@ Every future agent session — regardless of which AI tool is used — will read
 3. nib_build_prototype → generates shareable HTML with hotspot navigation
 
 ── COMPONENT CONTRACTS ──────────────────────────────────────────────
-nib_component_init — define token slots, states, and ARIA patterns for a component
-nib_kit — get a visual recipe to scaffold components in Pencil
+nib_kit_bootstrap — scaffold the standard 12-component kit in one call (call after nib_brand_build)
+nib_component_init — define a custom component with token slots, states, and ARIA patterns
+nib_kit — get a Pencil scaffolding recipe for all registered components (read-only)
 
 If the user asks what nib does, how to start, or what they can do next — call nib_help first.`,
     },
@@ -82,6 +85,7 @@ If the user asks what nib does, how to start, or what they can do next — call 
   registerPrototypeTools(server);
   registerStatusTool(server);
   registerKitTool(server);
+  registerKitBootstrapTool(server);
 
   // Register all resources
   registerBrandResources(server);

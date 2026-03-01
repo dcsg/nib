@@ -106,12 +106,18 @@ export function extractBrandName(text: string): string | null {
     if (val.split(/\s+/).length <= 4) return val;
   }
 
-  // First H1 heading — strip common suffixes like "— Brand Guidelines"
+  // First H1 heading — strip document-title noise in both directions:
+  //   "Acme — Brand Guidelines"  → "Acme"   (suffix strip)
+  //   "Brand Brief — nib"        → "nib"    (prefix strip)
   const h1Match = text.match(/^#\s+(.+)/m);
   if (h1Match?.[1]) {
     const h1 = h1Match[1].trim();
-    // Remove "— Brand Guidelines", "- Brand Guide", etc.
-    const cleaned = h1.replace(/\s*[—–-]\s*(?:brand|style|design).*$/i, "").trim();
+    const cleaned = h1
+      // Strip suffix: "— Brand Guidelines", "- Brand Guide", "— Style Guide", etc.
+      .replace(/\s*[—–-]\s*(?:brand|style|design).*$/i, "")
+      // Strip prefix: "Brand Brief — ", "Brand Guide — ", "Style Guide — ", etc.
+      .replace(/^(?:brand|style|design)\s+(?:brief|guide|guidelines|system|identity)\s*[—–-]\s*/i, "")
+      .trim();
     if (cleaned) return cleaned;
   }
 

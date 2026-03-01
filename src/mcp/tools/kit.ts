@@ -52,9 +52,17 @@ export function registerKitTool(server: McpServer): void {
           ],
         };
       } catch (err) {
-        return errorResult(
-          err instanceof Error ? err.message : String(err),
-        );
+        const msg = err instanceof Error ? err.message : String(err);
+        // Provide actionable guidance when the registry is empty
+        if (msg.includes("No components in registry")) {
+          return errorResult(
+            msg +
+            " Call nib_kit_bootstrap to scaffold the standard 12-component kit " +
+            "(Button, TextInput, Checkbox, Radio, Switch, Dialog, Tooltip, Tabs, Combobox, Badge, Toast, Alert) " +
+            "in a single call.",
+          );
+        }
+        return errorResult(msg);
       }
     },
   );

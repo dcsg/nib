@@ -13,19 +13,19 @@ import type { NibBrandConfig, ComponentContract } from "../types/brand.js";
 
 /** Frame dimensions per widget type (px) */
 const FRAME_SIZES: Record<string, { width: number; height: number }> = {
-  button: { width: 120, height: 40 },
-  textinput: { width: 240, height: 40 },
-  checkbox: { width: 160, height: 24 },
-  radio: { width: 160, height: 24 },
-  switch: { width: 80, height: 28 },
-  tabs: { width: 320, height: 40 },
-  dialog: { width: 400, height: 300 },
-  combobox: { width: 240, height: 40 },
-  tooltip: { width: 200, height: 36 },
-  badge: { width: 80, height: 24 },
-  toast: { width: 320, height: 64 },
-  alert: { width: 400, height: 80 },
-  generic: { width: 240, height: 80 },
+  button: { width: 160, height: 40 },
+  textinput: { width: 280, height: 44 },
+  checkbox: { width: 200, height: 32 },
+  radio: { width: 200, height: 32 },
+  switch: { width: 120, height: 32 },
+  tabs: { width: 360, height: 44 },
+  dialog: { width: 440, height: 320 },
+  combobox: { width: 280, height: 44 },
+  tooltip: { width: 220, height: 40 },
+  badge: { width: 100, height: 28 },
+  toast: { width: 360, height: 72 },
+  alert: { width: 440, height: 88 },
+  generic: { width: 280, height: 80 },
 };
 
 /** Row spacing between component frames (px) */
@@ -196,7 +196,14 @@ function buildComponentOps(
     `cornerRadius: [6,6,6,6]`,
   ];
   if (rootFill) rootAttrs.push(`fill: "${tokenToExpr(rootFill)}"`);
-  if (rootBorder) rootAttrs.push(`stroke: "${tokenToExpr(rootBorder)}"`, `strokeThickness: 1`);
+  if (rootBorder) {
+    rootAttrs.push(`stroke: "${tokenToExpr(rootBorder)}"`, `strokeThickness: 1`);
+  } else {
+    // Always add a visible border so the frame isn't invisible on a dark canvas.
+    // Use the border token expression if available; otherwise fall back to a
+    // neutral stroke so the component outline is always visible.
+    rootAttrs.push(`stroke: "#888888"`, `strokeThickness: 1`);
+  }
 
   lines.push(`${id}_root=I(document, {${rootAttrs.join(", ")}})`);
 
