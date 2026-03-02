@@ -19,5 +19,7 @@ export default defineConfig([
     banner: { js: "#!/usr/bin/env node" },
     sourcemap: true,
     define,
+    // Stable chunk names prevent MCP server restarts after rebuild
+    chunkNames: "[name]",
   },
 ]);

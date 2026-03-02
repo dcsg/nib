@@ -110,6 +110,7 @@ export function registerKitBootstrapTool(server: McpServer): void {
 
         for (const name of toScaffold) {
           const contractPath = join(componentsDir, `${name}.contract.json`);
+          const widgetType = detectWidgetType(name); // needed in both branches
 
           if (existsSync(contractPath)) {
             skipped.push(name);
@@ -118,10 +119,19 @@ export function registerKitBootstrapTool(server: McpServer): void {
               const raw = await readFile(contractPath, "utf-8");
               contractMap.set(name, JSON.parse(raw) as ComponentContract);
             } catch { /* not fatal */ }
+            // Re-register in config if missing (handles fresh brand init with stale contracts)
+            if (!brandConfig.components) brandConfig.components = {};
+            if (!brandConfig.components[name]) {
+              brandConfig.components[name] = {
+                contractPath: join(componentsDir, `${name}.contract.json`),
+                widgetType,
+                status: "draft" as ComponentStatus,
+                addedAt: today,
+              };
+            }
             continue;
           }
 
-          const widgetType = detectWidgetType(name);
           const contract = await scaffoldContract(name, { widgetType });
 
           await writeFile(contractPath, JSON.stringify(contract, null, 2) + "\n");
@@ -141,7 +151,7 @@ export function registerKitBootstrapTool(server: McpServer): void {
         }
 
         // Persist updated config and brand.md inventory
-        if (scaffolded.length > 0) {
+        if (Object.keys(brandConfig.components ?? {}).length > 0) {
           await writeFile(resolvedConfigFile, JSON.stringify(brandConfig, null, 2) + "\n");
 
           if (brandConfig.components) {
