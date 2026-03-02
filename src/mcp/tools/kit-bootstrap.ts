@@ -45,7 +45,13 @@ export function registerKitBootstrapTool(server: McpServer): void {
         "brand.config.json, patches brand.md inventory, and returns a Pencil scaffolding recipe. " +
         "Idempotent — skips components that already exist. " +
         "Call this after nib_brand_init + nib_brand_build. " +
-        "Pass the returned recipe to Pencil's batch_design tool to draw frames in the .pen file.",
+        "IMPORTANT: component ops produce ONE generic variant per component with English placeholder " +
+        "content (e.g. 'Default', 'Label'). They are a starting scaffold for developer handoff / " +
+        "design system docs — NOT for stakeholder review or product flows. " +
+        "For stakeholder-ready output with real copy and multiple variants, skip components[].batchDesignOps " +
+        "and design components directly in Pencil via batch_design (see ADR-009). " +
+        "The foundations ops (color palette, type scale, spacing scale) are always worth running — " +
+        "they are saved to .nib/kit-foundations.ops and drawn with a separate batch_design call.",
       inputSchema: {
         config: z
           .string()

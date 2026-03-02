@@ -43,11 +43,19 @@ Claude asks one question at a time (name, primary color, font, personality, audi
 
 Claude calls `nib_brand_push`. **If `design-system.pen` doesn't exist yet, nib creates it automatically and opens it in Pencil — just hit Cmd+S to save.**
 
-**Step 3 — Scaffold the component kit.**
+**Step 3 — Draw components into Pencil.**
 
-> "Scaffold the nib component kit in my Pencil file."
+Tell the agent which mode you want:
 
-Claude calls `nib_kit_bootstrap`, which scaffolds the 12-component kit (Button, TextInput, Dialog, Checkbox, etc.) and returns `batch_design` ops with brand token variables pre-wired. Claude then draws them into your Pencil file using those ops. You now have a reusable component library inside `design-system.pen`.
+> **"Scaffold the nib component kit in my Pencil file."** → full pipeline (developer handoff / design system docs)
+>
+> **"Design a component library for [your product] with real copy and multiple variants."** → hybrid mode (stakeholder review / product flows)
+
+**Full pipeline** (`nib_kit_bootstrap`): Claude scaffolds all 12 components with token-wired ops in one call. Output is a generic, single-variant, English-placeholder library — great for developer handoff and design system documentation. Use this as a starting scaffold to copy-and-customise.
+
+**Hybrid mode** (skip `nib_kit_bootstrap` components): Claude draws components directly in Pencil using `batch_design` with brand-specific copy, multiple variants (e.g. a green eco CTA alongside the primary blue one), and product-realistic content. Requires more calls but produces stakeholder-ready output.
+
+**The sweet spot:** run `nib_kit_bootstrap` once for the foundations (color palette, type scale, spacing scale), then skip its component ops and design components manually. See [ADR-009](/guide/adr-009) for the full two-mode workflow decision.
 
 **Step 4 — Design your screens.**
 

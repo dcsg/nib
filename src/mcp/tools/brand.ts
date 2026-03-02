@@ -513,9 +513,12 @@ export function registerBrandTools(server: McpServer): void {
         lines.push(
           `NEXT STEPS (in order):` +
           `\n1. Open the .pen file: pencil.open_document("${result.penFile}")` +
-          `\n2. Load brand variables: pencil.set_variables(filePath: "${result.penFile}", variables: <see variables field>)` +
-          `\n3. Call nib_kit_bootstrap to scaffold the 12-component kit` +
-          `\n4. Pass the returned recipe to pencil.batch_design to draw the component frames`,
+          `\n2. Load ALL brand variables: pencil.set_variables(filePath: "${result.penFile}", variables: <the full variables object below>)` +
+          `\n   CRITICAL: pass the COMPLETE variables map — never a subset. Missing variables silently render as black (#000000).` +
+          `\n3. Call nib_kit_bootstrap to scaffold the 12-component kit (foundations + contracts)` +
+          `\n4. Execute foundations ops: read .nib/kit-foundations.ops and pass to pencil.batch_design` +
+          `\n5. For developer handoff: execute recipe.components[].batchDesignOps (generic 1-variant placeholders)` +
+          `\n   For stakeholder review: skip component ops, design directly in Pencil with real copy and multiple variants (see ADR-009)`,
         );
 
         return {

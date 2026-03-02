@@ -67,7 +67,10 @@ export async function urlIntake(url: string): Promise<BrandInput> {
 
   if (colors.length === 0) {
     throw new Error(
-      `No colors could be extracted from ${url}. The site may require JavaScript rendering.`,
+      `No colors could be extracted from ${url}. The site likely requires JavaScript rendering ` +
+      `(Next.js, React SPA, etc.) — static HTML fetch returned no inline styles or CSS variables. ` +
+      `Call nib_brand_init without the 'from' param and pass brand values directly instead: ` +
+      `brandName, primaryColor (hex), secondaryColor (hex), personality.`,
     );
   }
 
