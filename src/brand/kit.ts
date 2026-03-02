@@ -195,14 +195,34 @@ function tokenToVarName(token: string): string {
 function buildButtonOps(id: string, name: string, placement: KitPlacement, variant = "primary", parent = "document"): string {
   // Per ADR-007 constraints: buttonWidth="fit-content", textCentering="symmetric-padding"
   // No fixed width — Pencil determines width from content + padding
-  const configs: Record<string, { bg?: string; text: string; border?: string }> = {
+  // INV-009 Rule 12: icon variant uses type:"icon_font" with semantic Lucide name
+  const configs: Record<string, { bg?: string; text: string; border?: string; iconName?: string }> = {
     primary:     { bg: "$button-bg-primary", text: "$button-text-primary" },
     secondary:   { bg: "#f1f5f9", text: "#1e293b", border: "$--border" },
     outline:     { text: "$--foreground", border: "$--border" },
     destructive: { bg: "#dc2626", text: "#ffffff" },
+    icon:        { bg: "$button-bg-primary", text: "$button-text-primary", iconName: "plus" },
   };
   const cfg = configs[variant] ?? configs["primary"]!;
   const label = variant.charAt(0).toUpperCase() + variant.slice(1);
+  const children: NibNodeSpec[] = cfg.iconName ? [
+    {
+      id: `${id}_ico`, type: "icon_font", name: "icon",
+      iconFontFamily: "lucide", iconFontName: cfg.iconName,
+      fontSize: 16, textColor: cfg.text,
+    },
+    {
+      id: `${id}_lbl`, type: "text", name: "label",
+      textContent: label, fontSize: 14, fontWeight: "600",
+      textColor: cfg.text,
+    },
+  ] : [
+    {
+      id: `${id}_lbl`, type: "text", name: "label",
+      textContent: label, fontSize: 14, fontWeight: "600",
+      textColor: cfg.text,
+    },
+  ];
   return specToOps({
     id: `${id}_root`, type: "frame", name: `${name} / ${label}`,
     x: placement.x, y: placement.y, height: placement.height,
@@ -211,11 +231,7 @@ function buildButtonOps(id: string, name: string, placement: KitPlacement, varia
     cornerRadius: [6, 6, 6, 6],
     backgroundColor: cfg.bg,
     borderColor: cfg.border,
-    children: [{
-      id: `${id}_lbl`, type: "text", name: "label",
-      textContent: label, fontSize: 14, fontWeight: "600",
-      textColor: cfg.text,
-    }],
+    children,
   }, parent);
 }
 
@@ -240,7 +256,7 @@ function buildTextInputOps(id: string, name: string, placement: KitPlacement, va
       {
         id: `${id}_input`, type: "frame", name: "input",
         width: placement.width, height: placement.height,
-        layout: "horizontal", gap: 8, padding: 10,
+        layout: "horizontal", gap: 8, padding: 10, alignItems: "center",
         cornerRadius: [6, 6, 6, 6],
         backgroundColor: cfg.bg,
         borderColor: cfg.border,
@@ -381,7 +397,7 @@ function buildTabsOps(id: string, name: string, placement: KitPlacement, parent 
       {
         id: `${id}_tab1`, type: "frame", name: "tab-active",
         height: 36,
-        layout: "horizontal", padding: 12,
+        layout: "horizontal", padding: 12, alignItems: "center", justifyContent: "center",
         cornerRadius: [6, 6, 6, 6],
         backgroundColor: "#ffffff",
         children: [{
@@ -393,7 +409,7 @@ function buildTabsOps(id: string, name: string, placement: KitPlacement, parent 
       {
         id: `${id}_tab2`, type: "frame", name: "tab-2",
         height: 36,
-        layout: "horizontal", padding: 12,
+        layout: "horizontal", padding: 12, alignItems: "center", justifyContent: "center",
         children: [{
           id: `${id}_tab2_lbl`, type: "text", name: "label",
           textContent: "Tab 2", fontSize: 14, fontWeight: "400",
@@ -403,7 +419,7 @@ function buildTabsOps(id: string, name: string, placement: KitPlacement, parent 
       {
         id: `${id}_tab3`, type: "frame", name: "tab-3",
         height: 36,
-        layout: "horizontal", padding: 12,
+        layout: "horizontal", padding: 12, alignItems: "center", justifyContent: "center",
         children: [{
           id: `${id}_tab3_lbl`, type: "text", name: "label",
           textContent: "Tab 3", fontSize: 14, fontWeight: "400",
@@ -441,10 +457,10 @@ function buildDialogOps(id: string, name: string, placement: KitPlacement, paren
         children: [
           {
             id: `${id}_cancel`, type: "frame", name: "cancel",
-            width: 88, height: 36,
+            height: 36,
             cornerRadius: [6, 6, 6, 6],
             borderColor: "$--border",
-            layout: "horizontal", padding: 10,
+            layout: "horizontal", padding: [8, 16], alignItems: "center", justifyContent: "center",
             children: [{
               id: `${id}_cancel_lbl`, type: "text", name: "label",
               textContent: "Cancel", fontSize: 14, fontWeight: "500",
@@ -453,10 +469,10 @@ function buildDialogOps(id: string, name: string, placement: KitPlacement, paren
           },
           {
             id: `${id}_confirm`, type: "frame", name: "confirm",
-            width: 88, height: 36,
+            height: 36,
             cornerRadius: [6, 6, 6, 6],
             backgroundColor: "$button-bg-primary",
-            layout: "horizontal", padding: 10,
+            layout: "horizontal", padding: [8, 16], alignItems: "center", justifyContent: "center",
             children: [{
               id: `${id}_confirm_lbl`, type: "text", name: "label",
               textContent: "Confirm", fontSize: 14, fontWeight: "500",
@@ -510,7 +526,8 @@ function buildComboboxOps(id: string, name: string, placement: KitPlacement, var
       {
         id: `${id}_ctrl`, type: "frame", name: "control",
         width: placement.width, height: placement.height,
-        layout: "horizontal", gap: 8, padding: 10, alignItems: "center",
+        layout: "horizontal", gap: 8, padding: 10,
+        alignItems: "center", justifyContent: "space_between",
         cornerRadius: [6, 6, 6, 6],
         backgroundColor: cfg.bg,
         borderColor: cfg.border,
@@ -559,12 +576,13 @@ function buildBadgeOps(id: string, name: string, placement: KitPlacement, varian
 
 function buildToastOps(id: string, name: string, placement: KitPlacement, variant = "info", parent = "document"): string {
   // ADR-007: accentBar.width=4 via child frame (Pencil has no per-side borders)
-  // ADR-007: constraints.closeGlyph="ascii-safe" → use × U+00D7 not ✕ U+2715
-  const configs: Record<string, { accent: string; iconBg: string; label: string }> = {
-    info:    { accent: "$--primary", iconBg: "$--primary", label: "Info" },
-    success: { accent: "#16a34a", iconBg: "#16a34a", label: "Success" },
-    warning: { accent: "#d97706", iconBg: "#d97706", label: "Warning" },
-    error:   { accent: "#dc2626", iconBg: "#dc2626", label: "Error" },
+  // INV-009 Rule 12: intent icons use type:"icon_font" with semantic Lucide names
+  // INV-009 Rule 13: dismiss icons use type:"icon_font" — not text glyphs
+  const configs: Record<string, { accent: string; iconBg: string; iconName: string; label: string }> = {
+    info:    { accent: "$--primary", iconBg: "$--primary", iconName: "info",           label: "Info" },
+    success: { accent: "#16a34a",    iconBg: "#16a34a",    iconName: "check-circle",   label: "Success" },
+    warning: { accent: "#d97706",    iconBg: "#d97706",    iconName: "alert-triangle", label: "Warning" },
+    error:   { accent: "#dc2626",    iconBg: "#dc2626",    iconName: "x-circle",       label: "Error" },
   };
   const cfg = configs[variant] ?? configs["info"]!;
   const label = variant.charAt(0).toUpperCase() + variant.slice(1);
@@ -589,10 +607,10 @@ function buildToastOps(id: string, name: string, placement: KitPlacement, varian
         layout: "horizontal", gap: 12, padding: 16, alignItems: "center",
         children: [
           {
-            id: `${id}_icon`, type: "frame", name: "icon",
-            width: 20, height: 20,
-            cornerRadius: [10, 10, 10, 10],
-            backgroundColor: cfg.iconBg,
+            // INV-009 Rule 12: intent icon uses icon_font with semantic Lucide name
+            id: `${id}_icon`, type: "icon_font", name: "icon",
+            iconFontFamily: "lucide", iconFontName: cfg.iconName,
+            fontSize: 20, textColor: cfg.iconBg,
           },
           {
             id: `${id}_msg`, type: "text", name: "message",
@@ -600,9 +618,10 @@ function buildToastOps(id: string, name: string, placement: KitPlacement, varian
             textColor: "$toast-text",
           },
           {
-            id: `${id}_close`, type: "text", name: "close",
-            textContent: "\u00D7", fontSize: 16, fontWeight: "400", // × U+00D7 (ascii-safe)
-            textColor: "$--foreground-muted",
+            // INV-009 Rule 13: dismiss icon uses icon_font — not text glyph
+            id: `${id}_close`, type: "icon_font", name: "close",
+            iconFontFamily: "lucide", iconFontName: "x",
+            fontSize: 16, textColor: "$--foreground-muted",
           },
         ],
       },
@@ -612,12 +631,13 @@ function buildToastOps(id: string, name: string, placement: KitPlacement, varian
 
 function buildAlertOps(id: string, name: string, placement: KitPlacement, variant = "info", parent = "document"): string {
   // ADR-007: visualClass="inline-contextual" — tinted background per intent
-  // ADR-007: constraints.closeGlyph="ascii-safe" → use × U+00D7 not ✕ U+2715
-  const configs: Record<string, { bg: string; border: string; iconBg: string; label: string }> = {
-    info:    { bg: "$alert-bg", border: "$alert-border", iconBg: "$--primary", label: "Info" },
-    success: { bg: "#f0fdf4", border: "#16a34a", iconBg: "#16a34a", label: "Success" },
-    warning: { bg: "#fffbeb", border: "#d97706", iconBg: "#d97706", label: "Warning" },
-    error:   { bg: "#fef2f2", border: "#dc2626", iconBg: "#dc2626", label: "Error" },
+  // INV-009 Rule 12: intent icons use type:"icon_font" with semantic Lucide names
+  // INV-009 Rule 13: dismiss icons use type:"icon_font" — not text glyphs
+  const configs: Record<string, { bg: string; border: string; iconColor: string; iconName: string; label: string }> = {
+    info:    { bg: "$alert-bg",  border: "$alert-border", iconColor: "$--primary", iconName: "info",           label: "Info" },
+    success: { bg: "#f0fdf4",   border: "#16a34a",        iconColor: "#16a34a",    iconName: "check-circle",   label: "Success" },
+    warning: { bg: "#fffbeb",   border: "#d97706",        iconColor: "#d97706",    iconName: "alert-triangle", label: "Warning" },
+    error:   { bg: "#fef2f2",   border: "#dc2626",        iconColor: "#dc2626",    iconName: "x-circle",       label: "Error" },
   };
   const cfg = configs[variant] ?? configs["info"]!;
   const label = variant.charAt(0).toUpperCase() + variant.slice(1);
@@ -630,10 +650,10 @@ function buildAlertOps(id: string, name: string, placement: KitPlacement, varian
     borderColor: cfg.border,
     children: [
       {
-        id: `${id}_icon`, type: "frame", name: "icon",
-        width: 24, height: 24,
-        cornerRadius: [12, 12, 12, 12],
-        backgroundColor: cfg.iconBg,
+        // INV-009 Rule 12: intent icon uses icon_font with semantic Lucide name
+        id: `${id}_icon`, type: "icon_font", name: "icon",
+        iconFontFamily: "lucide", iconFontName: cfg.iconName,
+        fontSize: 24, textColor: cfg.iconColor,
       },
       {
         id: `${id}_content`, type: "frame", name: "content",
@@ -652,9 +672,10 @@ function buildAlertOps(id: string, name: string, placement: KitPlacement, varian
         ],
       },
       {
-        id: `${id}_close`, type: "text", name: "close",
-        textContent: "\u00D7", fontSize: 16, fontWeight: "400", // × U+00D7 (ascii-safe)
-        textColor: "$--foreground-muted",
+        // INV-009 Rule 13: dismiss icon uses icon_font — not text glyph
+        id: `${id}_close`, type: "icon_font", name: "close",
+        iconFontFamily: "lucide", iconFontName: "x",
+        fontSize: 16, textColor: "$--foreground-muted",
       },
     ],
   }, parent);

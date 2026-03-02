@@ -1236,7 +1236,7 @@ describe("nib_kit — ADR-007 glyph safety", () => {
     );
   });
 
-  it("toast ops use ascii-safe \u00D7 (U+00D7) not \u2715 (U+2715) for close glyph", async () => {
+  it("toast close uses icon_font x — not a text glyph (INV-009 Rule 13)", async () => {
     const { client } = await createTestPair();
     const result = await client.callTool({
       name: "nib_kit",
@@ -1246,9 +1246,10 @@ describe("nib_kit — ADR-007 glyph safety", () => {
     const content = result.content as Array<{ type: string; text: string }>;
     const recipe = JSON.parse(content[0]!.text);
     const toast = recipe.components[0] as { batchDesignOps: string };
-    // ADR-007: ascii-safe close glyph — \u00D7 (Latin-1 Supplement) is used
-    expect(toast.batchDesignOps).toContain("\u00D7");
-    // \u2715 (Dingbats block) may not render in Inter and must NOT appear
+    // INV-009 Rule 13: dismiss icon uses icon_font, not text glyph
+    expect(toast.batchDesignOps).toContain('iconFontName:"x"');
+    // Neither text-glyph approach should appear
+    expect(toast.batchDesignOps).not.toContain("\u00D7");
     expect(toast.batchDesignOps).not.toContain("\u2715");
   });
 

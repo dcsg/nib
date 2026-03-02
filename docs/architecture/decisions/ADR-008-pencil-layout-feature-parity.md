@@ -121,6 +121,27 @@ These patterns are required in all current and future widget builders (see also 
 
 ---
 
+## Intent-to-Icon Mapping
+
+Standard Lucide icon names to use for semantic intent. All builders producing intent-aware
+components (Toast, Alert, Badge, Button) must reference this table.
+
+| Intent | `iconFontName` | Notes |
+|---|---|---|
+| info | `"info"` | — |
+| success | `"check-circle"` | — |
+| warning | `"alert-triangle"` | — |
+| error | `"x-circle"` | — |
+| close/dismiss | `"x"` | Use `type:"icon_font"`, not `type:"text"` |
+| add | `"plus"` | Button with-icon variant |
+| expand/collapse | `"chevrons-up-down"` | Combobox, Select |
+
+Icon nodes must use `type:"icon_font"`, `iconFontFamily:"lucide"`, `fontSize` matching the
+surrounding text size (usually 16–24px), and `textColor` matching the semantic color token.
+Never use `backgroundColor` or `cornerRadius` to create a colored circle as an icon substitute.
+
+---
+
 ## Consequences
 
 ### Positive

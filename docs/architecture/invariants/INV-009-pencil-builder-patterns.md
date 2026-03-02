@@ -198,6 +198,76 @@ padding: 8
 
 ---
 
+### Rule 12: Intent/status icons use `type:"icon_font"` with semantic Lucide names
+
+Canonical intent-to-icon mapping — all builders must use these exact `iconFontName` values:
+
+| Intent | `iconFontName` | Context |
+|---|---|---|
+| `info` | `"info"` | Toast, Alert, Badge |
+| `success` | `"check-circle"` | Toast, Alert |
+| `warning` | `"alert-triangle"` | Toast, Alert |
+| `error` | `"x-circle"` | Toast, Alert |
+| `close/dismiss` | `"x"` | Toast close, Dialog close, Alert dismiss |
+| `add` | `"plus"` | Button icon variant |
+| `expand/select` | `"chevrons-up-down"` | Combobox, Select |
+
+An empty colored circle (`type:"frame"` with `cornerRadius` and a background fill) never
+communicates intent to a viewer. Every status icon must use `type:"icon_font"` with the
+intent-appropriate Lucide glyph.
+
+```typescript
+// Correct:
+{ type: "icon_font", iconFontFamily: "lucide", iconFontName: "info", fontSize: 20, textColor: "$--primary" }
+
+// Wrong — colored circle communicates nothing:
+{ type: "frame", width: 20, height: 20, cornerRadius: [10, 10, 10, 10], backgroundColor: "$--primary" }
+```
+
+---
+
+### Rule 13: Dismiss icons use `type:"icon_font"` — not text glyphs
+
+Close/dismiss affordances must use:
+```typescript
+{ type: "icon_font", iconFontFamily: "lucide", iconFontName: "x", fontSize: 16, textColor: "$--foreground-muted" }
+```
+
+The text-node approach (`type:"text", textContent:"×"`) is fragile: sizing is controlled by
+font metrics instead of the icon grid, and the glyph visually differs from the surrounding icon
+set. This supersedes ADR-007's `closeGlyph:"ascii-safe"` constraint — `type:"icon_font"` is
+always preferred over any text glyph for icon-like UI affordances.
+
+```typescript
+// Correct:
+{ type: "icon_font", iconFontFamily: "lucide", iconFontName: "x", fontSize: 16 }
+
+// Wrong (ADR-007 original, now superseded):
+{ type: "text", textContent: "\u00D7", fontSize: 16 }  // × text glyph
+```
+
+---
+
+### Rule 14: Value + trailing-icon layouts require `justifyContent:"space_between"`
+
+Any control that shows a value on the left and a trailing icon on the right (combobox, select,
+search field with clear button) must have `justifyContent:"space_between"` on its containing
+frame. Without it, children render adjacent at the start of the container. `gap:8` alone does
+not push items apart.
+
+```typescript
+// Correct — combobox control:
+{ layout: "horizontal", gap: 8, padding: 10,
+  alignItems: "center", justifyContent: "space_between",
+  children: [valueText, chevronIcon] }
+
+// Wrong — chevron renders immediately after value text:
+{ layout: "horizontal", gap: 8, padding: 10, alignItems: "center",
+  children: [valueText, chevronIcon] }
+```
+
+---
+
 ## Enforcement
 
 These rules are verified by:
@@ -205,4 +275,4 @@ These rules are verified by:
 2. Unit tests in `src/brand/pencil-ops.test.ts` (verify correct op string output)
 3. Visual verification via `get_screenshot` after `batch_design` (catch render issues)
 
-New widget builders must be reviewed against all 11 rules before merging.
+New widget builders must be reviewed against all 14 rules before merging.
