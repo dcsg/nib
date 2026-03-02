@@ -29,8 +29,30 @@ const FRAME_SIZES: Record<string, { width: number; height: number }> = {
   generic: { width: 280, height: 80 },
 };
 
+/**
+ * Actual rendered height per widget type.
+ * Components with a label above the control (textinput, combobox) are taller
+ * than their FRAME_SIZES.height — the label and gap add ~18px on top.
+ * Used for cumulative y-position tracking in buildKitRecipe.
+ */
+const ACTUAL_ROW_HEIGHTS: Record<string, number> = {
+  button: 40,
+  textinput: 62,  // label 12px + gap 6px + input 44px
+  checkbox: 32,
+  radio: 32,
+  switch: 32,
+  tabs: 44,
+  dialog: 320,
+  combobox: 62,   // label 12px + gap 6px + control 44px
+  tooltip: 40,
+  badge: 28,
+  toast: 72,
+  alert: 88,
+  generic: 80,
+};
+
 /** Row spacing between component frames (px) */
-const ROW_SPACING = 40;
+const ROW_SPACING = 60;
 
 /** Horizontal gap between variant frames within a component row (px) */
 const VARIANT_GAP = 24;
@@ -170,7 +192,7 @@ function tokenToVarName(token: string): string {
 // - borderColor always produces a properly-structured stroke object
 // - Type errors are caught at compile time, not during visual inspection
 
-function buildButtonOps(id: string, name: string, placement: KitPlacement, variant = "primary"): string {
+function buildButtonOps(id: string, name: string, placement: KitPlacement, variant = "primary", parent = "document"): string {
   // Per ADR-007 constraints: buttonWidth="fit-content", textCentering="symmetric-padding"
   // No fixed width — Pencil determines width from content + padding
   const configs: Record<string, { bg?: string; text: string; border?: string }> = {
@@ -193,10 +215,10 @@ function buildButtonOps(id: string, name: string, placement: KitPlacement, varia
       textContent: label, fontSize: 14, fontWeight: "600",
       textColor: cfg.text,
     }],
-  }, "document");
+  }, parent);
 }
 
-function buildTextInputOps(id: string, name: string, placement: KitPlacement, variant = "default"): string {
+function buildTextInputOps(id: string, name: string, placement: KitPlacement, variant = "default", parent = "document"): string {
   const configs: Record<string, { bg: string; border: string; labelColor: string; placeholderColor: string }> = {
     default:  { bg: "$input-bg", border: "$input-border", labelColor: "$--foreground", placeholderColor: "$--foreground-muted" },
     error:    { bg: "#fff0f0", border: "#dc2626", labelColor: "$--foreground", placeholderColor: "$--foreground-muted" },
@@ -228,10 +250,10 @@ function buildTextInputOps(id: string, name: string, placement: KitPlacement, va
         }],
       },
     ],
-  }, "document");
+  }, parent);
 }
 
-function buildCheckboxOps(id: string, name: string, placement: KitPlacement, variant = "unchecked"): string {
+function buildCheckboxOps(id: string, name: string, placement: KitPlacement, variant = "unchecked", parent = "document"): string {
   const configs: Record<string, { bg: string; border: string; textColor: string }> = {
     unchecked: { bg: "$checkbox-bg", border: "$checkbox-border", textColor: "$--foreground" },
     checked:   { bg: "$--primary", border: "$--primary", textColor: "$--foreground" },
@@ -258,10 +280,10 @@ function buildCheckboxOps(id: string, name: string, placement: KitPlacement, var
         textColor: cfg.textColor,
       },
     ],
-  }, "document");
+  }, parent);
 }
 
-function buildRadioOps(id: string, name: string, placement: KitPlacement, variant = "unselected"): string {
+function buildRadioOps(id: string, name: string, placement: KitPlacement, variant = "unselected", parent = "document"): string {
   const configs: Record<string, { bg: string; border: string; borderWidth: number; textColor: string }> = {
     unselected: { bg: "$radio-bg", border: "$radio-border", borderWidth: 1.5, textColor: "$--foreground" },
     // Selected: white fill + thick primary inner stroke (ADR-007 — inner dot via thick stroke, not nested frame)
@@ -289,10 +311,10 @@ function buildRadioOps(id: string, name: string, placement: KitPlacement, varian
         textColor: cfg.textColor,
       },
     ],
-  }, "document");
+  }, parent);
 }
 
-function buildSwitchOps(id: string, name: string, placement: KitPlacement, variant = "off"): string {
+function buildSwitchOps(id: string, name: string, placement: KitPlacement, variant = "off", parent = "document"): string {
   const configs: Record<string, { trackBg: string; thumbBg: string; textColor: string }> = {
     off:      { trackBg: "$switch-track-bg", thumbBg: "$switch-thumb-bg", textColor: "$--foreground" },
     on:       { trackBg: "$--primary", thumbBg: "#ffffff", textColor: "$--foreground" },
@@ -324,21 +346,25 @@ function buildSwitchOps(id: string, name: string, placement: KitPlacement, varia
         textColor: cfg.textColor,
       },
     ],
-  }, "document");
+  }, parent);
 }
 
-function buildTabsOps(id: string, name: string, placement: KitPlacement): string {
+function buildTabsOps(id: string, name: string, placement: KitPlacement, parent = "document"): string {
+  // Segmented-control pattern: gray pill + white active card.
+  // Underline indicator is impossible in Pencil (no per-side border).
   return specToOps({
     id: `${id}_root`, type: "frame", name: `${name} / Default`,
     x: placement.x, y: placement.y, width: placement.width, height: placement.height,
-    layout: "horizontal", gap: 0, padding: 0,
-    borderColor: "$--border",
+    layout: "horizontal", gap: 4, padding: 4,
+    cornerRadius: [8, 8, 8, 8],
+    backgroundColor: "#f1f5f9",
     children: [
       {
         id: `${id}_tab1`, type: "frame", name: "tab-active",
-        width: 90, height: placement.height,
+        height: 36,
         layout: "horizontal", padding: 12,
-        borderColor: "$tab-indicator", borderWidth: 2,
+        cornerRadius: [6, 6, 6, 6],
+        backgroundColor: "#ffffff",
         children: [{
           id: `${id}_tab1_lbl`, type: "text", name: "label",
           textContent: "Tab 1", fontSize: 14, fontWeight: "600",
@@ -347,7 +373,7 @@ function buildTabsOps(id: string, name: string, placement: KitPlacement): string
       },
       {
         id: `${id}_tab2`, type: "frame", name: "tab-2",
-        width: 90, height: placement.height,
+        height: 36,
         layout: "horizontal", padding: 12,
         children: [{
           id: `${id}_tab2_lbl`, type: "text", name: "label",
@@ -357,7 +383,7 @@ function buildTabsOps(id: string, name: string, placement: KitPlacement): string
       },
       {
         id: `${id}_tab3`, type: "frame", name: "tab-3",
-        width: 90, height: placement.height,
+        height: 36,
         layout: "horizontal", padding: 12,
         children: [{
           id: `${id}_tab3_lbl`, type: "text", name: "label",
@@ -366,10 +392,10 @@ function buildTabsOps(id: string, name: string, placement: KitPlacement): string
         }],
       },
     ],
-  }, "document");
+  }, parent);
 }
 
-function buildDialogOps(id: string, name: string, placement: KitPlacement): string {
+function buildDialogOps(id: string, name: string, placement: KitPlacement, parent = "document"): string {
   return specToOps({
     id: `${id}_root`, type: "frame", name: `${name} / Default`,
     x: placement.x, y: placement.y, width: placement.width, height: placement.height,
@@ -421,10 +447,10 @@ function buildDialogOps(id: string, name: string, placement: KitPlacement): stri
         ],
       },
     ],
-  }, "document");
+  }, parent);
 }
 
-function buildTooltipOps(id: string, name: string, placement: KitPlacement, variant = "dark"): string {
+function buildTooltipOps(id: string, name: string, placement: KitPlacement, variant = "dark", parent = "document"): string {
   const configs: Record<string, { bg: string; text: string }> = {
     dark:  { bg: "$tooltip-bg", text: "$tooltip-text" },
     light: { bg: "#f0f9ff", text: "#0f172a" },
@@ -442,10 +468,10 @@ function buildTooltipOps(id: string, name: string, placement: KitPlacement, vari
       textContent: "Tooltip message", fontSize: 12, fontWeight: "400",
       textColor: cfg.text,
     }],
-  }, "document");
+  }, parent);
 }
 
-function buildComboboxOps(id: string, name: string, placement: KitPlacement, variant = "default"): string {
+function buildComboboxOps(id: string, name: string, placement: KitPlacement, variant = "default", parent = "document"): string {
   const configs: Record<string, { bg: string; border: string; valueText: string; valueColor: string }> = {
     default:  { bg: "$combobox-bg", border: "$combobox-border", valueText: "Select option...", valueColor: "$--foreground-muted" },
     selected: { bg: "$combobox-bg", border: "$--primary", valueText: "Option selected", valueColor: "$--foreground" },
@@ -482,10 +508,10 @@ function buildComboboxOps(id: string, name: string, placement: KitPlacement, var
         ],
       },
     ],
-  }, "document");
+  }, parent);
 }
 
-function buildBadgeOps(id: string, name: string, placement: KitPlacement, variant = "neutral"): string {
+function buildBadgeOps(id: string, name: string, placement: KitPlacement, variant = "neutral", parent = "document"): string {
   const configs: Record<string, { bg: string; text: string }> = {
     neutral: { bg: "$badge-bg-neutral", text: "$badge-text-neutral" },
     success: { bg: "#dcfce7", text: "#166534" },
@@ -505,10 +531,10 @@ function buildBadgeOps(id: string, name: string, placement: KitPlacement, varian
       textContent: label, fontSize: 12, fontWeight: "500",
       textColor: cfg.text,
     }],
-  }, "document");
+  }, parent);
 }
 
-function buildToastOps(id: string, name: string, placement: KitPlacement, variant = "info"): string {
+function buildToastOps(id: string, name: string, placement: KitPlacement, variant = "info", parent = "document"): string {
   // ADR-007: accentBar.width=4 via child frame (Pencil has no per-side borders)
   // ADR-007: constraints.closeGlyph="ascii-safe" → use × U+00D7 not ✕ U+2715
   const configs: Record<string, { accent: string; iconBg: string; label: string }> = {
@@ -558,10 +584,10 @@ function buildToastOps(id: string, name: string, placement: KitPlacement, varian
         ],
       },
     ],
-  }, "document");
+  }, parent);
 }
 
-function buildAlertOps(id: string, name: string, placement: KitPlacement, variant = "info"): string {
+function buildAlertOps(id: string, name: string, placement: KitPlacement, variant = "info", parent = "document"): string {
   // ADR-007: visualClass="inline-contextual" — tinted background per intent
   // ADR-007: constraints.closeGlyph="ascii-safe" → use × U+00D7 not ✕ U+2715
   const configs: Record<string, { bg: string; border: string; iconBg: string; label: string }> = {
@@ -608,10 +634,10 @@ function buildAlertOps(id: string, name: string, placement: KitPlacement, varian
         textColor: "$--foreground-muted",
       },
     ],
-  }, "document");
+  }, parent);
 }
 
-function buildGenericOps(id: string, name: string, contract: ComponentContract, placement: KitPlacement): string {
+function buildGenericOps(id: string, name: string, contract: ComponentContract, placement: KitPlacement, parent = "document"): string {
   const rootTokens = contract.tokens["root"]?.["default"] ?? {};
   const rootFill = tokenString(rootTokens["fill"]) ?? tokenString(rootTokens["background"]) ?? tokenString(rootTokens["backgroundColor"]);
   const bgColor = rootFill ? tokenToRef(rootFill) : undefined;
@@ -627,7 +653,7 @@ function buildGenericOps(id: string, name: string, contract: ComponentContract, 
       textContent: name, fontSize: 14, fontWeight: "500",
       textColor: "$--foreground",
     }],
-  }, "document");
+  }, parent);
 }
 
 /** Pencil variable value — flat or themed (light/dark array). */
@@ -671,44 +697,87 @@ function tokenString(v: unknown): string | undefined {
  * Fills and strokes use Pencil variable references ($button-bg-primary, $--border, etc.).
  * Run nib_brand_push before executing so variables are loaded in Pencil.
  */
+/**
+ * Build ops for one component section.
+ *
+ * Structure:
+ *   kitFrameId (parent passed in — the "Component Kit" wrapper frame)
+ *   └── ${id}_section  (light-gray card, layout=vertical)
+ *       ├── ${id}_title  (section label)
+ *       └── ${id}_row    (layout=horizontal, gap=VARIANT_GAP)
+ *           ├── variant1 frame
+ *           ├── variant2 frame
+ *           └── ...
+ */
 function buildComponentOps(
   name: string,
   contract: ComponentContract,
-  placement: KitPlacement,
+  _placement: KitPlacement,
   _pencilVars: Record<string, string>,
+  kitFrameId = "document",
 ): string {
   const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "_");
   const variants = getPrimaryVariants(contract);
   const widgetType = contract.widgetType;
   const frameSize = FRAME_SIZES[widgetType] ?? FRAME_SIZES["generic"]!;
-
-  // Use variantMatrix values when available; otherwise render a single "default" frame
   const effectiveVariants = variants.length > 0 ? variants : ["default"];
 
-  const opsParts: string[] = [];
+  const sectionId = `${id}_section`;
+  const rowId = `${id}_row`;
+
+  // Section card — child of the kit wrapper frame
+  const sectionOps = specToOps({
+    id: sectionId,
+    type: "frame",
+    name,
+    layout: "vertical",
+    gap: 12,
+    padding: 16,
+    cornerRadius: 12,
+    backgroundColor: "#f5f6f7",
+  }, kitFrameId);
+
+  // Section label — child of section card
+  const titleOps = specToOps({
+    id: `${id}_title`,
+    type: "text",
+    name: "section-title",
+    textContent: name,
+    fontSize: 11,
+    fontWeight: "600",
+    textColor: "#566267",
+  }, sectionId);
+
+  // Variants row — horizontal flex child of section card
+  const rowOps = specToOps({
+    id: rowId,
+    type: "frame",
+    name: "variants",
+    layout: "horizontal",
+    gap: VARIANT_GAP,
+  }, sectionId);
+
+  // Dummy placement (x/y ignored inside flex — width/height still needed for variant frames)
+  const variantPlacement: KitPlacement = { x: 0, y: 0, width: frameSize.width, height: frameSize.height };
+
+  const opsParts: string[] = [sectionOps, titleOps, rowOps];
   for (let i = 0; i < effectiveVariants.length; i++) {
     const variant = effectiveVariants[i]!;
-    // Each subsequent variant is offset horizontally from the previous
-    const variantPlacement: KitPlacement = {
-      ...placement,
-      x: placement.x + i * (frameSize.width + VARIANT_GAP),
-    };
-    // Unique binding id per variant to avoid Pencil node name collisions
     const variantId = i === 0 ? id : `${id}_${variant.replace(/[^a-z0-9]+/g, "_")}`;
     switch (widgetType) {
-      case "button":    opsParts.push(buildButtonOps(variantId, name, variantPlacement, variant)); break;
-      case "textinput": opsParts.push(buildTextInputOps(variantId, name, variantPlacement, variant)); break;
-      case "checkbox":  opsParts.push(buildCheckboxOps(variantId, name, variantPlacement, variant)); break;
-      case "radio":     opsParts.push(buildRadioOps(variantId, name, variantPlacement, variant)); break;
-      case "switch":    opsParts.push(buildSwitchOps(variantId, name, variantPlacement, variant)); break;
-      case "tabs":      opsParts.push(buildTabsOps(variantId, name, variantPlacement)); break;
-      case "dialog":    opsParts.push(buildDialogOps(variantId, name, variantPlacement)); break;
-      case "tooltip":   opsParts.push(buildTooltipOps(variantId, name, variantPlacement, variant)); break;
-      case "combobox":  opsParts.push(buildComboboxOps(variantId, name, variantPlacement, variant)); break;
-      case "badge":     opsParts.push(buildBadgeOps(variantId, name, variantPlacement, variant)); break;
-      case "toast":     opsParts.push(buildToastOps(variantId, name, variantPlacement, variant)); break;
-      case "alert":     opsParts.push(buildAlertOps(variantId, name, variantPlacement, variant)); break;
-      default:          opsParts.push(buildGenericOps(variantId, name, contract, variantPlacement)); break;
+      case "button":    opsParts.push(buildButtonOps(variantId, name, variantPlacement, variant, rowId)); break;
+      case "textinput": opsParts.push(buildTextInputOps(variantId, name, variantPlacement, variant, rowId)); break;
+      case "checkbox":  opsParts.push(buildCheckboxOps(variantId, name, variantPlacement, variant, rowId)); break;
+      case "radio":     opsParts.push(buildRadioOps(variantId, name, variantPlacement, variant, rowId)); break;
+      case "switch":    opsParts.push(buildSwitchOps(variantId, name, variantPlacement, variant, rowId)); break;
+      case "tabs":      opsParts.push(buildTabsOps(variantId, name, variantPlacement, rowId)); break;
+      case "dialog":    opsParts.push(buildDialogOps(variantId, name, variantPlacement, rowId)); break;
+      case "tooltip":   opsParts.push(buildTooltipOps(variantId, name, variantPlacement, variant, rowId)); break;
+      case "combobox":  opsParts.push(buildComboboxOps(variantId, name, variantPlacement, variant, rowId)); break;
+      case "badge":     opsParts.push(buildBadgeOps(variantId, name, variantPlacement, variant, rowId)); break;
+      case "toast":     opsParts.push(buildToastOps(variantId, name, variantPlacement, variant, rowId)); break;
+      case "alert":     opsParts.push(buildAlertOps(variantId, name, variantPlacement, variant, rowId)); break;
+      default:          opsParts.push(buildGenericOps(variantId, name, contract, variantPlacement, rowId)); break;
     }
   }
   return opsParts.join("\n");
@@ -963,15 +1032,13 @@ function buildFoundationsOps(
     `spacing_section=I(document, {type: "frame", name: "Spacing / Scale", x: ${CANVAS_X}, y: ${y}, width: 700, layout: "vertical", gap: 8, padding: ${SECTION_PADDING}, cornerRadius: [8,8,8,8], fill: "${bgColorHex(pencilVars)}"})`,
   );
 
+  // Spacing bar fill — always use the primary interactive color, not the spacing token
+  // (spacing tokens resolve to numeric pixel values, not hex colors)
+  const spacingBarFill = groups.interactives[0] ? groups.interactives[0][1] : "#3b82f6";
+
   for (const step of spacingSteps) {
     const stepId = `spacing_${step}`;
-    // Find matching spacing variable if it exists
-    const spacingVarKey = Object.keys(pencilVars).find(k =>
-      new RegExp(`spacing[.-]?0?${step}$|space[.-]?0?${step}$`).test(k.replace(/^\$--/, ""))
-    );
-    const barFill = spacingVarKey
-      ? (pencilVars[spacingVarKey] ?? "#3b82f6")
-      : (groups.interactives[0] ? groups.interactives[0][1] : "#3b82f6");
+    const barFill = spacingBarFill;
 
     lines.push(
       `${stepId}_row=I(spacing_section, {type: "frame", name: "${step}px", layout: "horizontal", gap: 12, width: "fill_container"})`,
@@ -1035,14 +1102,14 @@ function buildKitComponent(
   name: string,
   contract: ComponentContract,
   pencilVars: Record<string, string>,
-  index: number,
+  startY: number,
 ): KitComponent {
   const widgetType = contract.widgetType;
   const frameSize = FRAME_SIZES[widgetType] ?? FRAME_SIZES["generic"]!;
 
   const placement: KitPlacement = {
     x: 80,
-    y: 80 + index * (frameSize.height + ROW_SPACING),
+    y: startY,
     width: frameSize.width,
     height: frameSize.height,
   };
@@ -1163,11 +1230,18 @@ export async function buildKitRecipe(
     }),
   );
 
+  // Build components with cumulative y-tracking so rows don't overlap.
+  // Each row advances by the actual rendered height (ACTUAL_ROW_HEIGHTS) + ROW_SPACING.
+  let currentY = 80;
   const components: KitComponent[] = contractEntries
     .filter((e): e is { name: string; contract: ComponentContract } => e.contract !== null)
-    .map(({ name, contract }, index) =>
-      buildKitComponent(name, contract, pencilVars, index),
-    );
+    .map(({ name, contract }) => {
+      const widgetType = contract.widgetType ?? "generic";
+      const comp = buildKitComponent(name, contract, pencilVars, currentY);
+      const actualHeight = ACTUAL_ROW_HEIGHTS[widgetType] ?? ACTUAL_ROW_HEIGHTS["generic"]!;
+      currentY += actualHeight + ROW_SPACING;
+      return comp;
+    });
 
   if (components.length === 0) {
     const brandName = config.brand.name;
@@ -1179,10 +1253,10 @@ export async function buildKitRecipe(
     );
   }
 
-  // Foundation pages start below all components
-  const lastComponent = components[components.length - 1]!;
-  const lastFrameSize = FRAME_SIZES[lastComponent.widgetType] ?? FRAME_SIZES["generic"]!;
-  const foundationsStartY = lastComponent.placement.y + lastFrameSize.height + 120;
+  // Foundation pages start below all components.
+  // currentY is already past the last component row (y + actualHeight + ROW_SPACING),
+  // so add an extra gap for visual separation.
+  const foundationsStartY = currentY + 80;
 
   const { ops: foundationsOps, foundations } = buildFoundationsOps(
     config.brand.name,
