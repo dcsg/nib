@@ -244,3 +244,24 @@ The underline active-tab pattern requires a per-side bottom border (see Rule 4).
 | `src/mcp/tools/kit-bootstrap.ts` | Pass `visualClass` when calling `nib_component_init` for each of the 12 standard components |
 | `src/brand/build.ts` | Add `requiredTokens` validation pass — warn on `#000000` fallback |
 | `src/mcp/tools/brand.ts` | Surface token resolution warnings in `nib_brand_build` response |
+
+---
+
+## Amendment (2026-03-02) — Corrections from shadcnui.pen study
+
+Rules 4 and 5 in the "Pencil Implementation Notes" section were written before
+the official shadcn kit file was studied empirically. Both rules were incorrect.
+
+**Rule 4 correction — Per-side stroke IS supported:**
+`stroke:{align:"inside", fill:"$--border", thickness:{bottom:1}}` is valid Pencil syntax.
+This enables underline-only borders (TextInput focus state, table row separators, etc.).
+The workarounds documented in Rule 4 remain valid alternatives but are no longer the only option.
+
+**Rule 5 correction — `textAlign` IS supported:**
+`textAlign:"center"` and `textAlignVertical:"middle"` work on Pencil text nodes.
+The shadcnui.pen official kit uses both extensively.
+The symmetric-padding technique (from Rule 5) remains valid for buttons (simpler, no dependency
+on text node width), but `textAlign:"center"` is now an available alternative for display text.
+
+See ADR-008 for the complete Pencil layout feature reference and INV-009 for the non-negotiable
+builder rules derived from the shadcnui.pen study.

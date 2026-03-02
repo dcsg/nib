@@ -249,6 +249,122 @@ describe("specToOps", () => {
   });
 });
 
+describe("toPencilOps — new node types and properties", () => {
+  it("type:ellipse emits type:\"ellipse\" and fill from backgroundColor", () => {
+    const ops = toPencilOps(
+      { id: "dot", type: "ellipse", name: "dot", width: 8, height: 8, backgroundColor: "$--primary" },
+      "document",
+    );
+    expect(ops[0]).toContain('type:"ellipse"');
+    expect(ops[0]).toContain('fill:"$--primary"');
+  });
+
+  it("type:ellipse does NOT emit layout, gap, or padding", () => {
+    const ops = toPencilOps(
+      { id: "dot", type: "ellipse", name: "dot", backgroundColor: "#ff0000" },
+      "document",
+    );
+    expect(ops[0]).not.toContain("layout:");
+    expect(ops[0]).not.toContain("gap:");
+    expect(ops[0]).not.toContain("padding:");
+  });
+
+  it("type:icon_font emits iconFontFamily, iconFontName, and fill from textColor", () => {
+    const ops = toPencilOps(
+      { id: "icon", type: "icon_font", name: "check-icon",
+        iconFontFamily: "lucide", iconFontName: "check",
+        fontSize: 12, textColor: "#ffffff" },
+      "document",
+    );
+    expect(ops[0]).toContain('type:"icon_font"');
+    expect(ops[0]).toContain('iconFontFamily:"lucide"');
+    expect(ops[0]).toContain('iconFontName:"check"');
+    expect(ops[0]).toContain('fill:"#ffffff"');
+    expect(ops[0]).toContain("fontSize:12");
+  });
+
+  it("type:icon_font does NOT emit layout or gap", () => {
+    const ops = toPencilOps(
+      { id: "icon", type: "icon_font", name: "x", iconFontFamily: "lucide", iconFontName: "x" },
+      "document",
+    );
+    expect(ops[0]).not.toContain("layout:");
+    expect(ops[0]).not.toContain("gap:");
+  });
+
+  it("alignItems:center emits on frame, not on text", () => {
+    const frameOps = toPencilOps(
+      { id: "f", type: "frame", name: "Frame", alignItems: "center" },
+      "document",
+    );
+    expect(frameOps[0]).toContain('alignItems:"center"');
+
+    const textOps = toPencilOps(
+      // alignItems is a frame-only prop — TypeScript prevents it on text, test via cast
+      { id: "t", type: "text", name: "Text" } as Parameters<typeof toPencilOps>[0],
+      "document",
+    );
+    expect(textOps[0]).not.toContain("alignItems:");
+  });
+
+  it("justifyContent:end emits on frame", () => {
+    const ops = toPencilOps(
+      { id: "f", type: "frame", name: "Frame", justifyContent: "end" },
+      "document",
+    );
+    expect(ops[0]).toContain('justifyContent:"end"');
+  });
+
+  it("padding:[4,8] emits as array (not flattened)", () => {
+    const ops = toPencilOps(
+      { id: "f", type: "frame", name: "Frame", padding: [4, 8] },
+      "document",
+    );
+    expect(ops[0]).toContain("padding:[4,8]");
+  });
+
+  it("borderWidth:{bottom:1} emits as thickness:{bottom:1} inside stroke", () => {
+    const ops = toPencilOps(
+      { id: "f", type: "frame", name: "Frame", borderColor: "$--border", borderWidth: { bottom: 1 } },
+      "document",
+    );
+    expect(ops[0]).toContain("stroke:");
+    expect(ops[0]).toContain("thickness:{bottom:1}");
+  });
+
+  it("textAlign:center emits on text nodes", () => {
+    const ops = toPencilOps(
+      { id: "t", type: "text", name: "Text", textContent: "Hi", textAlign: "center" },
+      "document",
+    );
+    expect(ops[0]).toContain('textAlign:"center"');
+  });
+
+  it("textAlignVertical:middle emits on text nodes", () => {
+    const ops = toPencilOps(
+      { id: "t", type: "text", name: "Text", textContent: "Hi", textAlignVertical: "middle" },
+      "document",
+    );
+    expect(ops[0]).toContain('textAlignVertical:"middle"');
+  });
+
+  it("clip:true emits on frame nodes", () => {
+    const ops = toPencilOps(
+      { id: "f", type: "frame", name: "Frame", clip: true },
+      "document",
+    );
+    expect(ops[0]).toContain("clip:true");
+  });
+
+  it("lineHeight emits on text nodes", () => {
+    const ops = toPencilOps(
+      { id: "t", type: "text", name: "Text", lineHeight: 1.5 },
+      "document",
+    );
+    expect(ops[0]).toContain("lineHeight:1.5");
+  });
+});
+
 describe("toPencilOps — op string format", () => {
   it("produces binding=I(parent, props) format", () => {
     const ops = toPencilOps(

@@ -10,7 +10,7 @@ import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import type { NibBrandConfig, ComponentContract } from "../types/brand.js";
-import { specToOps } from "./pencil-ops.js";
+import { specToOps, type NibNodeSpec } from "./pencil-ops.js";
 
 /** Frame dimensions per widget type (px) */
 const FRAME_SIZES: Record<string, { width: number; height: number }> = {
@@ -207,6 +207,7 @@ function buildButtonOps(id: string, name: string, placement: KitPlacement, varia
     id: `${id}_root`, type: "frame", name: `${name} / ${label}`,
     x: placement.x, y: placement.y, height: placement.height,
     layout: "horizontal", gap: 8, padding: 12,
+    alignItems: "center", justifyContent: "center",
     cornerRadius: [6, 6, 6, 6],
     backgroundColor: cfg.bg,
     borderColor: cfg.border,
@@ -261,10 +262,16 @@ function buildCheckboxOps(id: string, name: string, placement: KitPlacement, var
   };
   const cfg = configs[variant] ?? configs["unchecked"]!;
   const label = variant.charAt(0).toUpperCase() + variant.slice(1);
+  const isChecked = variant === "checked";
+  const boxChildren: NibNodeSpec[] = isChecked ? [{
+    id: `${id}_check`, type: "icon_font", name: "check-icon",
+    iconFontFamily: "lucide", iconFontName: "check",
+    fontSize: 12, textColor: "#ffffff",
+  }] : [];
   return specToOps({
     id: `${id}_root`, type: "frame", name: `${name} / ${label}`,
     x: placement.x, y: placement.y, width: placement.width, height: placement.height,
-    layout: "horizontal", gap: 8, padding: 0,
+    layout: "horizontal", gap: 8, padding: 0, alignItems: "center",
     children: [
       {
         id: `${id}_box`, type: "frame", name: "checkbox",
@@ -273,6 +280,8 @@ function buildCheckboxOps(id: string, name: string, placement: KitPlacement, var
         backgroundColor: cfg.bg,
         borderColor: cfg.border,
         borderWidth: 1.5,
+        ...(isChecked ? { layout: "horizontal", alignItems: "center", justifyContent: "center" } : {}),
+        children: boxChildren,
       },
       {
         id: `${id}_lbl`, type: "text", name: "label",
@@ -284,18 +293,24 @@ function buildCheckboxOps(id: string, name: string, placement: KitPlacement, var
 }
 
 function buildRadioOps(id: string, name: string, placement: KitPlacement, variant = "unselected", parent = "document"): string {
-  const configs: Record<string, { bg: string; border: string; borderWidth: number; textColor: string }> = {
-    unselected: { bg: "$radio-bg", border: "$radio-border", borderWidth: 1.5, textColor: "$--foreground" },
-    // Selected: white fill + thick primary inner stroke (ADR-007 — inner dot via thick stroke, not nested frame)
-    selected:   { bg: "#ffffff", border: "$--primary", borderWidth: 5, textColor: "$--foreground" },
-    disabled:   { bg: "#f1f5f9", border: "#e2e8f0", borderWidth: 1.5, textColor: "#94a3b8" },
+  const configs: Record<string, { bg: string; border: string; textColor: string }> = {
+    unselected: { bg: "$radio-bg", border: "$radio-border", textColor: "$--foreground" },
+    selected:   { bg: "#ffffff", border: "$--primary", textColor: "$--foreground" },
+    disabled:   { bg: "#f1f5f9", border: "#e2e8f0", textColor: "#94a3b8" },
   };
   const cfg = configs[variant] ?? configs["unselected"]!;
   const label = variant.charAt(0).toUpperCase() + variant.slice(1);
+  const isSelected = variant === "selected";
+  // INV-009: Selected radio uses inner ellipse dot — never the thick-border workaround
+  const circleChildren: NibNodeSpec[] = isSelected ? [{
+    id: `${id}_dot`, type: "ellipse", name: "dot",
+    width: 8, height: 8,
+    backgroundColor: "$--primary",
+  }] : [];
   return specToOps({
     id: `${id}_root`, type: "frame", name: `${name} / ${label}`,
     x: placement.x, y: placement.y, width: placement.width, height: placement.height,
-    layout: "horizontal", gap: 8, padding: 0,
+    layout: "horizontal", gap: 8, padding: 0, alignItems: "center",
     children: [
       {
         id: `${id}_circle`, type: "frame", name: "radio",
@@ -303,7 +318,9 @@ function buildRadioOps(id: string, name: string, placement: KitPlacement, varian
         cornerRadius: [9, 9, 9, 9],
         backgroundColor: cfg.bg,
         borderColor: cfg.border,
-        borderWidth: cfg.borderWidth,
+        borderWidth: 2,
+        ...(isSelected ? { layout: "horizontal", alignItems: "center", justifyContent: "center" } : {}),
+        children: circleChildren,
       },
       {
         id: `${id}_lbl`, type: "text", name: "label",
@@ -322,10 +339,12 @@ function buildSwitchOps(id: string, name: string, placement: KitPlacement, varia
   };
   const cfg = configs[variant] ?? configs["off"]!;
   const label = variant.charAt(0).toUpperCase() + variant.slice(1);
+  // INV-009: Switch thumb is type:"ellipse" — never type:"frame". ON="end", OFF="start"
+  const thumbJustify: "start" | "end" = variant === "on" ? "end" : "start";
   return specToOps({
     id: `${id}_root`, type: "frame", name: `${name} / ${label}`,
     x: placement.x, y: placement.y, width: placement.width, height: placement.height,
-    layout: "horizontal", gap: 8, padding: 0,
+    layout: "horizontal", gap: 8, padding: 0, alignItems: "center",
     children: [
       {
         id: `${id}_track`, type: "frame", name: "track",
@@ -333,10 +352,10 @@ function buildSwitchOps(id: string, name: string, placement: KitPlacement, varia
         cornerRadius: [12, 12, 12, 12],
         backgroundColor: cfg.trackBg,
         layout: "horizontal", padding: 2,
+        alignItems: "center", justifyContent: thumbJustify,
         children: [{
-          id: `${id}_thumb`, type: "frame", name: "thumb",
+          id: `${id}_thumb`, type: "ellipse", name: "thumb",
           width: 20, height: 20,
-          cornerRadius: [10, 10, 10, 10],
           backgroundColor: cfg.thumbBg,
         }],
       },
@@ -351,7 +370,7 @@ function buildSwitchOps(id: string, name: string, placement: KitPlacement, varia
 
 function buildTabsOps(id: string, name: string, placement: KitPlacement, parent = "document"): string {
   // Segmented-control pattern: gray pill + white active card.
-  // Underline indicator is impossible in Pencil (no per-side border).
+  // Per ADR-007 Rule 7 — segmented control is the canonical Pencil tabs pattern.
   return specToOps({
     id: `${id}_root`, type: "frame", name: `${name} / Default`,
     x: placement.x, y: placement.y, width: placement.width, height: placement.height,
@@ -418,7 +437,7 @@ function buildDialogOps(id: string, name: string, placement: KitPlacement, paren
       {
         id: `${id}_footer`, type: "frame", name: "footer",
         width: "fill_container",
-        layout: "horizontal", gap: 8, padding: 0,
+        layout: "horizontal", gap: 8, padding: 0, alignItems: "center",
         children: [
           {
             id: `${id}_cancel`, type: "frame", name: "cancel",
@@ -491,7 +510,7 @@ function buildComboboxOps(id: string, name: string, placement: KitPlacement, var
       {
         id: `${id}_ctrl`, type: "frame", name: "control",
         width: placement.width, height: placement.height,
-        layout: "horizontal", gap: 8, padding: 10,
+        layout: "horizontal", gap: 8, padding: 10, alignItems: "center",
         cornerRadius: [6, 6, 6, 6],
         backgroundColor: cfg.bg,
         borderColor: cfg.border,
@@ -502,8 +521,10 @@ function buildComboboxOps(id: string, name: string, placement: KitPlacement, var
             textColor: cfg.valueColor,
           },
           {
-            id: `${id}_chevron`, type: "frame", name: "chevron",
-            width: 16, height: 16,
+            // INV-009: Icon glyphs use type:"icon_font" — never empty frames
+            id: `${id}_chevron`, type: "icon_font", name: "chevron",
+            iconFontFamily: "lucide", iconFontName: "chevrons-up-down",
+            fontSize: 16, textColor: "$--foreground-muted",
           },
         ],
       },
@@ -520,10 +541,12 @@ function buildBadgeOps(id: string, name: string, placement: KitPlacement, varian
   };
   const cfg = configs[variant] ?? configs["neutral"]!;
   const label = variant.charAt(0).toUpperCase() + variant.slice(1);
+  // INV-009: padding arrays give proper pill proportions — [vertical, horizontal]
   return specToOps({
     id: `${id}_root`, type: "frame", name: `${name} / ${label}`,
     x: placement.x, y: placement.y, width: placement.width, height: placement.height,
-    layout: "horizontal", gap: 4, padding: 8,
+    layout: "horizontal", gap: 4, padding: [4, 8],
+    alignItems: "center", justifyContent: "center",
     cornerRadius: [14, 14, 14, 14],
     backgroundColor: cfg.bg,
     children: [{
@@ -563,7 +586,7 @@ function buildToastOps(id: string, name: string, placement: KitPlacement, varian
       {
         id: `${id}_content`, type: "frame", name: "content",
         width: "fill_container",
-        layout: "horizontal", gap: 12, padding: 16,
+        layout: "horizontal", gap: 12, padding: 16, alignItems: "center",
         children: [
           {
             id: `${id}_icon`, type: "frame", name: "icon",
@@ -601,7 +624,7 @@ function buildAlertOps(id: string, name: string, placement: KitPlacement, varian
   return specToOps({
     id: `${id}_root`, type: "frame", name: `${name} / ${label}`,
     x: placement.x, y: placement.y, width: placement.width, height: placement.height,
-    layout: "horizontal", gap: 12, padding: 16,
+    layout: "horizontal", gap: 12, padding: 16, alignItems: "center",
     cornerRadius: [8, 8, 8, 8],
     backgroundColor: cfg.bg,
     borderColor: cfg.border,
