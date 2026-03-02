@@ -196,7 +196,7 @@ export function registerStatusTool(server: McpServer): void {
         }
 
         return {
-          content: [{ type: "text", text: JSON.stringify(status, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify(status) }],
         };
       } catch (err) {
         return errorResult(

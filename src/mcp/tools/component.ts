@@ -79,18 +79,14 @@ export function registerComponentTools(server: McpServer): void {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
-                {
-                  name,
-                  widgetType: result.widgetType,
-                  contractPath: result.contractPath,
-                  docPath: result.docPath,
-                  states: Object.keys(contract.states),
-                  keyboard: contract.a11y.keyboard,
-                },
-                null,
-                2,
-              ),
+              text: JSON.stringify({
+                name,
+                widgetType: result.widgetType,
+                contractPath: result.contractPath,
+                docPath: result.docPath,
+                states: Object.keys(contract.states),
+                keyboard: contract.a11y.keyboard,
+              }),
             },
           ],
         };
@@ -146,7 +142,7 @@ export function registerComponentTools(server: McpServer): void {
           content: [
             {
               type: "text",
-              text: JSON.stringify({ count: entries.length, components: entries }, null, 2),
+              text: JSON.stringify({ count: entries.length, components: entries }),
             },
           ],
         };

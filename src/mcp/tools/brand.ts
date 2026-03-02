@@ -237,7 +237,7 @@ export function registerBrandTools(server: McpServer): void {
                 confidence,
                 missing,
                 nextStep: nextStepParts.join("\n"),
-              }, null, 2),
+              }),
             }],
           };
         }
@@ -288,7 +288,7 @@ export function registerBrandTools(server: McpServer): void {
                 (contextFiles.length > 0
                   ? `AI agent context injected into: ${contextFiles.join(", ")} — future sessions will automatically read brand.md before writing UI.`
                   : "No AI agent config files found — consider adding CLAUDE.md, .cursorrules, or .github/copilot-instructions.md so agents use brand tokens automatically."),
-            }, null, 2),
+            }),
           }],
         };
       } catch (err) {
@@ -375,7 +375,7 @@ export function registerBrandTools(server: McpServer): void {
           ? "All pairs pass. Call nib_brand_push to create or update the Pencil design file with these tokens."
           : `${report.failed} pair(s) fail WCAG ${level ?? "AA"}. Fix the failing tokens (adjust lightness/darkness), then re-run nib_brand_audit before pushing.`;
         return {
-          content: [{ type: "text", text: JSON.stringify({ ...report, nextStep }, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify({ ...report, nextStep }) }],
         };
       } catch (err) {
         return errorResult(
@@ -435,7 +435,7 @@ export function registerBrandTools(server: McpServer): void {
         });
 
         return {
-          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify(result) }],
         };
       } catch (err) {
         return errorResult(
@@ -521,7 +521,7 @@ export function registerBrandTools(server: McpServer): void {
         return {
           content: [
             { type: "text", text: lines.join("\n") },
-            { type: "text", text: JSON.stringify({ penFile: result.penFile, variables }, null, 2) },
+            { type: "text", text: JSON.stringify({ penFile: result.penFile, variables }) },
           ],
         };
       } catch (err) {
@@ -572,7 +572,7 @@ export function registerBrandTools(server: McpServer): void {
         const result = await brandImport({ file, output, config, overwrite });
 
         return {
-          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify(result) }],
         };
       } catch (err) {
         return errorResult(
