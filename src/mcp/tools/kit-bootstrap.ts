@@ -180,21 +180,46 @@ export function registerKitBootstrapTool(server: McpServer): void {
           }
         }
 
+        // Save foundations ops to disk — they are ~40 KB on their own and would
+        // exceed MCP result size limits if inlined. The agent reads the file and
+        // passes its contents verbatim to batch_design after all components are drawn.
+        const foundationsOpsPath = join(nibDir, "kit-foundations.ops");
+        await writeFile(foundationsOpsPath, recipe.foundations.batchDesignOps);
+
+        // Slim the recipe before serializing — strip fields not needed for batch_design:
+        //   pencilVariables: already loaded in Pencil via nib_brand_push
+        //   tokenBindings/anatomy/states: internal contract details, on disk in .nib/components/
+        //   foundations.batchDesignOps: saved to disk (see foundationsOpsPath)
+        const slimRecipe = {
+          brandName: recipe.brandName,
+          components: recipe.components.map(({ name, widgetType, placement, batchDesignOps, verification }) => ({
+            name,
+            widgetType,
+            placement,
+            batchDesignOps,
+            verification,
+          })),
+          foundations: {
+            colorCount: recipe.foundations.colorCount,
+            typographySteps: recipe.foundations.typographySteps,
+            startsAtY: recipe.foundations.startsAtY,
+            batchDesignOpsFile: foundationsOpsPath,
+            note: `Read ${foundationsOpsPath} and pass its contents verbatim to batch_design after all components are drawn.`,
+          },
+          instruction: recipe.instruction,
+        };
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(
-                {
-                  scaffolded,
-                  skipped,
-                  totalComponents: toScaffold.length,
-                  visualClasses,
-                  recipe,
-                },
-                null,
-                2,
-              ),
+              text: JSON.stringify({
+                scaffolded,
+                skipped,
+                totalComponents: toScaffold.length,
+                visualClasses,
+                recipe: slimRecipe,
+              }),
             },
           ],
         };

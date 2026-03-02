@@ -43,11 +43,45 @@ export function registerKitTool(server: McpServer): void {
         const { buildKitRecipe } = await import("../../brand/kit.js");
         const recipe = await buildKitRecipe({ config, components });
 
+        const { join, resolve, dirname } = await import("node:path");
+        const { writeFile } = await import("node:fs/promises");
+        const { loadBrandConfig } = await import("../../brand/index.js");
+        const brandConfig = await loadBrandConfig(config);
+        const resolvedConfigFile = resolve(config ?? join(".nib", "brand.config.json"));
+        const nibDir = dirname(resolvedConfigFile);
+
+        // Save foundations ops to disk — they are ~40 KB and would exceed MCP result
+        // size limits if inlined. The agent reads the file and passes contents to batch_design.
+        const foundationsOpsPath = join(nibDir, "kit-foundations.ops");
+        await writeFile(foundationsOpsPath, recipe.foundations.batchDesignOps);
+
+        // Slim the recipe — strip pencilVariables and per-component tokenBindings/anatomy/states
+        // which are not needed to execute batch_design, and replace foundations.batchDesignOps
+        // with a file reference to keep the response under MCP size limits.
+        const slimRecipe = {
+          brandName: recipe.brandName,
+          components: recipe.components.map(({ name, widgetType, placement, batchDesignOps, verification }) => ({
+            name,
+            widgetType,
+            placement,
+            batchDesignOps,
+            verification,
+          })),
+          foundations: {
+            colorCount: recipe.foundations.colorCount,
+            typographySteps: recipe.foundations.typographySteps,
+            startsAtY: recipe.foundations.startsAtY,
+            batchDesignOpsFile: foundationsOpsPath,
+            note: `Read ${foundationsOpsPath} and pass its contents verbatim to batch_design after all components are drawn.`,
+          },
+          instruction: recipe.instruction,
+        };
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(recipe, null, 2),
+              text: JSON.stringify(slimRecipe),
             },
           ],
         };
