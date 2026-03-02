@@ -186,7 +186,7 @@ Restart [Windsurf](https://codeium.com/windsurf?utm_source=nib&utm_medium=docs) 
 
 Ask your agent: *"What nib tools do you have available?"*
 
-It should list the 13 nib MCP tools. If it doesn't, check that:
+It should list the 14 nib MCP tools. If it doesn't, check that:
 
 1. `nib` is on your system `PATH` — run `nib --version` in a terminal to confirm
 2. The config file is saved in the correct location
@@ -211,6 +211,7 @@ It should list the 13 nib MCP tools. If it doesn't, check that:
 | `nib_component_init` | Create a component contract (token slots, interactive states, ARIA patterns) | UX designer |
 | `nib_component_list` | List all registered component contracts | Both |
 | `nib_kit` | Return a recipe of branded component frames for drawing into Pencil | Both |
+| `nib_kit_bootstrap` | Scaffold the standard 12-component kit (contracts + docs + Pencil recipe) | Both |
 
 ---
 

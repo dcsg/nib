@@ -47,7 +47,7 @@ Claude calls `nib_brand_push`. **If `design-system.pen` doesn't exist yet, nib c
 
 > "Scaffold the nib component kit in my Pencil file."
 
-Claude calls `nib_kit`, which returns a recipe of branded component frames (Button, TextInput, Dialog, Checkbox, etc.) with brand token variables pre-wired. Claude then draws them into your Pencil file using the recipe. You now have a reusable component library inside `design-system.pen`.
+Claude calls `nib_kit_bootstrap`, which scaffolds the 12-component kit (Button, TextInput, Dialog, Checkbox, etc.) and returns `batch_design` ops with brand token variables pre-wired. Claude then draws them into your Pencil file using those ops. You now have a reusable component library inside `design-system.pen`.
 
 **Step 4 — Design your screens.**
 
@@ -138,7 +138,7 @@ Claude calls `nib_component_init` for each — wiring token slots, interactive s
 
 > "Show me the nib component kit recipe for my design system."
 
-Claude calls `nib_kit`, returning token bindings and placement hints for each component. Use this as a reference when designing new screens.
+Claude calls `nib_kit`, returning component frame ops and placement coordinates for each component. Use this as a reference when designing new screens.
 
 **Step 4 — Audit before every handoff.**
 
