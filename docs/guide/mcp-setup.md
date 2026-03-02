@@ -38,6 +38,10 @@ Confirm the install:
 nib --version
 ```
 
+::: tip Prefer no global installs?
+Use `npx -y usenib --mcp` as the `command` instead of `nib --mcp` in any config below. npx downloads and caches the package on first run — no install step needed.
+:::
+
 ---
 
 ## Global vs project-scoped
