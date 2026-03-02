@@ -205,12 +205,14 @@ Canonical intent-to-icon mapping — all builders must use these exact `iconFont
 | Intent | `iconFontName` | Context |
 |---|---|---|
 | `info` | `"info"` | Toast, Alert, Badge |
-| `success` | `"check-circle"` | Toast, Alert |
-| `warning` | `"alert-triangle"` | Toast, Alert |
-| `error` | `"x-circle"` | Toast, Alert |
+| `success` | `"circle-check"` | Toast, Alert |
+| `warning` | `"triangle-alert"` | Toast, Alert |
+| `error` | `"circle-x"` | Toast, Alert |
 | `close/dismiss` | `"x"` | Toast close, Dialog close, Alert dismiss |
 | `add` | `"plus"` | Button icon variant |
 | `expand/select` | `"chevrons-up-down"` | Combobox, Select |
+
+> **Note:** Pencil's bundled Lucide version uses the post-v1.0 naming convention. The old names (`check-circle`, `alert-triangle`, `x-circle`) are silently invalid — Pencil will render nothing. Always use the new names above.
 
 An empty colored circle (`type:"frame"` with `cornerRadius` and a background fill) never
 communicates intent to a viewer. Every status icon must use `type:"icon_font"` with the

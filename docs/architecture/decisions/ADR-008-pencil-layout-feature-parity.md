@@ -129,9 +129,9 @@ components (Toast, Alert, Badge, Button) must reference this table.
 | Intent | `iconFontName` | Notes |
 |---|---|---|
 | info | `"info"` | — |
-| success | `"check-circle"` | — |
-| warning | `"alert-triangle"` | — |
-| error | `"x-circle"` | — |
+| success | `"circle-check"` | Lucide v1+ name (old: `check-circle` → invalid) |
+| warning | `"triangle-alert"` | Lucide v1+ name (old: `alert-triangle` → invalid) |
+| error | `"circle-x"` | Lucide v1+ name (old: `x-circle` → invalid) |
 | close/dismiss | `"x"` | Use `type:"icon_font"`, not `type:"text"` |
 | add | `"plus"` | Button with-icon variant |
 | expand/collapse | `"chevrons-up-down"` | Combobox, Select |

@@ -580,9 +580,9 @@ function buildToastOps(id: string, name: string, placement: KitPlacement, varian
   // INV-009 Rule 13: dismiss icons use type:"icon_font" — not text glyphs
   const configs: Record<string, { accent: string; iconBg: string; iconName: string; label: string }> = {
     info:    { accent: "$--primary", iconBg: "$--primary", iconName: "info",           label: "Info" },
-    success: { accent: "#16a34a",    iconBg: "#16a34a",    iconName: "check-circle",   label: "Success" },
-    warning: { accent: "#d97706",    iconBg: "#d97706",    iconName: "alert-triangle", label: "Warning" },
-    error:   { accent: "#dc2626",    iconBg: "#dc2626",    iconName: "x-circle",       label: "Error" },
+    success: { accent: "#16a34a",    iconBg: "#16a34a",    iconName: "circle-check",   label: "Success" },
+    warning: { accent: "#d97706",    iconBg: "#d97706",    iconName: "triangle-alert", label: "Warning" },
+    error:   { accent: "#dc2626",    iconBg: "#dc2626",    iconName: "circle-x",       label: "Error" },
   };
   const cfg = configs[variant] ?? configs["info"]!;
   const label = variant.charAt(0).toUpperCase() + variant.slice(1);
@@ -635,9 +635,9 @@ function buildAlertOps(id: string, name: string, placement: KitPlacement, varian
   // INV-009 Rule 13: dismiss icons use type:"icon_font" — not text glyphs
   const configs: Record<string, { bg: string; border: string; iconColor: string; iconName: string; label: string }> = {
     info:    { bg: "$alert-bg",  border: "$alert-border", iconColor: "$--primary", iconName: "info",           label: "Info" },
-    success: { bg: "#f0fdf4",   border: "#16a34a",        iconColor: "#16a34a",    iconName: "check-circle",   label: "Success" },
-    warning: { bg: "#fffbeb",   border: "#d97706",        iconColor: "#d97706",    iconName: "alert-triangle", label: "Warning" },
-    error:   { bg: "#fef2f2",   border: "#dc2626",        iconColor: "#dc2626",    iconName: "x-circle",       label: "Error" },
+    success: { bg: "#f0fdf4",   border: "#16a34a",        iconColor: "#16a34a",    iconName: "circle-check",   label: "Success" },
+    warning: { bg: "#fffbeb",   border: "#d97706",        iconColor: "#d97706",    iconName: "triangle-alert", label: "Warning" },
+    error:   { bg: "#fef2f2",   border: "#dc2626",        iconColor: "#dc2626",    iconName: "circle-x",       label: "Error" },
   };
   const cfg = configs[variant] ?? configs["info"]!;
   const label = variant.charAt(0).toUpperCase() + variant.slice(1);
