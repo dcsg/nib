@@ -320,9 +320,17 @@ export function registerBrandTools(server: McpServer): void {
     async ({ config }) => {
       try {
         const { brandBuild } = await import("../../brand/index.js");
-        await brandBuild({ config });
+        const result = await brandBuild({ config });
+        const lines = ["Brand build completed successfully."];
+        if (result.tokenWarnings.length > 0) {
+          lines.push(`\n⚠ Token Resolution Warnings (${result.tokenWarnings.length}):`);
+          for (const w of result.tokenWarnings) {
+            lines.push(`  • ${w.component}: ${w.token} — ${w.message}`);
+          }
+          lines.push("\nFix the above tokens before running nib_brand_push to avoid black fills in Pencil.");
+        }
         return {
-          content: [{ type: "text", text: "Brand build completed successfully." }],
+          content: [{ type: "text", text: lines.join("\n") }],
         };
       } catch (err) {
         return errorResult(
@@ -465,18 +473,56 @@ export function registerBrandTools(server: McpServer): void {
     },
     async ({ file, config }) => {
       try {
-        const { brandPush } = await import("../../brand/index.js");
+        const { readFile: readFileFs } = await import("node:fs/promises");
+        const { brandPush, loadBrandConfig } = await import("../../brand/index.js");
+        const { buildPencilStandardVariables } = await import("../../brand/pencil-bridge.js");
+
         const result = await brandPush({ file, config });
-        const msg = result.created
+
+        // Load the built variables so the caller (AI agent) can push them
+        // directly via pencil.set_variables using its active Pencil connection.
+        // This is needed because withMcpClient spawns a separate Pencil MCP
+        // process whose in-memory state is discarded when the file is next opened.
+        const brandConfig = await loadBrandConfig(config);
+        let variables: Record<string, unknown> = {};
+        try {
+          const raw = JSON.parse(
+            await readFileFs(brandConfig.platforms.pencil, "utf-8"),
+          ) as Record<string, { type: string; value: unknown }>;
+          variables = buildPencilStandardVariables(
+            raw as Record<string, { type: string; value: string | number | Array<{ value: string | number; theme: Record<string, string> }> }>,
+          );
+        } catch { /* variables stay empty — not fatal */ }
+
+        const lines: string[] = result.created
           ? [
-              `Created ${result.penFile} — brand tokens loaded as Pencil variables (150+ tokens: colors, typography, spacing).`,
+              `Created ${result.penFile} — ${Object.keys(variables).length} brand tokens ready to load.`,
               `The canvas is empty by design: nib only sets variables, not visual frames.`,
-              `Save the file now in Pencil (Cmd+S), then call nib_kit to get component recipes`,
-              `and use Pencil's batch_design tool to scaffold the component frames into this file.`,
-            ].join(" ")
-          : `Tokens pushed to ${result.penFile}. Save the file in Pencil (Cmd+S) to persist changes.`;
+            ]
+          : [`Tokens prepared for ${result.penFile}.`];
+
+        if (result.fontWarnings.length > 0) {
+          lines.push("");
+          lines.push("⚠ Font warnings:");
+          for (const warning of result.fontWarnings) {
+            lines.push(warning);
+          }
+        }
+
+        lines.push("");
+        lines.push(
+          `NEXT STEPS (in order):` +
+          `\n1. Open the .pen file: pencil.open_document("${result.penFile}")` +
+          `\n2. Load brand variables: pencil.set_variables(filePath: "${result.penFile}", variables: <see variables field>)` +
+          `\n3. Call nib_kit_bootstrap to scaffold the 12-component kit` +
+          `\n4. Pass the returned recipe to pencil.batch_design to draw the component frames`,
+        );
+
         return {
-          content: [{ type: "text", text: msg }],
+          content: [
+            { type: "text", text: lines.join("\n") },
+            { type: "text", text: JSON.stringify({ penFile: result.penFile, variables }, null, 2) },
+          ],
         };
       } catch (err) {
         return errorResult(

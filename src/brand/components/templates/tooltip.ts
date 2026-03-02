@@ -61,4 +61,6 @@ export const tooltipTemplate: Partial<ComponentContract> = {
       },
     },
   },
+  visualClass: "interactive-control",
+  variantMatrix: { theme: ["dark", "light"] },
 };

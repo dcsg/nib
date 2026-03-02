@@ -103,4 +103,6 @@ export const dialogTemplate: Partial<ComponentContract> = {
       },
     },
   },
+  visualClass: "structural",
+  constraints: { textCentering: "symmetric-padding", buttonWidth: "fit-content" },
 };

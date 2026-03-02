@@ -117,4 +117,6 @@ export const textinputTemplate: Partial<ComponentContract> = {
       },
     },
   },
+  visualClass: "structural",
+  variantMatrix: { state: ["default", "error", "disabled"] },
 };

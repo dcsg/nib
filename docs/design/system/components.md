@@ -17,7 +17,6 @@
 | [Badge](components/Badge.md) | badge | draft | 2 | 5 |
 | [Toast](components/Toast.md) | toast | draft | 4 | 4 |
 | [Alert](components/Alert.md) | alert | draft | 2 | 4 |
-| [Breadcrumb](components/Breadcrumb.md) | generic | draft | 3 | 0 |
 
 ---
 
@@ -139,16 +138,6 @@
 **Anatomy:** root, icon, title, description, actions, dismissButton
 **States:** default, dismissed
 **Keyboard:** `Tab` → Moves focus to actions or dismiss button within the alert, `Escape` → Dismisses the alert if it is dismissible
-**Touch target:** 44pt iOS / 48dp Android / 24px web
-
----
-
-### Breadcrumb
-> A custom component — fill in anatomy, states, and a11y contract manually
-
-**Anatomy:** root
-**States:** default, focused, disabled
-**Keyboard:** _none_
 **Touch target:** 44pt iOS / 48dp Android / 24px web
 
 

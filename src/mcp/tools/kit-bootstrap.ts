@@ -80,9 +80,11 @@ export function registerKitBootstrapTool(server: McpServer): void {
 
         const brandConfig = await loadBrandConfig(configPath);
         const resolvedConfigFile = resolve(configPath ?? join(".nib", "brand.config.json"));
-        const systemOutputDir = resolve(brandConfig.output ?? join("docs", "design", "system"));
-        const nibDir = resolve(".nib");
+        // Derive nibDir from the config file's location (not CWD) so MCP tools
+        // work correctly when the brand project is outside the server's CWD.
+        const nibDir = dirname(resolvedConfigFile);
         const componentsDir = join(nibDir, "components");
+        const systemOutputDir = brandConfig.output ?? resolve(join("docs", "design", "system"));
         const docsComponentsDir = join(systemOutputDir, "components");
         const brandMdPath = join(systemOutputDir, "brand.md");
         const today = new Date().toISOString().split("T")[0]!;
@@ -131,7 +133,7 @@ export function registerKitBootstrapTool(server: McpServer): void {
           // Register in config
           if (!brandConfig.components) brandConfig.components = {};
           brandConfig.components[name] = {
-            contractPath: `.nib/components/${name}.contract.json`,
+            contractPath: join(componentsDir, `${name}.contract.json`),
             widgetType,
             status: "draft" as ComponentStatus,
             addedAt: today,
@@ -160,6 +162,14 @@ export function registerKitBootstrapTool(server: McpServer): void {
         // Return recipe for all registered components
         const recipe = await buildKitRecipe({ config: configPath });
 
+        // Build visualClasses map from all processed contracts (scaffolded + pre-existing)
+        const visualClasses: Record<string, string> = {};
+        for (const [compName, contract] of contractMap) {
+          if (contract.visualClass) {
+            visualClasses[compName] = contract.visualClass;
+          }
+        }
+
         return {
           content: [
             {
@@ -169,6 +179,7 @@ export function registerKitBootstrapTool(server: McpServer): void {
                   scaffolded,
                   skipped,
                   totalComponents: toScaffold.length,
+                  visualClasses,
                   recipe,
                 },
                 null,

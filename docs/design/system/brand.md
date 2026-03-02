@@ -76,11 +76,11 @@ Do not invent or use components not listed here.
 | Badge | draft | A small label used to convey status, category, or metadata at a glance |
 | Toast | draft | A transient message that confirms an action or communicates status — auto-dismisses after a timeout |
 | Alert | draft | A persistent inline message that communicates status or guidance — stays visible until the condition changes or the user dismisses it |
-| Breadcrumb | draft | A custom component — fill in anatomy, states, and a11y contract manually |
 
 For full contracts, see docs/design/system/components/.
 
 <!-- nib-component-inventory:end -->
+
 
 
 

@@ -114,4 +114,6 @@ export const comboboxTemplate: Partial<ComponentContract> = {
       },
     },
   },
+  visualClass: "structural",
+  variantMatrix: { state: ["default", "selected"] },
 };

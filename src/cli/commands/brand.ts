@@ -169,24 +169,21 @@ const pushCommand = defineCommand({
 
     if (result.created) {
       console.log();
-      console.log(pc.green("✓"), pc.bold("Design file created + opened in Pencil"));
+      console.log(pc.green("✓"), pc.bold("Design file created with brand tokens"));
       console.log(pc.dim(`   Path: ${penDisplay}`));
       console.log(pc.dim("   This is your canonical design file going forward."));
       console.log();
-      console.log(pc.bold("  → Save it now:"), pc.cyan("Cmd+S"), pc.dim("in Pencil"));
-      console.log(
-        pc.dim("     Pencil has your tokens loaded — saving makes them permanent."),
-      );
-      console.log();
-      console.log(pc.dim("  → Next steps:"));
-      console.log(
-        pc.dim("     Design your screens in this file, then run:"),
-      );
-      console.log(pc.cyan(`     nib capture ${penDisplay}`));
-      console.log(pc.dim("     to build a clickable prototype."));
+      console.log(pc.bold("  → Open in Pencil:"), pc.cyan(`open "${penDisplay}"`));
+      console.log(pc.dim("  → Next: use nib_kit (MCP) to scaffold base components"));
     } else {
       console.log(pc.green("✓"), `Tokens pushed to ${pc.dim(penDisplay)}`);
-      console.log(pc.dim("  → Save in Pencil (Cmd+S) to persist changes"));
+    }
+
+    if (result.fontWarnings.length > 0) {
+      console.log();
+      for (const warning of result.fontWarnings) {
+        console.log(pc.yellow("⚠"), warning.split("\n").join("\n  "));
+      }
     }
   },
 });

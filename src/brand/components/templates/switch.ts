@@ -97,4 +97,6 @@ export const switchTemplate: Partial<ComponentContract> = {
       },
     },
   },
+  visualClass: "interactive-control",
+  variantMatrix: { state: ["off", "on", "disabled"] },
 };

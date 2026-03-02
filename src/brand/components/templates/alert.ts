@@ -81,4 +81,7 @@ export const alertTemplate: Partial<ComponentContract> = {
       },
     },
   },
+  visualClass: "inline-contextual",
+  variantMatrix: { intent: ["info", "success", "warning", "error"] },
+  constraints: { closeGlyph: "ascii-safe" },
 };

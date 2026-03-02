@@ -35,7 +35,7 @@ import { buildOpacityTokens } from "./tokens/opacity.js";
 import { buildZIndexTokens } from "./tokens/z-index.js";
 import { buildBreakpointTokens } from "./tokens/breakpoint.js";
 import { writeBrandConfig, writeBrandDocs, writeTokenFiles } from "./writer.js";
-import { buildAll } from "./build.js";
+import { buildAll, type TokenBuildWarning } from "./build.js";
 import { auditTokens } from "./wcag.js";
 import { writeFoundationDocs } from "./foundations/index.js";
 
@@ -175,14 +175,20 @@ async function updateStatus(
   await writeFile(statusPath, JSON.stringify(updated, null, 2) + "\n");
 }
 
+/** Result of a `nib brand build` operation */
+export interface BrandBuildResult {
+  /** Warnings for required tokens that resolved to the Pencil #000000 fallback */
+  tokenWarnings: TokenBuildWarning[];
+}
+
 /**
  * `nib brand build` — transform DTCG tokens into platform outputs.
  * Also generates foundation docs, component tokens, and writes .nib/.status.json.
  */
-export async function brandBuild(options: BrandBuildOptions = {}): Promise<void> {
+export async function brandBuild(options: BrandBuildOptions = {}): Promise<BrandBuildResult> {
   const config = await loadBrandConfig(options.config);
 
-  await Promise.all([
+  const [buildResult] = await Promise.all([
     buildAll(config),
     writeFoundationDocs(config),
   ]);
@@ -194,6 +200,8 @@ export async function brandBuild(options: BrandBuildOptions = {}): Promise<void>
     lastBuild: new Date().toISOString(),
     tokenVersion: NIB_VERSION,
   });
+
+  return { tokenWarnings: buildResult.tokenWarnings };
 }
 
 /**
@@ -269,6 +277,8 @@ export interface BrandPushResult {
   penFile: string;
   /** True if the .pen file was created on this push (first-time setup) */
   created: boolean;
+  /** Font families that were not found on this system — each entry is a user-facing hint string */
+  fontWarnings: string[];
 }
 
 /**
@@ -293,21 +303,36 @@ export async function brandPush(options: BrandPushOptions): Promise<BrandPushRes
   type PencilVarValue = string | number | Array<{ value: string | number; theme: Record<string, string> }>;
   const rawVariables = JSON.parse(content) as Record<string, { type: string; value: PencilVarValue }>;
 
-  // Always include Pencil standard variable mappings
+  // Bridge variables are now included by buildPencilVariables() at build time,
+  // but we run buildPencilStandardVariables() again to ensure they're present
+  // even if the user has an older variables.json from before this fix.
   const { buildPencilStandardVariables } = await import("./pencil-bridge.js");
   const variables = buildPencilStandardVariables(rawVariables);
+
+  // Check if brand fonts are installed — warn before Pencil silently falls back
+  const { checkFontInstalled, extractFontFamiliesFromVars } = await import("./font-check.js");
+  const fontFamilies = extractFontFamiliesFromVars(rawVariables);
+  const fontWarnings: string[] = [];
+  for (const family of fontFamilies) {
+    const result = checkFontInstalled(family);
+    if (!result.installed && result.hint) {
+      fontWarnings.push(result.hint);
+    }
+  }
 
   // Use the MCP client to push variables
   const { discoverPencilMcp } = await import("../mcp/discover.js");
   const { withMcpClient } = await import("../mcp/client.js");
 
+  // Use filePath directly — set_variables writes to disk without needing
+  // openDocument. Calling openDocument first causes Pencil to re-read from
+  // disk on any subsequent open, losing in-memory variable state.
   const mcpConfig = await discoverPencilMcp();
   await withMcpClient(mcpConfig, async (client) => {
-    await client.openDocument(penFile);
     await client.callTool("set_variables", { filePath: penFile, variables });
   });
 
-  return { penFile, created };
+  return { penFile, created, fontWarnings };
 }
 
 /**

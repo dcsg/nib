@@ -100,4 +100,7 @@ export const buttonTemplate: Partial<ComponentContract> = {
       },
     },
   },
+  visualClass: "interactive-control",
+  variantMatrix: { style: ["primary", "secondary", "outline", "destructive"] },
+  constraints: { textCentering: "symmetric-padding", buttonWidth: "fit-content" },
 };

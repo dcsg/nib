@@ -96,4 +96,5 @@ export const tabsTemplate: Partial<ComponentContract> = {
       },
     },
   },
+  visualClass: "structural",
 };

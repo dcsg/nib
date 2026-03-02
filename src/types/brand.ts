@@ -278,6 +278,42 @@ export interface BrandStyleOptions {
 // Component system types (Phase 3)
 // ---------------------------------------------------------------------------
 
+/** Visual behavioral category — determines frame structure in kit builder (ADR-007) */
+export type VisualClass =
+  | "inline-contextual"   // Alert: tinted bg, fill-container width, optional dismiss
+  | "ephemeral-overlay"   // Toast: white + accent-bar, fixed narrow, required dismiss
+  | "interactive-control" // Button/Checkbox/etc: token-driven, fit-content
+  | "structural";         // Tabs/Dialog/TextInput: token-driven, fill-container or fixed
+
+/** Close glyph safety constraint — ascii-safe → use × (U+00D7) not ✕ (U+2715) (ADR-007) */
+export type GlyphSafety = "ascii-safe";
+
+/** Text centering method — symmetric-padding → equal padding, no textAlign (ADR-007) */
+export type TextCenteringMethod = "symmetric-padding";
+
+/** Button width constraint — fit-content → no fixed pixel width (ADR-007) */
+export type ButtonWidthConstraint = "fit-content";
+
+/** Visual constraints enforced at scaffold time (ADR-007) */
+export interface ComponentVisualConstraints {
+  /** Glyph safety for close buttons — "ascii-safe" → × (U+00D7) not ✕ (U+2715) */
+  closeGlyph?: GlyphSafety;
+  /** Text centering method — "symmetric-padding" → equal padding, no textAlign */
+  textCentering?: TextCenteringMethod;
+  /** Button width — "fit-content" → no fixed pixel width */
+  buttonWidth?: ButtonWidthConstraint;
+  /** Tokens that must resolve to non-black values — validated at nib_brand_build time */
+  requiredTokens?: string[];
+}
+
+/** Left-border accent bar for ephemeral-overlay components (ADR-007) */
+export interface ComponentAccentBar {
+  /** Accent bar width in pixels */
+  width: number;
+  /** Fill token reference (e.g. "$toast-accent") */
+  fillToken: string;
+}
+
 /** Supported WAI-ARIA widget types */
 export type WidgetType =
   | "button"
@@ -432,6 +468,14 @@ export interface ComponentContract {
   /** Design API: what content slots this component accepts */
   slots?: ComponentSlots;
   tokens: ComponentTokenBindings;
+  /** Visual behavioral category — drives frame structure in kit builder (ADR-007) */
+  visualClass?: VisualClass;
+  /** Scaffold axis — kit builder generates one frame per value on the primary axis (ADR-007) */
+  variantMatrix?: Record<string, string[]>;
+  /** Visual rules enforced at scaffold time (ADR-007) */
+  constraints?: ComponentVisualConstraints;
+  /** Left-border accent bar structure — ephemeral-overlay only (ADR-007) */
+  accentBar?: ComponentAccentBar;
 }
 
 /** Registry entry for a single component */

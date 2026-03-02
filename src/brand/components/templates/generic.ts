@@ -34,4 +34,5 @@ export const genericTemplate: Partial<ComponentContract> = {
       default: {},
     },
   },
+  visualClass: "structural",
 };

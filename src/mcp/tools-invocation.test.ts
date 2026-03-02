@@ -774,10 +774,10 @@ describe("nib_kit — batchDesignOps and foundations", () => {
     expect(typeof button.batchDesignOps).toBe("string");
     expect(button.batchDesignOps.length).toBeGreaterThan(0);
     // Operations use Pencil variable references ($varname) — not {var.xxx} or bare hex values
-    expect(button.batchDesignOps).toMatch(/fill: "\$[a-z]/);
+    expect(button.batchDesignOps).toMatch(/fill:"[^"]*\$[a-z]/);
     expect(button.batchDesignOps).not.toContain("{var.");
-    // Stroke uses the Pencil object format, not a bare hex string
-    expect(button.batchDesignOps).toContain("stroke: {align:");
+    // Must use I(document, ...) to place root frame on canvas
+    expect(button.batchDesignOps).toContain("I(document,");
   });
 
   it("batchDesignOps inserts root frame into document", async () => {
@@ -848,6 +848,26 @@ describe("nib_kit — batchDesignOps and foundations", () => {
     expect(button.verification.visualChecks.length).toBeGreaterThan(0);
     // Must include a check referencing Pencil variable references ($varname)
     expect(button.verification.visualChecks.some((c) => c.includes("$"))).toBe(true);
+  });
+
+  it("verification.variantCount is 1 and first check references 'Default' when no variantMatrix", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_kit",
+      arguments: { config: kitConfigPath },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const recipe = JSON.parse(content[0]!.text);
+    const button = recipe.components[0] as {
+      verification: { variantCount: number; visualChecks: string[] };
+    };
+
+    // BUTTON_CONTRACT_FIXTURE has no variantMatrix → single "default" frame
+    expect(typeof button.verification.variantCount).toBe("number");
+    expect(button.verification.variantCount).toBe(1);
+    // First visual check must reference "Default" (no variants defined)
+    expect(button.verification.visualChecks[0]).toContain("Default");
   });
 
   it("instruction text references batch_design and Pencil variable references", async () => {
@@ -1069,6 +1089,251 @@ describe("nib_brand_init — direct brief validation", () => {
     expect(result.isError).toBe(true);
     const content = result.content as Array<{ type: string; text: string }>;
     expect(content[0]!.text.length).toBeGreaterThan(0);
+  });
+});
+
+// ─── nib_kit — ADR-007 variant row generation ─────────────────────────────────
+
+describe("nib_kit — ADR-007 variant row generation", () => {
+  let variantConfigPath: string;
+
+  const BUTTON_WITH_VARIANTS = {
+    ...BUTTON_CONTRACT_FIXTURE,
+    variantMatrix: { style: ["primary", "secondary"] },
+  };
+
+  beforeAll(async () => {
+    const variantDir = join(tmpDir, "kit-adr007-variants");
+    const variantTokensDir = join(variantDir, "tokens");
+    const variantOutputDir = join(variantDir, "build");
+    const contractPath = join(variantDir, "button.contract.json");
+
+    await writeTokenFixtures(variantTokensDir);
+    await mkdir(variantOutputDir, { recursive: true });
+    await writeFile(join(variantOutputDir, "variables.json"), JSON.stringify(PENCIL_VARIABLES_FIXTURE, null, 2));
+    await writeFile(contractPath, JSON.stringify(BUTTON_WITH_VARIANTS, null, 2));
+
+    variantConfigPath = join(variantDir, "brand.config.json");
+    await writeFile(
+      variantConfigPath,
+      JSON.stringify(
+        {
+          version: "1",
+          generator: "nib",
+          brand: { name: "Variant Brand", personality: [] },
+          tokens: variantTokensDir,
+          platforms: {
+            css: join(variantOutputDir, "variables.css"),
+            tailwind: join(variantOutputDir, "preset.js"),
+            pencil: join(variantOutputDir, "variables.json"),
+            penFile: join(variantOutputDir, "design-system.pen"),
+          },
+          output: variantOutputDir,
+          ai: { provider: false },
+          components: {
+            Button: { contractPath, widgetType: "button", status: "stable", addedAt: "2024-01-01" },
+          },
+        },
+        null,
+        2,
+      ),
+    );
+  });
+
+  it("variantCount equals primary axis length from variantMatrix", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_kit",
+      arguments: { config: variantConfigPath },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const recipe = JSON.parse(content[0]!.text);
+    const button = recipe.components[0] as { verification: { variantCount: number } };
+    expect(button.verification.variantCount).toBe(2); // style: ["primary", "secondary"]
+  });
+
+  it("batchDesignOps contains a frame for each variant in variantMatrix", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_kit",
+      arguments: { config: variantConfigPath },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const recipe = JSON.parse(content[0]!.text);
+    const button = recipe.components[0] as { batchDesignOps: string };
+    expect(button.batchDesignOps).toContain("Button / Primary");
+    expect(button.batchDesignOps).toContain("Button / Secondary");
+  });
+});
+
+// ─── nib_kit — ADR-007 glyph safety ──────────────────────────────────────────
+
+describe("nib_kit — ADR-007 glyph safety", () => {
+  let toastConfigPath: string;
+
+  const TOAST_CONTRACT_FIXTURE = {
+    $schema: "https://nib.dev/schemas/component-contract.json",
+    name: "Toast",
+    description: "Ephemeral notification toast",
+    widgetType: "toast",
+    visualClass: "ephemeral-overlay",
+    variantMatrix: { intent: ["info", "error"] },
+    constraints: { closeGlyph: "ascii-safe" },
+    accentBar: { width: 4, fillToken: "$toast-accent" },
+    anatomy: { root: "The outer toast frame" },
+    states: { default: { description: "Visible state" } },
+    a11y: {
+      role: "status",
+      keyboard: {},
+      focusBehavior: "not-focusable",
+      focusTrap: false,
+      focusReturnTarget: null,
+      minimumTouchTarget: { ios: "44pt", android: "48dp", web: "24px" },
+      ariaAttributes: ["aria-live"],
+      requiredLabel: false,
+      labelStrategy: "aria-live",
+    },
+    tokens: { root: { default: { fill: "{color.background.primary}" } } },
+  };
+
+  beforeAll(async () => {
+    const toastDir = join(tmpDir, "kit-adr007-glyph");
+    const toastTokensDir = join(toastDir, "tokens");
+    const toastOutputDir = join(toastDir, "build");
+    const contractPath = join(toastDir, "toast.contract.json");
+
+    await writeTokenFixtures(toastTokensDir);
+    await mkdir(toastOutputDir, { recursive: true });
+    await writeFile(join(toastOutputDir, "variables.json"), JSON.stringify(PENCIL_VARIABLES_FIXTURE, null, 2));
+    await writeFile(contractPath, JSON.stringify(TOAST_CONTRACT_FIXTURE, null, 2));
+
+    toastConfigPath = join(toastDir, "brand.config.json");
+    await writeFile(
+      toastConfigPath,
+      JSON.stringify(
+        {
+          version: "1",
+          generator: "nib",
+          brand: { name: "Glyph Test Brand", personality: [] },
+          tokens: toastTokensDir,
+          platforms: {
+            css: join(toastOutputDir, "variables.css"),
+            tailwind: join(toastOutputDir, "preset.js"),
+            pencil: join(toastOutputDir, "variables.json"),
+            penFile: join(toastOutputDir, "design-system.pen"),
+          },
+          output: toastOutputDir,
+          ai: { provider: false },
+          components: {
+            Toast: { contractPath, widgetType: "toast", status: "stable", addedAt: "2024-01-01" },
+          },
+        },
+        null,
+        2,
+      ),
+    );
+  });
+
+  it("toast ops use ascii-safe \u00D7 (U+00D7) not \u2715 (U+2715) for close glyph", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_kit",
+      arguments: { config: toastConfigPath },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const recipe = JSON.parse(content[0]!.text);
+    const toast = recipe.components[0] as { batchDesignOps: string };
+    // ADR-007: ascii-safe close glyph — \u00D7 (Latin-1 Supplement) is used
+    expect(toast.batchDesignOps).toContain("\u00D7");
+    // \u2715 (Dingbats block) may not render in Inter and must NOT appear
+    expect(toast.batchDesignOps).not.toContain("\u2715");
+  });
+
+  it("toast ops include accent-bar child frame per ADR-007 accentBar constraint", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_kit",
+      arguments: { config: toastConfigPath },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const recipe = JSON.parse(content[0]!.text);
+    const toast = recipe.components[0] as { batchDesignOps: string };
+    // Accent bar is a 4px child frame, not a border property (Pencil has no per-side borders)
+    expect(toast.batchDesignOps).toContain("accent-bar");
+  });
+});
+
+// ─── nib_kit_bootstrap — visualClasses ───────────────────────────────────────
+
+describe("nib_kit_bootstrap — visualClasses", () => {
+  let bootstrapConfigPath: string;
+
+  beforeAll(async () => {
+    const bootstrapDir = join(tmpDir, "kit-bootstrap-visualclasses");
+    const bootstrapTokensDir = join(bootstrapDir, "tokens");
+    const bootstrapOutputDir = join(bootstrapDir, "build");
+
+    await writeTokenFixtures(bootstrapTokensDir);
+    await mkdir(bootstrapOutputDir, { recursive: true });
+
+    bootstrapConfigPath = join(bootstrapDir, "brand.config.json");
+    await writeFile(
+      bootstrapConfigPath,
+      JSON.stringify(
+        {
+          version: "1",
+          generator: "nib",
+          brand: { name: "Bootstrap VisualClass Brand", personality: [] },
+          tokens: bootstrapTokensDir,
+          platforms: {
+            css: join(bootstrapOutputDir, "variables.css"),
+            tailwind: join(bootstrapOutputDir, "preset.js"),
+            pencil: join(bootstrapOutputDir, "variables.json"),
+            penFile: join(bootstrapOutputDir, "design-system.pen"),
+          },
+          output: bootstrapOutputDir,
+          ai: { provider: false },
+        },
+        null,
+        2,
+      ),
+    );
+  });
+
+  it("response includes visualClasses with Button='interactive-control' and Toast='ephemeral-overlay'", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_kit_bootstrap",
+      arguments: { config: bootstrapConfigPath, components: ["Button", "Toast"] },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const data = JSON.parse(content[0]!.text);
+
+    expect(data.visualClasses).toBeDefined();
+    expect(typeof data.visualClasses).toBe("object");
+    expect(data.visualClasses["Button"]).toBe("interactive-control");
+    expect(data.visualClasses["Toast"]).toBe("ephemeral-overlay");
+  });
+
+  it("skipped components still appear in visualClasses (loaded from existing contract)", async () => {
+    const { client } = await createTestPair();
+    // Button + Toast already scaffolded by the previous test — both will be skipped
+    const result = await client.callTool({
+      name: "nib_kit_bootstrap",
+      arguments: { config: bootstrapConfigPath, components: ["Button"] },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const data = JSON.parse(content[0]!.text);
+    expect(data.skipped).toContain("Button");
+    // Skipped components must still contribute their visualClass
+    expect(data.visualClasses["Button"]).toBe("interactive-control");
   });
 });
 

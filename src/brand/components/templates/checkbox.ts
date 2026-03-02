@@ -78,4 +78,6 @@ export const checkboxTemplate: Partial<ComponentContract> = {
       },
     },
   },
+  visualClass: "interactive-control",
+  variantMatrix: { state: ["unchecked", "checked", "disabled"] },
 };

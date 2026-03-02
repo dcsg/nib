@@ -171,6 +171,18 @@ export async function scaffoldContract(
   if (template.slots) {
     contract.slots = template.slots;
   }
+  if (template.visualClass) {
+    contract.visualClass = template.visualClass;
+  }
+  if (template.variantMatrix) {
+    contract.variantMatrix = template.variantMatrix;
+  }
+  if (template.constraints) {
+    contract.constraints = template.constraints;
+  }
+  if (template.accentBar) {
+    contract.accentBar = template.accentBar;
+  }
 
   return contract;
 }

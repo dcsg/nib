@@ -75,4 +75,6 @@ export const badgeTemplate: Partial<ComponentContract> = {
       },
     },
   },
+  visualClass: "interactive-control",
+  variantMatrix: { intent: ["neutral", "success", "warning", "error"] },
 };

@@ -5,8 +5,21 @@
  */
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import type { NibBrandConfig } from "../types/brand.js";
+import { dirname, join, resolve } from "node:path";
+import type { NibBrandConfig, ComponentContract } from "../types/brand.js";
+import { buildPencilStandardVariables } from "./pencil-bridge.js";
+
+/** A warning emitted when a required token resolves to #000000 (Pencil fallback) */
+export interface TokenBuildWarning {
+  component: string;
+  token: string;
+  message: string;
+}
+
+/** Result of a full brand build */
+export interface BuildResult {
+  tokenWarnings: TokenBuildWarning[];
+}
 
 /** Flatten nested DTCG tokens into a flat key→value map */
 function flattenTokens(
@@ -556,11 +569,75 @@ export async function buildPencilVariables(
     }
   }
 
-  await writeOutput(outputPath, JSON.stringify(variables, null, 2) + "\n");
+  // Add Pencil standard bridge variables (--background, --primary, etc.)
+  // so the disk file includes all variables needed for design scaffolding.
+  const allVariables = buildPencilStandardVariables(variables);
+
+  await writeOutput(outputPath, JSON.stringify(allVariables, null, 2) + "\n");
+}
+
+/**
+ * Validate required tokens from component contracts against the built Pencil variables.
+ * Warns when a token resolves to #000000 — the Pencil fallback for unresolved variables.
+ */
+async function checkRequiredTokens(
+  config: NibBrandConfig,
+  pencilVarsPath: string,
+): Promise<TokenBuildWarning[]> {
+  const { components } = config;
+  if (!components || Object.keys(components).length === 0) return [];
+
+  // Load the built variables file
+  let variables: Record<string, { type: string; value: unknown }>;
+  try {
+    const content = await readFile(pencilVarsPath, "utf-8");
+    variables = JSON.parse(content) as Record<string, { type: string; value: unknown }>;
+  } catch {
+    return [];
+  }
+
+  const warnings: TokenBuildWarning[] = [];
+
+  for (const [compName, entry] of Object.entries(components)) {
+    try {
+      const contractContent = await readFile(resolve(entry.contractPath), "utf-8");
+      const contract = JSON.parse(contractContent) as ComponentContract;
+      const requiredTokens = contract.constraints?.requiredTokens ?? [];
+
+      for (const token of requiredTokens) {
+        // token is like "$alert-bg" — strip the $ prefix to get the var name
+        const varName = token.startsWith("$") ? token.slice(1) : token;
+        const varEntry = variables[varName];
+
+        let resolvedValue: string | undefined;
+        if (varEntry) {
+          if (Array.isArray(varEntry.value)) {
+            resolvedValue = String(
+              (varEntry.value as Array<{ value: unknown }>)[0]?.value ?? "",
+            );
+          } else {
+            resolvedValue = String(varEntry.value);
+          }
+        }
+
+        if (!resolvedValue || resolvedValue === "#000000") {
+          warnings.push({
+            component: compName,
+            token,
+            message: `${token} resolves to #000000 (Pencil fallback for unresolved variables) — will appear black in the canvas`,
+          });
+        }
+      }
+    } catch {
+      // Contract not loadable — skip
+    }
+  }
+
+  return warnings;
 }
 
 /** Run all platform builds */
-export async function buildAll(config: NibBrandConfig): Promise<void> {
+export async function buildAll(config: NibBrandConfig): Promise<BuildResult> {
   const tokensDir = config.tokens;
 
   await Promise.all([
@@ -568,4 +645,7 @@ export async function buildAll(config: NibBrandConfig): Promise<void> {
     buildTailwindPreset(tokensDir, config.platforms.tailwind),
     buildPencilVariables(tokensDir, config.platforms.pencil),
   ]);
+
+  const tokenWarnings = await checkRequiredTokens(config, config.platforms.pencil);
+  return { tokenWarnings };
 }

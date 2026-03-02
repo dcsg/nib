@@ -88,4 +88,8 @@ export const toastTemplate: Partial<ComponentContract> = {
       },
     },
   },
+  visualClass: "ephemeral-overlay",
+  variantMatrix: { intent: ["info", "success", "warning", "error"] },
+  constraints: { closeGlyph: "ascii-safe" },
+  accentBar: { width: 4, fillToken: "$toast-accent" },
 };

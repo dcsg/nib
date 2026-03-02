@@ -80,4 +80,6 @@ export const radioTemplate: Partial<ComponentContract> = {
       },
     },
   },
+  visualClass: "interactive-control",
+  variantMatrix: { state: ["unselected", "selected", "disabled"] },
 };

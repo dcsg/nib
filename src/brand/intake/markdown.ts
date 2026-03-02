@@ -66,9 +66,10 @@ export function extractFonts(text: string): string[] {
       fonts.push(font);
   }
 
-  // "font: InterVar" / "typeface: Recoleta" — proper-noun only, same or next line
+  // "font: InterVar" / "typeface: Recoleta" — proper-noun only, same line only.
+  // Use [ \t] (not \s) to prevent capturing the next line (e.g. "Inter\nBody").
   const colonPattern =
-    /(?:typeface|font)[:\s]+["']?([A-Z][a-zA-Z]+(?:\s[A-Z][a-zA-Z]+)*)/g;
+    /(?:typeface|font)[:\s]+["']?([A-Z][a-zA-Z]+(?:[ \t][A-Z][a-zA-Z]+)*)/g;
   while ((match = colonPattern.exec(text)) !== null) {
     const font = match[1]?.trim();
     if (
