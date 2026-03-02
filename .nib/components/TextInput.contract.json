@@ -108,5 +108,44 @@
   },
   "interaction": {
     "role": "textbox"
+  },
+  "slots": {
+    "label": {
+      "description": "Visible field label — always required (never use placeholder as a label substitute)",
+      "required": true,
+      "accepts": "text"
+    },
+    "helperText": {
+      "description": "Supporting guidance shown below the field in the resting state",
+      "required": false,
+      "accepts": "text",
+      "maxLength": 100,
+      "truncatable": false
+    },
+    "errorText": {
+      "description": "Error message shown in the invalid state — replaces helperText",
+      "required": false,
+      "accepts": "text",
+      "maxLength": 80,
+      "truncatable": false
+    },
+    "leadingIcon": {
+      "description": "Decorative icon at the leading edge of the input",
+      "required": false,
+      "accepts": "icon"
+    },
+    "trailingIcon": {
+      "description": "Icon or clear/reveal action at the trailing edge",
+      "required": false,
+      "accepts": "icon"
+    }
+  },
+  "visualClass": "structural",
+  "variantMatrix": {
+    "state": [
+      "default",
+      "error",
+      "disabled"
+    ]
   }
 }

@@ -1,5 +1,5 @@
 # Tooltip
-<!-- nib-component: v1 | generated: 2026-03-01 | do not edit manually -->
+<!-- nib-component: v1 | generated: 2026-03-02 | do not edit manually -->
 
 > A small popup that displays information about another element on hover or focus
 

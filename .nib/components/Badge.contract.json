@@ -82,5 +82,14 @@
       "required": false,
       "accepts": "action"
     }
+  },
+  "visualClass": "interactive-control",
+  "variantMatrix": {
+    "intent": [
+      "neutral",
+      "success",
+      "warning",
+      "error"
+    ]
   }
 }

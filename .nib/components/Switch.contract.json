@@ -92,5 +92,34 @@
       "Enter"
     ],
     "role": "switch"
+  },
+  "slots": {
+    "label": {
+      "description": "Switch label — describes the setting being toggled; always required",
+      "required": true,
+      "accepts": "text",
+      "maxLength": 60,
+      "truncatable": true
+    },
+    "onLabel": {
+      "description": "Short label shown inside the track when on (e.g. 'On') — optional, use for clarity only",
+      "required": false,
+      "accepts": "text",
+      "maxLength": 10
+    },
+    "offLabel": {
+      "description": "Short label shown inside the track when off (e.g. 'Off') — optional",
+      "required": false,
+      "accepts": "text",
+      "maxLength": 10
+    }
+  },
+  "visualClass": "interactive-control",
+  "variantMatrix": {
+    "state": [
+      "off",
+      "on",
+      "disabled"
+    ]
   }
 }

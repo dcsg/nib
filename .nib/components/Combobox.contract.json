@@ -129,5 +129,12 @@
       "maxLength": 80,
       "truncatable": false
     }
+  },
+  "visualClass": "structural",
+  "variantMatrix": {
+    "state": [
+      "default",
+      "selected"
+    ]
   }
 }

@@ -2,10 +2,9 @@
   "version": "1",
   "generator": "nib",
   "brand": {
-    "name": "Acme Corp",
+    "name": "Flux",
     "personality": [
-      "professional",
-      "minimal",
+      "bold",
       "technical"
     ]
   },
@@ -25,73 +24,73 @@
       "contractPath": ".nib/components/Button.contract.json",
       "widgetType": "button",
       "status": "draft",
-      "addedAt": "2026-03-01"
-    },
-    "Dialog": {
-      "contractPath": ".nib/components/Dialog.contract.json",
-      "widgetType": "dialog",
-      "status": "draft",
-      "addedAt": "2026-03-01"
+      "addedAt": "2026-03-02"
     },
     "TextInput": {
       "contractPath": ".nib/components/TextInput.contract.json",
       "widgetType": "textinput",
       "status": "draft",
-      "addedAt": "2026-03-01"
+      "addedAt": "2026-03-02"
     },
     "Checkbox": {
       "contractPath": ".nib/components/Checkbox.contract.json",
       "widgetType": "checkbox",
       "status": "draft",
-      "addedAt": "2026-03-01"
-    },
-    "Tabs": {
-      "contractPath": ".nib/components/Tabs.contract.json",
-      "widgetType": "tabs",
-      "status": "draft",
-      "addedAt": "2026-03-01"
-    },
-    "Switch": {
-      "contractPath": ".nib/components/Switch.contract.json",
-      "widgetType": "switch",
-      "status": "draft",
-      "addedAt": "2026-03-01"
+      "addedAt": "2026-03-02"
     },
     "Radio": {
       "contractPath": ".nib/components/Radio.contract.json",
       "widgetType": "radio",
       "status": "draft",
-      "addedAt": "2026-03-01"
+      "addedAt": "2026-03-02"
+    },
+    "Switch": {
+      "contractPath": ".nib/components/Switch.contract.json",
+      "widgetType": "switch",
+      "status": "draft",
+      "addedAt": "2026-03-02"
+    },
+    "Dialog": {
+      "contractPath": ".nib/components/Dialog.contract.json",
+      "widgetType": "dialog",
+      "status": "draft",
+      "addedAt": "2026-03-02"
     },
     "Tooltip": {
       "contractPath": ".nib/components/Tooltip.contract.json",
       "widgetType": "tooltip",
       "status": "draft",
-      "addedAt": "2026-03-01"
+      "addedAt": "2026-03-02"
+    },
+    "Tabs": {
+      "contractPath": ".nib/components/Tabs.contract.json",
+      "widgetType": "tabs",
+      "status": "draft",
+      "addedAt": "2026-03-02"
     },
     "Combobox": {
       "contractPath": ".nib/components/Combobox.contract.json",
       "widgetType": "combobox",
       "status": "draft",
-      "addedAt": "2026-03-01"
+      "addedAt": "2026-03-02"
     },
     "Badge": {
       "contractPath": ".nib/components/Badge.contract.json",
       "widgetType": "badge",
       "status": "draft",
-      "addedAt": "2026-03-01"
+      "addedAt": "2026-03-02"
     },
     "Toast": {
       "contractPath": ".nib/components/Toast.contract.json",
       "widgetType": "toast",
       "status": "draft",
-      "addedAt": "2026-03-01"
+      "addedAt": "2026-03-02"
     },
     "Alert": {
       "contractPath": ".nib/components/Alert.contract.json",
       "widgetType": "alert",
       "status": "draft",
-      "addedAt": "2026-03-01"
+      "addedAt": "2026-03-02"
     }
   }
 }

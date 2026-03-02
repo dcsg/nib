@@ -1,5 +1,5 @@
 # Spacing System
-<!-- nib-foundation: spacing-system | generated: 2026-03-01 | do not edit manually -->
+<!-- nib-foundation: spacing-system | generated: 2026-03-02 | do not edit manually -->
 
 ## Base Unit
 

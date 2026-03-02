@@ -89,5 +89,34 @@
     "expanded": {
       "fullWidth": false
     }
+  },
+  "slots": {
+    "title": {
+      "description": "Dialog heading — referenced by aria-labelledby; always required",
+      "required": true,
+      "accepts": "text",
+      "maxLength": 60,
+      "truncatable": false
+    },
+    "body": {
+      "description": "Main content area — accepts any structured content",
+      "required": true,
+      "accepts": "component"
+    },
+    "footer": {
+      "description": "Action buttons — max two actions (primary + cancel); omit for informational dialogs",
+      "required": false,
+      "accepts": "component"
+    },
+    "closeButton": {
+      "description": "Icon button in the header to dismiss — omit for critical/blocking dialogs",
+      "required": false,
+      "accepts": "action"
+    }
+  },
+  "visualClass": "structural",
+  "constraints": {
+    "textCentering": "symmetric-padding",
+    "buttonWidth": "fit-content"
   }
 }

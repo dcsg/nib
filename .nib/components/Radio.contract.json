@@ -99,5 +99,13 @@
       "maxLength": 80,
       "truncatable": true
     }
+  },
+  "visualClass": "interactive-control",
+  "variantMatrix": {
+    "state": [
+      "unselected",
+      "selected",
+      "disabled"
+    ]
   }
 }

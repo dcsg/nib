@@ -86,5 +86,22 @@
       "Space"
     ],
     "role": "checkbox"
+  },
+  "slots": {
+    "label": {
+      "description": "Checkbox label — describes what is being selected; always required",
+      "required": true,
+      "accepts": "text",
+      "maxLength": 80,
+      "truncatable": true
+    }
+  },
+  "visualClass": "interactive-control",
+  "variantMatrix": {
+    "state": [
+      "unchecked",
+      "checked",
+      "disabled"
+    ]
   }
 }

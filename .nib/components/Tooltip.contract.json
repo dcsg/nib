@@ -62,5 +62,12 @@
       "maxLength": 80,
       "truncatable": false
     }
+  },
+  "visualClass": "interactive-control",
+  "variantMatrix": {
+    "theme": [
+      "dark",
+      "light"
+    ]
   }
 }

@@ -88,5 +88,25 @@
       "Tab"
     ],
     "role": "tab"
-  }
+  },
+  "slots": {
+    "tabLabel": {
+      "description": "Label for each tab trigger — keep short and scannable",
+      "required": true,
+      "accepts": "text",
+      "maxLength": 30,
+      "truncatable": true
+    },
+    "tabIcon": {
+      "description": "Optional icon before or instead of the tab label",
+      "required": false,
+      "accepts": "icon"
+    },
+    "tabPanel": {
+      "description": "Content associated with each tab — any structured content",
+      "required": true,
+      "accepts": "component"
+    }
+  },
+  "visualClass": "structural"
 }

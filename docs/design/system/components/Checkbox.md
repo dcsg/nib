@@ -1,5 +1,5 @@
 # Checkbox
-<!-- nib-component: v1 | generated: 2026-03-01 | do not edit manually -->
+<!-- nib-component: v1 | generated: 2026-03-02 | do not edit manually -->
 
 > A binary toggle that can be checked or unchecked
 

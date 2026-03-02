@@ -118,5 +118,37 @@
     "expanded": {
       "fullWidth": false
     }
+  },
+  "slots": {
+    "label": {
+      "description": "Button label text — always required unless icon-only with aria-label",
+      "required": true,
+      "accepts": "text",
+      "maxLength": 40,
+      "truncatable": false
+    },
+    "leadingIcon": {
+      "description": "Icon placed before the label — use to reinforce the action",
+      "required": false,
+      "accepts": "icon"
+    },
+    "trailingIcon": {
+      "description": "Icon placed after the label — use sparingly (e.g. external link, chevron)",
+      "required": false,
+      "accepts": "icon"
+    }
+  },
+  "visualClass": "interactive-control",
+  "variantMatrix": {
+    "style": [
+      "primary",
+      "secondary",
+      "outline",
+      "destructive"
+    ]
+  },
+  "constraints": {
+    "textCentering": "symmetric-padding",
+    "buttonWidth": "fit-content"
   }
 }
