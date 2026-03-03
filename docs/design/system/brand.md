@@ -74,12 +74,15 @@ Do not invent or use components not listed here.
 | Tabs | draft | _no description_ |
 | Combobox | draft | _no description_ |
 | Badge | draft | _no description_ |
-| Toast | draft | _no description_ |
-| Alert | draft | _no description_ |
+| Toast | draft | A transient message that confirms an action or communicates status — auto-dismisses after a timeout |
+| Alert | draft | A persistent inline message that communicates status or guidance — stays visible until the condition changes or the user dismisses it |
 
 For full contracts, see docs/design/system/components/.
 
 <!-- nib-component-inventory:end -->
+
+
+
 
 
 
