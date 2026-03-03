@@ -134,6 +134,17 @@ export interface KitComponent {
   verification: KitVerification;
 }
 
+/**
+ * A pre-packed group of components whose ops fit within one batch_design call.
+ * The agent executes recipe.batches sequentially instead of one call per component.
+ */
+export interface KitBatch {
+  /** Names of the components included in this batch (for logging/verification) */
+  components: string[];
+  /** Ready-to-execute ops covering all components in this batch */
+  ops: string;
+}
+
 /** Foundation pages included in every kit recipe. */
 export interface KitFoundations {
   /** How many color swatches will be created */
@@ -157,6 +168,13 @@ export interface KitRecipe {
   pencilVariables: Record<string, string>;
   /** Requested components (or all if none specified) */
   components: KitComponent[];
+  /**
+   * Pre-packed batches — multiple components merged into each batch_design call.
+   * Execute recipe.batches sequentially (not components[].batchDesignOps directly).
+   * Packing respects the 25-op-per-call guideline; a component that exceeds 25 ops
+   * on its own gets its own batch.
+   */
+  batches: KitBatch[];
   /**
    * Foundation pages — colors, typography, spacing.
    * Always included regardless of component filter.
@@ -1108,25 +1126,70 @@ function buildFoundationsOps(
   };
 }
 
+// ── Batch packing ──────────────────────────────────────────────────────────────
+
+/**
+ * Bin-pack component ops into batches that fit within the batch_design 25-op guideline.
+ *
+ * With inline children (improvement 2), each component produces 3 + N ops where N is the
+ * number of variants (one op per variant frame, all children inlined). Most components
+ * now fit 3–4 per batch, reducing calls from 12 to ~4–5 for the standard kit.
+ *
+ * A component whose ops exceed maxOps on its own gets its own dedicated batch.
+ */
+export function packIntoBatches(components: KitComponent[], maxOps = 25): KitBatch[] {
+  const batches: KitBatch[] = [];
+  let currentNames: string[] = [];
+  let currentLines: string[] = [];
+
+  for (const comp of components) {
+    const lines = comp.batchDesignOps.split("\n").filter((l) => l.trim().length > 0);
+
+    if (lines.length > maxOps) {
+      // Component exceeds limit alone — flush pending and add as solo batch
+      if (currentNames.length > 0) {
+        batches.push({ components: currentNames, ops: currentLines.join("\n") });
+        currentNames = [];
+        currentLines = [];
+      }
+      batches.push({ components: [comp.name], ops: comp.batchDesignOps });
+    } else if (currentLines.length + lines.length > maxOps && currentNames.length > 0) {
+      // Adding this component would overflow — flush and start fresh
+      batches.push({ components: currentNames, ops: currentLines.join("\n") });
+      currentNames = [comp.name];
+      currentLines = [...lines];
+    } else {
+      // Fits — append to current batch
+      currentNames.push(comp.name);
+      currentLines.push(...lines);
+    }
+  }
+
+  if (currentNames.length > 0) {
+    batches.push({ components: currentNames, ops: currentLines.join("\n") });
+  }
+
+  return batches;
+}
+
 // ── Instruction ───────────────────────────────────────────────────────────────
 
 /** Build the directive instruction text for the agent. */
-function buildInstruction(components: KitComponent[]): string {
+function buildInstruction(components: KitComponent[], batches: KitBatch[]): string {
   return [
-    `## Drawing the ${components.length} component(s) + foundation pages`,
+    `## Drawing the ${components.length} component(s) in ${batches.length} batch(es) + foundation pages`,
     "",
     "PREREQUISITE: nib_brand_push must be run before executing these ops.",
     "Fills and strokes use Pencil variable references ($--primary, $color-brand-600, etc.).",
     "Without brand variables loaded, all fills will render as black.",
     "",
-    "STEP 1 — Components (execute one at a time, verify before continuing):",
-    "For each component in the recipe:",
-    "  a. Call batch_design(filePath, component.batchDesignOps) — use the operations VERBATIM.",
-    "     DO NOT rewrite them. Fill and stroke values use Pencil variable references.",
-    "  b. Call snapshot_layout — confirm the frame is placed correctly with no clipping.",
-    "  c. Call get_screenshot(nodeId) on the frame — check every item in component.verification.visualChecks.",
+    `STEP 1 — Components (${batches.length} batch_design call(s), verify after each):`,
+    "For each batch in recipe.batches:",
+    "  a. Call batch_design(filePath, batch.ops) — use the operations VERBATIM.",
+    "     DO NOT rewrite them. Each batch covers: " + batches.map((b) => b.components.join("+")).join(", ") + ".",
+    "  b. Call snapshot_layout — confirm all frames in the batch are placed correctly.",
+    "  c. Call get_screenshot on each root frame — check verification.visualChecks for each component.",
     "  d. If fills appear black, brand variables are not loaded — run nib_brand_push first.",
-    "     Use batch_design Update operations to fix any layout or visibility issues.",
     "",
     "STEP 2 — Foundation pages (after all components):",
     "  Call batch_design(filePath, foundations.batchDesignOps) to create the color palette,",
@@ -1310,12 +1373,14 @@ export async function buildKitRecipe(
   // Attach batchDesignOps to the returned foundations object
   const foundationsWithOps: KitFoundations = { ...foundations, batchDesignOps: foundationsOps };
 
-  const instruction = buildInstruction(components);
+  const batches = packIntoBatches(components);
+  const instruction = buildInstruction(components, batches);
 
   return {
     brandName: config.brand.name,
     pencilVariables: pencilVars,
     components,
+    batches,
     foundations: foundationsWithOps,
     instruction,
   };

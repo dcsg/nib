@@ -60,6 +60,8 @@ export function registerKitTool(server: McpServer): void {
         // with a file reference to keep the response under MCP size limits.
         const slimRecipe = {
           brandName: recipe.brandName,
+          // Pre-packed batches — execute these instead of iterating components[].batchDesignOps.
+          batches: recipe.batches,
           components: recipe.components.map(({ name, widgetType, placement, batchDesignOps, verification }) => ({
             name,
             widgetType,

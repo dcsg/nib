@@ -166,8 +166,8 @@ describe("toPencilOps — variable references", () => {
   });
 });
 
-describe("toPencilOps — parent/child nesting", () => {
-  it("children are recursively emitted with correct parent binding", () => {
+describe("toPencilOps — parent/child nesting (inline children)", () => {
+  it("children are inlined into a children: array — produces exactly 1 op", () => {
     const ops = toPencilOps({
       id: "parent",
       type: "frame",
@@ -180,12 +180,17 @@ describe("toPencilOps — parent/child nesting", () => {
       }],
     }, "document");
 
-    expect(ops).toHaveLength(2);
+    // Inlining: exactly 1 op, no separate child I() call
+    expect(ops).toHaveLength(1);
     expect(ops[0]).toContain("parent=I(document,");
-    expect(ops[1]).toContain("child=I(parent,");
+    // Child content is inlined in children: array
+    expect(ops[0]).toContain("children:");
+    expect(ops[0]).toContain('"Hello"');
+    // No separate binding for the child
+    expect(ops[0]).not.toContain("child=I(parent,");
   });
 
-  it("deeply nested children reference their immediate parent binding", () => {
+  it("deeply nested children are recursively inlined — still 1 op total", () => {
     const ops = toPencilOps({
       id: "root",
       type: "frame",
@@ -203,10 +208,15 @@ describe("toPencilOps — parent/child nesting", () => {
       }],
     }, "document");
 
-    expect(ops).toHaveLength(3);
+    // All levels inlined — still 1 op
+    expect(ops).toHaveLength(1);
     expect(ops[0]).toContain("root=I(document,");
-    expect(ops[1]).toContain("mid=I(root,");
-    expect(ops[2]).toContain("leaf=I(mid,");
+    // Mid and leaf are in nested children arrays
+    expect(ops[0]).toContain('"Mid"');
+    expect(ops[0]).toContain('"deep"');
+    // No separate ops for mid or leaf
+    expect(ops[0]).not.toContain("mid=I(root,");
+    expect(ops[0]).not.toContain("leaf=I(mid,");
   });
 
   it("parent uses the provided parent argument (not hardcoded document)", () => {
@@ -216,10 +226,35 @@ describe("toPencilOps — parent/child nesting", () => {
     );
     expect(ops[0]).toContain("child=I(custom_parent_123,");
   });
+
+  it("inline children have their NibNodeSpec properties mapped to Pencil props", () => {
+    const ops = toPencilOps({
+      id: "card",
+      type: "frame",
+      name: "Card",
+      backgroundColor: "$--card",
+      children: [{
+        id: "lbl",
+        type: "text",
+        name: "label",
+        textContent: "Click me",
+        textColor: "$--foreground",
+      }],
+    }, "document");
+
+    expect(ops).toHaveLength(1);
+    // Parent fill mapped correctly
+    expect(ops[0]).toContain('"$--card"');
+    // Child textContent → content, textColor → fill
+    expect(ops[0]).toContain('content:"Click me"');
+    expect(ops[0]).toContain('"$--foreground"');
+    // No "textContent:" key in output
+    expect(ops[0]).not.toContain("textContent:");
+  });
 });
 
 describe("specToOps", () => {
-  it("joins all ops into a single multi-line string", () => {
+  it("always produces a single-line string — children are inlined, not separate ops", () => {
     const result = specToOps({
       id: "root",
       type: "frame",
@@ -233,10 +268,11 @@ describe("specToOps", () => {
     }, "document");
 
     expect(typeof result).toBe("string");
-    const lines = result.split("\n");
-    expect(lines).toHaveLength(2);
-    expect(lines[0]).toContain("root=I(document,");
-    expect(lines[1]).toContain("child=I(root,");
+    // Children inlined — no newline, single op
+    expect(result).not.toContain("\n");
+    expect(result).toContain("root=I(document,");
+    expect(result).toContain("children:");
+    expect(result).toContain('"Hi"');
   });
 
   it("single node produces a single-line string (no trailing newline)", () => {

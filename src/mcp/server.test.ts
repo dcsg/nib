@@ -158,11 +158,11 @@ describe("MCP Server", () => {
       // Error path — no config or no components
       expect(typeof content[0]!.text).toBe("string");
     } else {
-      // Success path — kit recipe shape
+      // Success path — kit recipe shape (slim: pencilVariables stripped per INV-010)
       const parsed = JSON.parse(content[0]!.text);
       expect(typeof parsed.brandName).toBe("string");
-      expect(typeof parsed.pencilVariables).toBe("object");
       expect(Array.isArray(parsed.components)).toBe(true);
+      expect(Array.isArray(parsed.batches)).toBe(true);
       expect(typeof parsed.instruction).toBe("string");
     }
   });

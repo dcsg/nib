@@ -94,7 +94,9 @@ function serializeValue(val: unknown): string {
 }
 
 /**
- * Transform a NibNodeSpec tree into Pencil batch_design operation strings.
+ * Build Pencil-native props from a NibNodeSpec, applying all canonical property mappings.
+ * Children are recursively inlined as a `children:` array — no `id` is emitted (Pencil
+ * auto-assigns IDs for inline children per its batch_design schema).
  *
  * Key mappings enforced here:
  * - frame.backgroundColor → fill
@@ -112,15 +114,11 @@ function serializeValue(val: unknown): string {
  * - icon_font.iconFontFamily → iconFontFamily
  * - icon_font.iconFontName   → iconFontName
  * - cornerRadius: N       → [N, N, N, N]
+ * - children              → inlined recursively (no separate I() ops emitted)
  *
  * See ADR-008 for the complete Pencil layout feature reference.
- *
- * @param spec    The node to render
- * @param parent  The Pencil parent binding (e.g. "document" or a binding name)
- * @returns Flat list of op strings, one per node
  */
-export function toPencilOps(spec: NibNodeSpec, parent: string): string[] {
-  const ops: string[] = [];
+function buildPencilProps(spec: NibNodeSpec): Record<string, unknown> {
   const props: Record<string, unknown> = { type: spec.type, name: spec.name };
 
   // Geometry — common to all node types
@@ -150,6 +148,10 @@ export function toPencilOps(spec: NibNodeSpec, parent: string): string[] {
     if (spec.alignItems) props["alignItems"] = spec.alignItems;
     if (spec.justifyContent) props["justifyContent"] = spec.justifyContent;
     if (spec.clip !== undefined) props["clip"] = spec.clip;
+    // Inline children recursively — no separate I() ops, Pencil auto-assigns child IDs
+    if (spec.children && spec.children.length > 0) {
+      props["children"] = spec.children.map(buildPencilProps);
+    }
 
   } else if (spec.type === "text") {
     if (spec.textContent !== undefined) props["content"] = spec.textContent;
@@ -172,20 +174,36 @@ export function toPencilOps(spec: NibNodeSpec, parent: string): string[] {
     if (spec.fontSize !== undefined) props["fontSize"] = spec.fontSize;
   }
 
-  ops.push(`${spec.id}=I(${parent}, ${serializeValue(props)})`);
-
-  for (const child of spec.children ?? []) {
-    ops.push(...toPencilOps(child, spec.id));
-  }
-  return ops;
+  return props;
 }
 
 /**
- * Convert a NibNodeSpec tree to a single multi-line Pencil batch_design operations string.
+ * Transform a NibNodeSpec tree into a single Pencil batch_design operation string.
+ *
+ * All children are inlined recursively into the root Insert op via a `children:` array.
+ * This produces exactly one op per specToOps() call, regardless of tree depth.
+ *
+ * The root node's `id` becomes the batch_design binding name. Child node IDs are
+ * intentionally omitted — Pencil auto-assigns IDs for inline children.
+ *
+ * Cross-call parent bindings (e.g. sectionId used as parent for a subsequent specToOps
+ * call) still work because all ops land in the same batch_design operations string.
+ *
+ * @param spec    The node to render
+ * @param parent  The Pencil parent binding (e.g. "document" or a binding name)
+ * @returns Single-element array containing the complete Insert op
+ */
+export function toPencilOps(spec: NibNodeSpec, parent: string): string[] {
+  return [`${spec.id}=I(${parent}, ${serializeValue(buildPencilProps(spec))})`];
+}
+
+/**
+ * Convert a NibNodeSpec tree to a single-line Pencil batch_design operations string.
+ * Children are inlined — always returns exactly one line.
  *
  * @param spec    Root node spec
  * @param parent  Parent binding (typically "document" for canvas-level frames)
- * @returns Multi-line string of Pencil batch_design op lines
+ * @returns Single op line as a string
  */
 export function specToOps(spec: NibNodeSpec, parent: string): string {
   return toPencilOps(spec, parent).join("\n");

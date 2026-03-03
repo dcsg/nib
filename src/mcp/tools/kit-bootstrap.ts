@@ -195,14 +195,17 @@ export function registerKitBootstrapTool(server: McpServer): void {
         // Slim the recipe before serializing — strip fields not needed for batch_design:
         //   pencilVariables: already loaded in Pencil via nib_brand_push
         //   tokenBindings/anatomy/states: internal contract details, on disk in .nib/components/
+        //   components[].batchDesignOps: use batches[] instead (pre-packed, fewer calls)
         //   foundations.batchDesignOps: saved to disk (see foundationsOpsPath)
         const slimRecipe = {
           brandName: recipe.brandName,
-          components: recipe.components.map(({ name, widgetType, placement, batchDesignOps, verification }) => ({
+          // Pre-packed batches — execute these instead of components[].batchDesignOps.
+          // Multiple components are merged per batch to minimise batch_design call count.
+          batches: recipe.batches,
+          components: recipe.components.map(({ name, widgetType, placement, verification }) => ({
             name,
             widgetType,
             placement,
-            batchDesignOps,
             verification,
           })),
           foundations: {

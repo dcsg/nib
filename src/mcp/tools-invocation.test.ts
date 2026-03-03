@@ -805,10 +805,12 @@ describe("nib_kit — batchDesignOps and foundations", () => {
     const recipe = JSON.parse(content[0]!.text);
 
     expect(recipe.foundations).toBeDefined();
-    expect(typeof recipe.foundations.batchDesignOps).toBe("string");
-    expect(recipe.foundations.batchDesignOps).toContain("Color Palette");
-    expect(recipe.foundations.batchDesignOps).toContain("Typography Scale");
-    expect(recipe.foundations.batchDesignOps).toContain("Spacing Scale");
+    // foundations.batchDesignOps is saved to disk (INV-010 — too large to inline).
+    // The slim recipe exposes batchDesignOpsFile (path) + metadata instead.
+    expect(typeof recipe.foundations.batchDesignOpsFile).toBe("string");
+    expect(recipe.foundations.batchDesignOpsFile.length).toBeGreaterThan(0);
+    expect(typeof recipe.foundations.colorCount).toBe("number");
+    expect(typeof recipe.foundations.typographySteps).toBe("number");
   });
 
   it("foundations startsAtY is below all component frames", async () => {
