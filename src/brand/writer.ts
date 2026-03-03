@@ -63,9 +63,13 @@ export async function writeTokenFiles(
   ]);
 }
 
-/** Write the .nib/brand.config.json */
-export async function writeBrandConfig(config: NibBrandConfig): Promise<void> {
-  await writeJson(resolve(".nib", "brand.config.json"), config);
+/**
+ * Write the .nib/brand.config.json.
+ * @param nibDir  Path to the .nib directory. Defaults to `.nib` relative to cwd.
+ */
+export async function writeBrandConfig(config: NibBrandConfig, nibDir?: string): Promise<void> {
+  const dir = nibDir ?? resolve(".nib");
+  await writeJson(join(dir, "brand.config.json"), config);
 }
 
 /** Generate brand.md content */
@@ -268,26 +272,31 @@ async function injectIntoFile(filePath: string, snippet: string): Promise<void> 
  *
  * Returns the list of files written so the caller can report them.
  */
-export async function injectAgentContext(config: NibBrandConfig): Promise<string[]> {
+/**
+ * @param projectDir  Project root for resolving context file paths.
+ *                    Defaults to process.cwd(). Pass an explicit path when
+ *                    the target project is outside the nib server's CWD.
+ */
+export async function injectAgentContext(config: NibBrandConfig, projectDir?: string): Promise<string[]> {
   const { existsSync } = await import("node:fs");
-  const cwd = process.cwd();
+  const root = projectDir ?? process.cwd();
   const snippet = buildContextSnippet(config);
 
   // Files to update only if they already exist
   const conditionalTargets: Array<{ path: string; label: string }> = [
-    { path: join(cwd, "CLAUDE.md"), label: "CLAUDE.md" },
-    { path: join(cwd, ".cursorrules"), label: ".cursorrules" },
-    { path: join(cwd, ".windsurfrules"), label: ".windsurfrules" },
-    { path: join(cwd, ".github", "copilot-instructions.md"), label: ".github/copilot-instructions.md" },
+    { path: join(root, "CLAUDE.md"), label: "CLAUDE.md" },
+    { path: join(root, ".cursorrules"), label: ".cursorrules" },
+    { path: join(root, ".windsurfrules"), label: ".windsurfrules" },
+    { path: join(root, ".github", "copilot-instructions.md"), label: ".github/copilot-instructions.md" },
   ];
 
   // If .cursor/ dir exists, write a dedicated rules file for modern Cursor
-  const cursorRulesPath = join(cwd, ".cursor", "rules", "nib.md");
-  const hasCursorDir = existsSync(join(cwd, ".cursor"));
+  const cursorRulesPath = join(root, ".cursor", "rules", "nib.md");
+  const hasCursorDir = existsSync(join(root, ".cursor"));
 
   // Always write AI_CONTEXT.md as the universal fallback
   const alwaysTargets: Array<{ path: string; label: string }> = [
-    { path: join(cwd, "AI_CONTEXT.md"), label: "AI_CONTEXT.md" },
+    { path: join(root, "AI_CONTEXT.md"), label: "AI_CONTEXT.md" },
     ...(hasCursorDir ? [{ path: cursorRulesPath, label: ".cursor/rules/nib.md" }] : []),
   ];
 

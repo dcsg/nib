@@ -236,6 +236,12 @@ export interface BrandInitOptions {
   output?: string;
   /** Skip AI enhancement (use only algorithmic derivation) */
   noAi?: boolean;
+  /**
+   * Explicit project root for .nib/ config and agent context injection.
+   * Defaults to process.cwd(). Set this when the output directory is outside
+   * the nib server's working directory (e.g. an external project folder).
+   */
+  projectDir?: string;
 }
 
 /** Options for `nib brand build` */

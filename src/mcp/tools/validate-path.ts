@@ -22,3 +22,16 @@ export function validateProjectPath(filePath: string): string {
 
   return resolved;
 }
+
+/**
+ * Resolve an input source path for reading brand source files.
+ *
+ * Unlike validateProjectPath, this does NOT enforce project-directory boundaries.
+ * Use this when users supply brand brief files, guidelines, or PDFs that may
+ * live outside the nib package directory (e.g. /tmp/my-project/brand-brief.md).
+ *
+ * Relative paths are resolved against cwd. Absolute paths pass through unchanged.
+ */
+export function resolveInputPath(filePath: string): string {
+  return resolve(filePath);
+}

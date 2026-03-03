@@ -69,6 +69,8 @@ export async function init(
 ): Promise<NibBrandConfig> {
   const outputDir = resolve(options.output ?? DEFAULT_OUTPUT);
   const tokensDir = join(outputDir, "tokens");
+  // Derive the .nib directory: explicit projectDir wins, otherwise cwd
+  const nibDir = options.projectDir ? resolve(options.projectDir, ".nib") : resolve(".nib");
 
   // Generate all tokens algorithmically
   const colorPrimitives = buildColorPrimitives(input.colors);
@@ -139,7 +141,7 @@ export async function init(
       zIndex,
       breakpoint,
     }),
-    writeBrandConfig(config),
+    writeBrandConfig(config, nibDir),
     writeBrandDocs(outputDir, input, enhancement),
   ]);
 
@@ -153,7 +155,7 @@ export async function init(
     lastBuild: new Date().toISOString(),
     penFile: config.platforms.penFile,
     tokenVersion: NIB_VERSION,
-  });
+  }, nibDir);
 
   return config;
 }
@@ -161,8 +163,10 @@ export async function init(
 /** Write (or update) .nib/.status.json with the latest build metadata */
 async function updateStatus(
   patch: Partial<NibStatus>,
+  nibDir?: string,
 ): Promise<void> {
-  const statusPath = resolve(".nib", ".status.json");
+  const dir = nibDir ?? resolve(".nib");
+  const statusPath = join(dir, ".status.json");
   let current: NibStatus = {};
   try {
     const raw = await readFile(statusPath, "utf-8");
@@ -171,7 +175,7 @@ async function updateStatus(
     // File doesn't exist yet — start fresh
   }
   const updated: NibStatus = { ...current, ...patch };
-  await mkdir(resolve(".nib"), { recursive: true });
+  await mkdir(dir, { recursive: true });
   await writeFile(statusPath, JSON.stringify(updated, null, 2) + "\n");
 }
 

@@ -7,7 +7,8 @@
 
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { validateProjectPath } from "./validate-path.js";
+import { resolve } from "node:path";
+import { validateProjectPath, resolveInputPath } from "./validate-path.js";
 
 /** Wrap an error into the MCP isError response shape. */
 function errorResult(message: string) {
@@ -100,7 +101,7 @@ export function registerBrandTools(server: McpServer): void {
             };
           } else {
             const { statSync, readFileSync } = await import("node:fs");
-            const path = validateProjectPath(from);
+            const path = resolveInputPath(from);
             let stat;
             try {
               stat = statSync(path);
@@ -268,11 +269,24 @@ export function registerBrandTools(server: McpServer): void {
           industry: rawInput.industry ?? undefined,
         };
 
-        const config = await init(brandInput, { from, output, ai, noAi: noAi ?? false });
+        // Derive project root for .nib/ and agent context files.
+        // When output is an absolute path outside the server's cwd, walk 3 levels up
+        // (the default output is docs/design/system — 3 directories deep).
+        const cwd = process.cwd();
+        let projectDir: string | undefined;
+        if (output) {
+          const resolvedOutput = resolve(output);
+          if (!resolvedOutput.startsWith(cwd + "/") && resolvedOutput !== cwd) {
+            // Output is outside server cwd — derive project root as 3 levels up
+            projectDir = resolve(resolvedOutput, "../../..");
+          }
+        }
+
+        const config = await init(brandInput, { from, output, ai, noAi: noAi ?? false, projectDir });
 
         // Inject nib context into all detected AI agent config files
         const { injectAgentContext } = await import("../../brand/writer.js");
-        const contextFiles = await injectAgentContext(config).catch(() => [] as string[]);
+        const contextFiles = await injectAgentContext(config, projectDir).catch(() => [] as string[]);
 
         return {
           content: [{
