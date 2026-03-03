@@ -1,7 +1,7 @@
 {
   "$schema": "https://nibjs.dev/schemas/component-contract.v1.json",
   "name": "Tabs",
-  "description": "A set of layered sections of content — only one section is visible at a time",
+  "description": "A set of layered sections of content \u2014 only one section is visible at a time",
   "widgetType": "tabs",
   "anatomy": {
     "root": "The outer container element",
@@ -12,10 +12,10 @@
   },
   "states": {
     "default": {
-      "description": "Inactive tab — not selected"
+      "description": "Inactive tab \u2014 not selected"
     },
     "selected": {
-      "description": "Active tab — its tabpanel is visible"
+      "description": "Active tab \u2014 its tabpanel is visible"
     },
     "focused": {
       "description": "Keyboard focus on a tab trigger",
@@ -58,19 +58,19 @@
   "tokens": {
     "tab": {
       "default": {
-        "color": "tab.text",
+        "color": "color.text.secondary",
         "background": "transparent"
       },
       "selected": {
-        "color": "tab.text.selected",
-        "border-color": "tab.indicator"
+        "color": "color.interactive.default",
+        "border-color": "color.interactive.default"
       },
       "focused": {
-        "outline-color": "color.focus.ring",
+        "outline-color": "color.border.focus",
         "outline-width": "2px"
       },
       "disabled": {
-        "color": "color.text.disabled"
+        "color": "color.text.tertiary"
       }
     }
   },
@@ -91,7 +91,7 @@
   },
   "slots": {
     "tabLabel": {
-      "description": "Label for each tab trigger — keep short and scannable",
+      "description": "Label for each tab trigger \u2014 keep short and scannable",
       "required": true,
       "accepts": "text",
       "maxLength": 30,
@@ -103,7 +103,7 @@
       "accepts": "icon"
     },
     "tabPanel": {
-      "description": "Content associated with each tab — any structured content",
+      "description": "Content associated with each tab \u2014 any structured content",
       "required": true,
       "accepts": "component"
     }

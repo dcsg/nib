@@ -1,5 +1,5 @@
 # Tabs
-<!-- nib-component: v1 | generated: 2026-03-02 | do not edit manually -->
+<!-- nib-component: v1 | generated: 2026-03-03 | do not edit manually -->
 
 > A set of layered sections of content — only one section is visible at a time
 
@@ -72,19 +72,19 @@
 {
   "tab": {
     "default": {
-      "color": "tab.text",
+      "color": "color.text.secondary",
       "background": "transparent"
     },
     "selected": {
-      "color": "tab.text.selected",
-      "border-color": "tab.indicator"
+      "color": "color.interactive.default",
+      "border-color": "color.interactive.default"
     },
     "focused": {
-      "outline-color": "color.focus.ring",
+      "outline-color": "color.border.focus",
       "outline-width": "2px"
     },
     "disabled": {
-      "color": "color.text.disabled"
+      "color": "color.text.tertiary"
     }
   }
 }

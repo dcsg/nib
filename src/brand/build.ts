@@ -4,7 +4,8 @@
  * Phase 1 targets: CSS custom properties + Tailwind preset.
  */
 
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import type { NibBrandConfig, ComponentContract } from "../types/brand.js";
 import { buildPencilStandardVariables } from "./pencil-bridge.js";
@@ -232,6 +233,26 @@ export async function buildCss(tokensDir: string, outputPath: string): Promise<v
   lines.push("  /* Breakpoints */");
   for (const [key, { value }] of Object.entries(flatBreakpoint)) {
     lines.push(`  --${key}: ${resolveToCssVar(value)};`);
+  }
+
+  // Component tokens (dynamic — only present if nib component init has been run)
+  const componentsDir = join(tokensDir, "components");
+  if (existsSync(componentsDir)) {
+    const componentFiles = await readdir(componentsDir);
+    const jsonFiles = componentFiles.filter(f => f.endsWith(".tokens.json"));
+    if (jsonFiles.length > 0) {
+      lines.push("");
+      lines.push("  /* Component Tokens */");
+      const allComponentTokens = await Promise.all(
+        jsonFiles.map(f => readTokenFile(join(componentsDir, f)))
+      );
+      for (const tokens of allComponentTokens) {
+        const flat = flattenTokens(tokens);
+        for (const [key, { value }] of Object.entries(flat)) {
+          lines.push(`  --${key}: ${resolveToCssVar(value)};`);
+        }
+      }
+    }
   }
 
   lines.push("}");

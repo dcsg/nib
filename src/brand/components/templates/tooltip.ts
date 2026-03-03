@@ -54,10 +54,10 @@ export const tooltipTemplate: Partial<ComponentContract> = {
   tokens: {
     root: {
       visible: {
-        background: "tooltip.bg",
-        color: "tooltip.text",
-        "border-radius": "tooltip.radius",
-        shadow: "tooltip.shadow",
+        background: "color.text.primary",
+        color: "color.text.inverse",
+        "border-radius": "border-radius.sm",
+        shadow: "elevation.sm",
       },
     },
   },

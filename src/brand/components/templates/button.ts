@@ -87,16 +87,16 @@ export const buttonTemplate: Partial<ComponentContract> = {
   tokens: {
     root: {
       default: {
-        background: "button.bg.primary",
-        color: "button.text.primary",
-        "border-radius": "button.radius",
+        background: "color.interactive.default",
+        color: "color.text.inverse",
+        "border-radius": "border-radius.md",
         "border-color": "transparent",
       },
-      hover: { background: "button.bg.primary.hover" },
-      focused: { "outline-color": "color.focus.ring", "outline-width": "2px" },
+      hover: { background: "color.interactive.hover" },
+      focused: { "outline-color": "color.border.focus", "outline-width": "2px" },
       disabled: {
-        background: "color.surface.disabled",
-        color: "color.text.disabled",
+        background: "color.interactive.disabled",
+        color: "color.text.tertiary",
       },
     },
   },

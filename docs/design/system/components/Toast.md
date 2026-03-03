@@ -1,5 +1,5 @@
 # Toast
-<!-- nib-component: v1 | generated: 2026-03-02 | do not edit manually -->
+<!-- nib-component: v1 | generated: 2026-03-03 | do not edit manually -->
 
 > A transient message that confirms an action or communicates status — auto-dismisses after a timeout
 
@@ -67,15 +67,15 @@
 {
   "root": {
     "visible": {
-      "background": "toast.bg",
-      "color": "toast.text",
-      "border-radius": "toast.radius",
+      "background": "color.surface.elevated",
+      "color": "color.text.primary",
+      "border-radius": "border-radius.md",
       "shadow": {
         "offsetX": "0px",
         "offsetY": "4px",
         "blur": "16px",
         "spread": "0px",
-        "color": "{color.shadow.default}"
+        "color": "rgba(0,0,0,0.1)"
       }
     }
   }

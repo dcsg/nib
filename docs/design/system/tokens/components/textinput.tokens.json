@@ -5,7 +5,7 @@
       "default": {
         "background": {
           "$type": "color",
-          "$value": "{input.bg}",
+          "$value": "{color.background.primary}",
           "$description": "TextInput input background in default state",
           "$extensions": {
             "nib": {
@@ -16,7 +16,7 @@
         },
         "border-color": {
           "$type": "color",
-          "$value": "{input.border}",
+          "$value": "{color.border.primary}",
           "$description": "TextInput input border-color in default state",
           "$extensions": {
             "nib": {
@@ -27,7 +27,7 @@
         },
         "color": {
           "$type": "color",
-          "$value": "{input.text}",
+          "$value": "{color.text.primary}",
           "$description": "TextInput input color in default state",
           "$extensions": {
             "nib": {
@@ -37,8 +37,8 @@
           }
         },
         "border-radius": {
-          "$type": "dimension",
-          "$value": "{input.radius}",
+          "$type": "color",
+          "$value": "{border-radius.md}",
           "$description": "TextInput input border-radius in default state",
           "$extensions": {
             "nib": {
@@ -51,7 +51,7 @@
       "focused": {
         "border-color": {
           "$type": "color",
-          "$value": "{input.border.focus}",
+          "$value": "{color.border.focus}",
           "$description": "TextInput input border-color in focused state",
           "$extensions": {
             "nib": {
@@ -62,7 +62,7 @@
         },
         "outline-color": {
           "$type": "color",
-          "$value": "{color.focus.ring}",
+          "$value": "{color.border.focus}",
           "$description": "TextInput input outline-color in focused state",
           "$extensions": {
             "nib": {
@@ -86,7 +86,7 @@
       "disabled": {
         "background": {
           "$type": "color",
-          "$value": "{color.surface.disabled}",
+          "$value": "{color.interactive.disabled}",
           "$description": "TextInput input background in disabled state",
           "$extensions": {
             "nib": {
@@ -97,7 +97,7 @@
         },
         "color": {
           "$type": "color",
-          "$value": "{color.text.disabled}",
+          "$value": "{color.text.tertiary}",
           "$description": "TextInput input color in disabled state",
           "$extensions": {
             "nib": {
@@ -108,7 +108,7 @@
         },
         "border-color": {
           "$type": "color",
-          "$value": "{color.border.disabled}",
+          "$value": "{color.border.secondary}",
           "$description": "TextInput input border-color in disabled state",
           "$extensions": {
             "nib": {

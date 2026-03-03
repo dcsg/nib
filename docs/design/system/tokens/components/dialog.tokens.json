@@ -5,7 +5,7 @@
       "open": {
         "background": {
           "$type": "color",
-          "$value": "{dialog.bg}",
+          "$value": "{color.surface.elevated}",
           "$description": "Dialog root background in open state",
           "$extensions": {
             "nib": {
@@ -15,8 +15,8 @@
           }
         },
         "border-radius": {
-          "$type": "dimension",
-          "$value": "{dialog.radius}",
+          "$type": "color",
+          "$value": "{border-radius.xl}",
           "$description": "Dialog root border-radius in open state",
           "$extensions": {
             "nib": {
@@ -32,7 +32,7 @@
             "offsetY": "8px",
             "blur": "24px",
             "spread": "0px",
-            "color": "{color.shadow.default}"
+            "color": "rgba(0,0,0,0.15)"
           },
           "$description": "Dialog root shadow in open state",
           "$extensions": {
@@ -47,8 +47,8 @@
     "backdrop": {
       "open": {
         "background": {
-          "$type": "dimension",
-          "$value": "{dialog.backdrop}",
+          "$type": "color",
+          "$value": "{color.text.primary}",
           "$description": "Dialog backdrop background in open state",
           "$extensions": {
             "nib": {

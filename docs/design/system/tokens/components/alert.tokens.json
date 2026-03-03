@@ -5,7 +5,7 @@
       "default": {
         "background": {
           "$type": "color",
-          "$value": "{alert.bg}",
+          "$value": "{color.background.secondary}",
           "$description": "Alert root background in default state",
           "$extensions": {
             "nib": {
@@ -16,7 +16,7 @@
         },
         "border-color": {
           "$type": "color",
-          "$value": "{alert.border}",
+          "$value": "{color.border.primary}",
           "$description": "Alert root border-color in default state",
           "$extensions": {
             "nib": {
@@ -27,7 +27,7 @@
         },
         "color": {
           "$type": "color",
-          "$value": "{alert.text}",
+          "$value": "{color.text.primary}",
           "$description": "Alert root color in default state",
           "$extensions": {
             "nib": {
@@ -37,8 +37,8 @@
           }
         },
         "border-radius": {
-          "$type": "dimension",
-          "$value": "{alert.radius}",
+          "$type": "color",
+          "$value": "{border-radius.md}",
           "$description": "Alert root border-radius in default state",
           "$extensions": {
             "nib": {

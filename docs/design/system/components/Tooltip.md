@@ -1,5 +1,5 @@
 # Tooltip
-<!-- nib-component: v1 | generated: 2026-03-02 | do not edit manually -->
+<!-- nib-component: v1 | generated: 2026-03-03 | do not edit manually -->
 
 > A small popup that displays information about another element on hover or focus
 
@@ -59,10 +59,10 @@
 {
   "root": {
     "visible": {
-      "background": "tooltip.bg",
-      "color": "tooltip.text",
-      "border-radius": "tooltip.radius",
-      "shadow": "tooltip.shadow"
+      "background": "color.text.primary",
+      "color": "color.text.inverse",
+      "border-radius": "border-radius.sm",
+      "shadow": "elevation.sm"
     }
   }
 }

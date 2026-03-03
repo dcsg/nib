@@ -5,7 +5,7 @@
       "default": {
         "background": {
           "$type": "color",
-          "$value": "{combobox.bg}",
+          "$value": "{color.background.primary}",
           "$description": "Combobox input background in default state",
           "$extensions": {
             "nib": {
@@ -16,7 +16,7 @@
         },
         "border-color": {
           "$type": "color",
-          "$value": "{combobox.border}",
+          "$value": "{color.border.primary}",
           "$description": "Combobox input border-color in default state",
           "$extensions": {
             "nib": {
@@ -27,7 +27,7 @@
         },
         "color": {
           "$type": "color",
-          "$value": "{combobox.text}",
+          "$value": "{color.text.primary}",
           "$description": "Combobox input color in default state",
           "$extensions": {
             "nib": {
@@ -37,8 +37,8 @@
           }
         },
         "border-radius": {
-          "$type": "dimension",
-          "$value": "{combobox.radius}",
+          "$type": "color",
+          "$value": "{border-radius.md}",
           "$description": "Combobox input border-radius in default state",
           "$extensions": {
             "nib": {
@@ -51,7 +51,7 @@
       "focused": {
         "border-color": {
           "$type": "color",
-          "$value": "{combobox.border.focus}",
+          "$value": "{color.border.focus}",
           "$description": "Combobox input border-color in focused state",
           "$extensions": {
             "nib": {
@@ -62,7 +62,7 @@
         },
         "outline-color": {
           "$type": "color",
-          "$value": "{color.focus.ring}",
+          "$value": "{color.border.focus}",
           "$description": "Combobox input outline-color in focused state",
           "$extensions": {
             "nib": {
@@ -86,7 +86,7 @@
       "disabled": {
         "background": {
           "$type": "color",
-          "$value": "{color.surface.disabled}",
+          "$value": "{color.interactive.disabled}",
           "$description": "Combobox input background in disabled state",
           "$extensions": {
             "nib": {
@@ -97,7 +97,7 @@
         },
         "color": {
           "$type": "color",
-          "$value": "{color.text.disabled}",
+          "$value": "{color.text.tertiary}",
           "$description": "Combobox input color in disabled state",
           "$extensions": {
             "nib": {
@@ -112,7 +112,7 @@
       "open": {
         "background": {
           "$type": "color",
-          "$value": "{combobox.popup.bg}",
+          "$value": "{color.surface.elevated}",
           "$description": "Combobox popup background in open state",
           "$extensions": {
             "nib": {
@@ -123,7 +123,7 @@
         },
         "border-color": {
           "$type": "color",
-          "$value": "{combobox.popup.border}",
+          "$value": "{color.border.primary}",
           "$description": "Combobox popup border-color in open state",
           "$extensions": {
             "nib": {
@@ -133,8 +133,8 @@
           }
         },
         "border-radius": {
-          "$type": "dimension",
-          "$value": "{combobox.popup.radius}",
+          "$type": "color",
+          "$value": "{border-radius.md}",
           "$description": "Combobox popup border-radius in open state",
           "$extensions": {
             "nib": {
@@ -145,7 +145,7 @@
         },
         "shadow": {
           "$type": "shadow",
-          "$value": "{combobox.popup.shadow}",
+          "$value": "{elevation.md}",
           "$description": "Combobox popup shadow in open state",
           "$extensions": {
             "nib": {

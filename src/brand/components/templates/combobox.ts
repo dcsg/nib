@@ -90,27 +90,27 @@ export const comboboxTemplate: Partial<ComponentContract> = {
   tokens: {
     input: {
       default: {
-        background: "combobox.bg",
-        "border-color": "combobox.border",
-        color: "combobox.text",
-        "border-radius": "combobox.radius",
+        background: "color.background.primary",
+        "border-color": "color.border.primary",
+        color: "color.text.primary",
+        "border-radius": "border-radius.md",
       },
       focused: {
-        "border-color": "combobox.border.focus",
-        "outline-color": "color.focus.ring",
+        "border-color": "color.border.focus",
+        "outline-color": "color.border.focus",
         "outline-width": "2px",
       },
       disabled: {
-        background: "color.surface.disabled",
-        color: "color.text.disabled",
+        background: "color.interactive.disabled",
+        color: "color.text.tertiary",
       },
     },
     popup: {
       open: {
-        background: "combobox.popup.bg",
-        "border-color": "combobox.popup.border",
-        "border-radius": "combobox.popup.radius",
-        shadow: "combobox.popup.shadow",
+        background: "color.surface.elevated",
+        "border-color": "color.border.primary",
+        "border-radius": "border-radius.md",
+        shadow: "elevation.md",
       },
     },
   },

@@ -75,15 +75,15 @@ export const toastTemplate: Partial<ComponentContract> = {
   tokens: {
     root: {
       visible: {
-        background: "toast.bg",
-        color: "toast.text",
-        "border-radius": "toast.radius",
+        background: "color.surface.elevated",
+        color: "color.text.primary",
+        "border-radius": "border-radius.md",
         shadow: {
           offsetX: "0px",
           offsetY: "4px",
           blur: "16px",
           spread: "0px",
-          color: "{color.shadow.default}",
+          color: "rgba(0,0,0,0.1)",
         },
       },
     },

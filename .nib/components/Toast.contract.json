@@ -1,7 +1,7 @@
 {
   "$schema": "https://nibjs.dev/schemas/component-contract.v1.json",
   "name": "Toast",
-  "description": "A transient message that confirms an action or communicates status — auto-dismisses after a timeout",
+  "description": "A transient message that confirms an action or communicates status \u2014 auto-dismisses after a timeout",
   "widgetType": "toast",
   "anatomy": {
     "root": "The toast container (role=status or role=alert)",
@@ -50,28 +50,28 @@
   "tokens": {
     "root": {
       "visible": {
-        "background": "toast.bg",
-        "color": "toast.text",
-        "border-radius": "toast.radius",
+        "background": "color.surface.elevated",
+        "color": "color.text.primary",
+        "border-radius": "border-radius.md",
         "shadow": {
           "offsetX": "0px",
           "offsetY": "4px",
           "blur": "16px",
           "spread": "0px",
-          "color": "{color.shadow.default}"
+          "color": "rgba(0,0,0,0.1)"
         }
       }
     }
   },
   "variants": {
-    "info": "Neutral information — role=status (polite live region)",
-    "success": "Positive outcome — role=status (polite live region)",
-    "warning": "Caution required — role=alert (assertive live region)",
-    "error": "Failure or blocking issue — role=alert (assertive live region)"
+    "info": "Neutral information \u2014 role=status (polite live region)",
+    "success": "Positive outcome \u2014 role=status (polite live region)",
+    "warning": "Caution required \u2014 role=alert (assertive live region)",
+    "error": "Failure or blocking issue \u2014 role=alert (assertive live region)"
   },
   "slots": {
     "message": {
-      "description": "The primary feedback message — must make sense without the title",
+      "description": "The primary feedback message \u2014 must make sense without the title",
       "required": true,
       "accepts": "text",
       "maxLength": 120,
@@ -90,7 +90,7 @@
       "accepts": "action"
     },
     "icon": {
-      "description": "Semantic icon matching variant — reinforces meaning for low-vision users",
+      "description": "Semantic icon matching variant \u2014 reinforces meaning for low-vision users",
       "required": false,
       "accepts": "icon"
     }

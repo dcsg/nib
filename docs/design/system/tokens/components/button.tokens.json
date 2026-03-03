@@ -5,7 +5,7 @@
       "default": {
         "background": {
           "$type": "color",
-          "$value": "{button.bg.primary}",
+          "$value": "{color.interactive.default}",
           "$description": "Button root background in default state",
           "$extensions": {
             "nib": {
@@ -16,7 +16,7 @@
         },
         "color": {
           "$type": "color",
-          "$value": "{button.text.primary}",
+          "$value": "{color.text.inverse}",
           "$description": "Button root color in default state",
           "$extensions": {
             "nib": {
@@ -26,8 +26,8 @@
           }
         },
         "border-radius": {
-          "$type": "dimension",
-          "$value": "{button.radius}",
+          "$type": "color",
+          "$value": "{border-radius.md}",
           "$description": "Button root border-radius in default state",
           "$extensions": {
             "nib": {
@@ -51,7 +51,7 @@
       "hover": {
         "background": {
           "$type": "color",
-          "$value": "{button.bg.primary.hover}",
+          "$value": "{color.interactive.hover}",
           "$description": "Button root background in hover state",
           "$extensions": {
             "nib": {
@@ -64,7 +64,7 @@
       "focused": {
         "outline-color": {
           "$type": "color",
-          "$value": "{color.focus.ring}",
+          "$value": "{color.border.focus}",
           "$description": "Button root outline-color in focused state",
           "$extensions": {
             "nib": {
@@ -88,7 +88,7 @@
       "disabled": {
         "background": {
           "$type": "color",
-          "$value": "{color.surface.disabled}",
+          "$value": "{color.interactive.disabled}",
           "$description": "Button root background in disabled state",
           "$extensions": {
             "nib": {
@@ -99,7 +99,7 @@
         },
         "color": {
           "$type": "color",
-          "$value": "{color.text.disabled}",
+          "$value": "{color.text.tertiary}",
           "$description": "Button root color in disabled state",
           "$extensions": {
             "nib": {

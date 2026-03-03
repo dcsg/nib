@@ -5,7 +5,7 @@
       "visible": {
         "background": {
           "$type": "color",
-          "$value": "{tooltip.bg}",
+          "$value": "{color.text.primary}",
           "$description": "Tooltip root background in visible state",
           "$extensions": {
             "nib": {
@@ -16,7 +16,7 @@
         },
         "color": {
           "$type": "color",
-          "$value": "{tooltip.text}",
+          "$value": "{color.text.inverse}",
           "$description": "Tooltip root color in visible state",
           "$extensions": {
             "nib": {
@@ -26,8 +26,8 @@
           }
         },
         "border-radius": {
-          "$type": "dimension",
-          "$value": "{tooltip.radius}",
+          "$type": "color",
+          "$value": "{border-radius.sm}",
           "$description": "Tooltip root border-radius in visible state",
           "$extensions": {
             "nib": {
@@ -38,7 +38,7 @@
         },
         "shadow": {
           "$type": "shadow",
-          "$value": "{tooltip.shadow}",
+          "$value": "{elevation.sm}",
           "$description": "Tooltip root shadow in visible state",
           "$extensions": {
             "nib": {

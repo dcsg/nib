@@ -1,5 +1,5 @@
 # Badge
-<!-- nib-component: v1 | generated: 2026-03-02 | do not edit manually -->
+<!-- nib-component: v1 | generated: 2026-03-03 | do not edit manually -->
 
 > A small label used to convey status, category, or metadata at a glance
 
@@ -66,9 +66,9 @@
 {
   "root": {
     "default": {
-      "background": "badge.bg.neutral",
-      "color": "badge.text.neutral",
-      "border-radius": "badge.radius"
+      "background": "color.background.secondary",
+      "color": "color.text.secondary",
+      "border-radius": "border-radius.full"
     }
   }
 }

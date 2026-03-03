@@ -5,7 +5,7 @@
       "default": {
         "background": {
           "$type": "color",
-          "$value": "{switch.track.bg}",
+          "$value": "{color.background.secondary}",
           "$description": "Switch track background in default state",
           "$extensions": {
             "nib": {
@@ -15,8 +15,8 @@
           }
         },
         "border-radius": {
-          "$type": "dimension",
-          "$value": "{switch.track.radius}",
+          "$type": "color",
+          "$value": "{border-radius.full}",
           "$description": "Switch track border-radius in default state",
           "$extensions": {
             "nib": {
@@ -29,7 +29,7 @@
       "on": {
         "background": {
           "$type": "color",
-          "$value": "{switch.track.bg.on}",
+          "$value": "{color.interactive.default}",
           "$description": "Switch track background in on state",
           "$extensions": {
             "nib": {
@@ -42,7 +42,7 @@
       "focused": {
         "outline-color": {
           "$type": "color",
-          "$value": "{color.focus.ring}",
+          "$value": "{color.border.focus}",
           "$description": "Switch track outline-color in focused state",
           "$extensions": {
             "nib": {
@@ -66,7 +66,7 @@
       "disabled": {
         "background": {
           "$type": "color",
-          "$value": "{color.surface.disabled}",
+          "$value": "{color.interactive.disabled}",
           "$description": "Switch track background in disabled state",
           "$extensions": {
             "nib": {
@@ -81,7 +81,7 @@
       "default": {
         "background": {
           "$type": "color",
-          "$value": "{switch.thumb.bg}",
+          "$value": "{color.background.primary}",
           "$description": "Switch thumb background in default state",
           "$extensions": {
             "nib": {
@@ -94,7 +94,7 @@
       "on": {
         "background": {
           "$type": "color",
-          "$value": "{switch.thumb.bg.on}",
+          "$value": "{color.background.primary}",
           "$description": "Switch thumb background in on state",
           "$extensions": {
             "nib": {

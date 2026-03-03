@@ -5,7 +5,7 @@
       "visible": {
         "background": {
           "$type": "color",
-          "$value": "{toast.bg}",
+          "$value": "{color.surface.elevated}",
           "$description": "Toast root background in visible state",
           "$extensions": {
             "nib": {
@@ -16,7 +16,7 @@
         },
         "color": {
           "$type": "color",
-          "$value": "{toast.text}",
+          "$value": "{color.text.primary}",
           "$description": "Toast root color in visible state",
           "$extensions": {
             "nib": {
@@ -26,8 +26,8 @@
           }
         },
         "border-radius": {
-          "$type": "dimension",
-          "$value": "{toast.radius}",
+          "$type": "color",
+          "$value": "{border-radius.md}",
           "$description": "Toast root border-radius in visible state",
           "$extensions": {
             "nib": {
@@ -43,7 +43,7 @@
             "offsetY": "4px",
             "blur": "16px",
             "spread": "0px",
-            "color": "{color.shadow.default}"
+            "color": "rgba(0,0,0,0.1)"
           },
           "$description": "Toast root shadow in visible state",
           "$extensions": {

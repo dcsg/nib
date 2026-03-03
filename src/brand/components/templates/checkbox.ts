@@ -60,21 +60,21 @@ export const checkboxTemplate: Partial<ComponentContract> = {
   tokens: {
     control: {
       default: {
-        background: "checkbox.bg",
-        "border-color": "checkbox.border",
-        "border-radius": "checkbox.radius",
+        background: "color.background.primary",
+        "border-color": "color.border.primary",
+        "border-radius": "border-radius.sm",
       },
       checked: {
-        background: "checkbox.bg.checked",
-        "border-color": "checkbox.border.checked",
+        background: "color.interactive.default",
+        "border-color": "color.interactive.default",
       },
       focused: {
-        "outline-color": "color.focus.ring",
+        "outline-color": "color.border.focus",
         "outline-width": "2px",
       },
       disabled: {
-        background: "color.surface.disabled",
-        "border-color": "color.border.disabled",
+        background: "color.interactive.disabled",
+        "border-color": "color.border.secondary",
       },
     },
   },

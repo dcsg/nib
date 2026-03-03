@@ -69,9 +69,9 @@ export const badgeTemplate: Partial<ComponentContract> = {
   tokens: {
     root: {
       default: {
-        background: "badge.bg.neutral",
-        color: "badge.text.neutral",
-        "border-radius": "badge.radius",
+        background: "color.background.secondary",
+        color: "color.text.secondary",
+        "border-radius": "border-radius.full",
       },
     },
   },

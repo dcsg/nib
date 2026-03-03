@@ -64,22 +64,25 @@ Do not invent or use components not listed here.
 
 | Component | Status | Description |
 |-----------|--------|-------------|
-| Button | draft | _no description_ |
-| TextInput | draft | _no description_ |
-| Checkbox | draft | _no description_ |
-| Radio | draft | _no description_ |
-| Switch | draft | _no description_ |
-| Dialog | draft | _no description_ |
-| Tooltip | draft | _no description_ |
-| Tabs | draft | _no description_ |
-| Combobox | draft | _no description_ |
-| Badge | draft | _no description_ |
+| Button | draft | Triggers an action or event |
+| TextInput | draft | Accepts free-form text input from the user |
+| Checkbox | draft | A binary toggle that can be checked or unchecked |
+| Radio | draft | A single option within a radio group — only one option can be selected at a time |
+| Switch | draft | A binary on/off toggle control |
+| Dialog | draft | A modal overlay that requires user interaction before the rest of the UI becomes accessible |
+| Tooltip | draft | A small popup that displays information about another element on hover or focus |
+| Tabs | draft | A set of layered sections of content — only one section is visible at a time |
+| Combobox | draft | An input that displays a popup list of suggested values |
+| Badge | draft | A small label used to convey status, category, or metadata at a glance |
 | Toast | draft | A transient message that confirms an action or communicates status — auto-dismisses after a timeout |
 | Alert | draft | A persistent inline message that communicates status or guidance — stays visible until the condition changes or the user dismisses it |
 
 For full contracts, see docs/design/system/components/.
 
 <!-- nib-component-inventory:end -->
+
+
+
 
 
 

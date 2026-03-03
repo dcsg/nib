@@ -59,26 +59,26 @@
   "tokens": {
     "track": {
       "default": {
-        "background": "switch.track.bg",
-        "border-radius": "switch.track.radius"
+        "background": "color.background.secondary",
+        "border-radius": "border-radius.full"
       },
       "on": {
-        "background": "switch.track.bg.on"
+        "background": "color.interactive.default"
       },
       "focused": {
-        "outline-color": "color.focus.ring",
+        "outline-color": "color.border.focus",
         "outline-width": "2px"
       },
       "disabled": {
-        "background": "color.surface.disabled"
+        "background": "color.interactive.disabled"
       }
     },
     "thumb": {
       "default": {
-        "background": "switch.thumb.bg"
+        "background": "color.background.primary"
       },
       "on": {
-        "background": "switch.thumb.bg.on"
+        "background": "color.background.primary"
       }
     }
   },
@@ -95,20 +95,20 @@
   },
   "slots": {
     "label": {
-      "description": "Switch label — describes the setting being toggled; always required",
+      "description": "Switch label \u2014 describes the setting being toggled; always required",
       "required": true,
       "accepts": "text",
       "maxLength": 60,
       "truncatable": true
     },
     "onLabel": {
-      "description": "Short label shown inside the track when on (e.g. 'On') — optional, use for clarity only",
+      "description": "Short label shown inside the track when on (e.g. 'On') \u2014 optional, use for clarity only",
       "required": false,
       "accepts": "text",
       "maxLength": 10
     },
     "offLabel": {
-      "description": "Short label shown inside the track when off (e.g. 'Off') — optional",
+      "description": "Short label shown inside the track when off (e.g. 'Off') \u2014 optional",
       "required": false,
       "accepts": "text",
       "maxLength": 10

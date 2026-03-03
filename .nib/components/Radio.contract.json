@@ -1,7 +1,7 @@
 {
   "$schema": "https://nibjs.dev/schemas/component-contract.v1.json",
   "name": "Radio",
-  "description": "A single option within a radio group — only one option can be selected at a time",
+  "description": "A single option within a radio group \u2014 only one option can be selected at a time",
   "widgetType": "radio",
   "anatomy": {
     "root": "The outer wrapper for the radio group",
@@ -59,21 +59,21 @@
   "tokens": {
     "radio": {
       "default": {
-        "background": "radio.bg",
-        "border-color": "radio.border",
-        "border-radius": "radio.radius"
+        "background": "color.background.primary",
+        "border-color": "color.border.primary",
+        "border-radius": "border-radius.full"
       },
       "selected": {
-        "background": "radio.bg.selected",
-        "border-color": "radio.border.selected"
+        "background": "color.interactive.default",
+        "border-color": "color.interactive.default"
       },
       "focused": {
-        "outline-color": "color.focus.ring",
+        "outline-color": "color.border.focus",
         "outline-width": "2px"
       },
       "disabled": {
-        "background": "color.surface.disabled",
-        "border-color": "color.border.disabled"
+        "background": "color.interactive.disabled",
+        "border-color": "color.border.secondary"
       }
     }
   },
@@ -93,7 +93,7 @@
   },
   "slots": {
     "label": {
-      "description": "Radio option label — describes this specific choice; always required",
+      "description": "Radio option label \u2014 describes this specific choice; always required",
       "required": true,
       "accepts": "text",
       "maxLength": 80,

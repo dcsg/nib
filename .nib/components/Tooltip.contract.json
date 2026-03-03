@@ -14,14 +14,14 @@
       "description": "Tooltip is not visible"
     },
     "visible": {
-      "description": "Tooltip is displayed — triggered by focus OR hover (never hover-only)"
+      "description": "Tooltip is displayed \u2014 triggered by focus OR hover (never hover-only)"
     }
   },
   "a11y": {
     "role": "tooltip",
     "keyboard": {
       "Escape": "Dismisses the tooltip without moving focus",
-      "Tab": "Showing on focus is required — tooltip must appear when trigger receives keyboard focus"
+      "Tab": "Showing on focus is required \u2014 tooltip must appear when trigger receives keyboard focus"
     },
     "focusBehavior": "not-focusable",
     "focusTrap": false,
@@ -40,10 +40,10 @@
   "tokens": {
     "root": {
       "visible": {
-        "background": "tooltip.bg",
-        "color": "tooltip.text",
-        "border-radius": "tooltip.radius",
-        "shadow": "tooltip.shadow"
+        "background": "color.text.primary",
+        "color": "color.text.inverse",
+        "border-radius": "border-radius.sm",
+        "shadow": "elevation.sm"
       }
     }
   },
@@ -56,7 +56,7 @@
   },
   "slots": {
     "content": {
-      "description": "Tooltip text — supplementary, never essential. Keep under 80 chars.",
+      "description": "Tooltip text \u2014 supplementary, never essential. Keep under 80 chars.",
       "required": true,
       "accepts": "text",
       "maxLength": 80,

@@ -14,7 +14,7 @@
       "description": "Resting display state"
     },
     "dismissible": {
-      "description": "Badge can be removed — dismiss button is visible"
+      "description": "Badge can be removed \u2014 dismiss button is visible"
     }
   },
   "a11y": {
@@ -36,19 +36,19 @@
       "aria-label"
     ],
     "requiredLabel": false,
-    "labelStrategy": "content-is-label — if icon-only badge, aria-label required"
+    "labelStrategy": "content-is-label \u2014 if icon-only badge, aria-label required"
   },
   "tokens": {
     "root": {
       "default": {
-        "background": "badge.bg.neutral",
-        "color": "badge.text.neutral",
-        "border-radius": "badge.radius"
+        "background": "color.background.secondary",
+        "color": "color.text.secondary",
+        "border-radius": "border-radius.full"
       }
     }
   },
   "variants": {
-    "neutral": "Default — no semantic meaning",
+    "neutral": "Default \u2014 no semantic meaning",
     "success": "Positive outcome or active status",
     "warning": "Caution or degraded state",
     "error": "Failure or blocked state",
@@ -66,7 +66,7 @@
   },
   "slots": {
     "label": {
-      "description": "Badge text — keep short and scannable",
+      "description": "Badge text \u2014 keep short and scannable",
       "required": true,
       "accepts": "text",
       "maxLength": 30,

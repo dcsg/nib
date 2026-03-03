@@ -1,5 +1,5 @@
 # Dialog
-<!-- nib-component: v1 | generated: 2026-03-02 | do not edit manually -->
+<!-- nib-component: v1 | generated: 2026-03-03 | do not edit manually -->
 
 > A modal overlay that requires user interaction before the rest of the UI becomes accessible
 
@@ -69,20 +69,20 @@
 {
   "root": {
     "open": {
-      "background": "dialog.bg",
-      "border-radius": "dialog.radius",
+      "background": "color.surface.elevated",
+      "border-radius": "border-radius.xl",
       "shadow": {
         "offsetX": "0px",
         "offsetY": "8px",
         "blur": "24px",
         "spread": "0px",
-        "color": "{color.shadow.default}"
+        "color": "rgba(0,0,0,0.15)"
       }
     }
   },
   "backdrop": {
     "open": {
-      "background": "dialog.backdrop"
+      "background": "color.text.primary"
     }
   }
 }

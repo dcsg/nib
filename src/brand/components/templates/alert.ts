@@ -74,10 +74,10 @@ export const alertTemplate: Partial<ComponentContract> = {
   tokens: {
     root: {
       default: {
-        background: "alert.bg",
-        "border-color": "alert.border",
-        color: "alert.text",
-        "border-radius": "alert.radius",
+        background: "color.background.secondary",
+        "border-color": "color.border.primary",
+        color: "color.text.primary",
+        "border-radius": "border-radius.md",
       },
     },
   },

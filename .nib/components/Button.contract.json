@@ -30,7 +30,7 @@
     },
     "loading": {
       "description": "Async action in progress",
-      "ariaLabel": "Loading…",
+      "ariaLabel": "Loading\u2026",
       "ariaDisabled": true
     }
   },
@@ -59,21 +59,21 @@
   "tokens": {
     "root": {
       "default": {
-        "background": "button.bg.primary",
-        "color": "button.text.primary",
-        "border-radius": "button.radius",
+        "background": "color.interactive.default",
+        "color": "color.text.inverse",
+        "border-radius": "border-radius.md",
         "border-color": "transparent"
       },
       "hover": {
-        "background": "button.bg.primary.hover"
+        "background": "color.interactive.hover"
       },
       "focused": {
-        "outline-color": "color.focus.ring",
+        "outline-color": "color.border.focus",
         "outline-width": "2px"
       },
       "disabled": {
-        "background": "color.surface.disabled",
-        "color": "color.text.disabled"
+        "background": "color.interactive.disabled",
+        "color": "color.text.tertiary"
       }
     }
   },
@@ -121,19 +121,19 @@
   },
   "slots": {
     "label": {
-      "description": "Button label text — always required unless icon-only with aria-label",
+      "description": "Button label text \u2014 always required unless icon-only with aria-label",
       "required": true,
       "accepts": "text",
       "maxLength": 40,
       "truncatable": false
     },
     "leadingIcon": {
-      "description": "Icon placed before the label — use to reinforce the action",
+      "description": "Icon placed before the label \u2014 use to reinforce the action",
       "required": false,
       "accepts": "icon"
     },
     "trailingIcon": {
-      "description": "Icon placed after the label — use sparingly (e.g. external link, chevron)",
+      "description": "Icon placed after the label \u2014 use sparingly (e.g. external link, chevron)",
       "required": false,
       "accepts": "icon"
     }

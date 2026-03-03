@@ -7,7 +7,7 @@
     "root": "The dialog element itself (role=dialog)",
     "backdrop": "The semi-transparent overlay behind the dialog",
     "header": "The title bar area containing the dialog title and close button",
-    "title": "The dialog’s heading (referenced by aria-labelledby)",
+    "title": "The dialog\u2019s heading (referenced by aria-labelledby)",
     "body": "The main content area",
     "footer": "Action buttons area",
     "closeButton": "The X button to dismiss the dialog"
@@ -51,20 +51,20 @@
   "tokens": {
     "root": {
       "open": {
-        "background": "dialog.bg",
-        "border-radius": "dialog.radius",
+        "background": "color.surface.elevated",
+        "border-radius": "border-radius.xl",
         "shadow": {
           "offsetX": "0px",
           "offsetY": "8px",
           "blur": "24px",
           "spread": "0px",
-          "color": "{color.shadow.default}"
+          "color": "rgba(0,0,0,0.15)"
         }
       }
     },
     "backdrop": {
       "open": {
-        "background": "dialog.backdrop"
+        "background": "color.text.primary"
       }
     }
   },
@@ -92,24 +92,24 @@
   },
   "slots": {
     "title": {
-      "description": "Dialog heading — referenced by aria-labelledby; always required",
+      "description": "Dialog heading \u2014 referenced by aria-labelledby; always required",
       "required": true,
       "accepts": "text",
       "maxLength": 60,
       "truncatable": false
     },
     "body": {
-      "description": "Main content area — accepts any structured content",
+      "description": "Main content area \u2014 accepts any structured content",
       "required": true,
       "accepts": "component"
     },
     "footer": {
-      "description": "Action buttons — max two actions (primary + cancel); omit for informational dialogs",
+      "description": "Action buttons \u2014 max two actions (primary + cancel); omit for informational dialogs",
       "required": false,
       "accepts": "component"
     },
     "closeButton": {
-      "description": "Icon button in the header to dismiss — omit for critical/blocking dialogs",
+      "description": "Icon button in the header to dismiss \u2014 omit for critical/blocking dialogs",
       "required": false,
       "accepts": "action"
     }

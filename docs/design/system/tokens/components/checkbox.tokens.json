@@ -5,7 +5,7 @@
       "default": {
         "background": {
           "$type": "color",
-          "$value": "{checkbox.bg}",
+          "$value": "{color.background.primary}",
           "$description": "Checkbox control background in default state",
           "$extensions": {
             "nib": {
@@ -16,7 +16,7 @@
         },
         "border-color": {
           "$type": "color",
-          "$value": "{checkbox.border}",
+          "$value": "{color.border.primary}",
           "$description": "Checkbox control border-color in default state",
           "$extensions": {
             "nib": {
@@ -26,8 +26,8 @@
           }
         },
         "border-radius": {
-          "$type": "dimension",
-          "$value": "{checkbox.radius}",
+          "$type": "color",
+          "$value": "{border-radius.sm}",
           "$description": "Checkbox control border-radius in default state",
           "$extensions": {
             "nib": {
@@ -40,7 +40,7 @@
       "checked": {
         "background": {
           "$type": "color",
-          "$value": "{checkbox.bg.checked}",
+          "$value": "{color.interactive.default}",
           "$description": "Checkbox control background in checked state",
           "$extensions": {
             "nib": {
@@ -51,7 +51,7 @@
         },
         "border-color": {
           "$type": "color",
-          "$value": "{checkbox.border.checked}",
+          "$value": "{color.interactive.default}",
           "$description": "Checkbox control border-color in checked state",
           "$extensions": {
             "nib": {
@@ -64,7 +64,7 @@
       "focused": {
         "outline-color": {
           "$type": "color",
-          "$value": "{color.focus.ring}",
+          "$value": "{color.border.focus}",
           "$description": "Checkbox control outline-color in focused state",
           "$extensions": {
             "nib": {
@@ -88,7 +88,7 @@
       "disabled": {
         "background": {
           "$type": "color",
-          "$value": "{color.surface.disabled}",
+          "$value": "{color.interactive.disabled}",
           "$description": "Checkbox control background in disabled state",
           "$extensions": {
             "nib": {
@@ -99,7 +99,7 @@
         },
         "border-color": {
           "$type": "color",
-          "$value": "{color.border.disabled}",
+          "$value": "{color.border.secondary}",
           "$description": "Checkbox control border-color in disabled state",
           "$extensions": {
             "nib": {

@@ -1,5 +1,5 @@
 # Button
-<!-- nib-component: v1 | generated: 2026-03-02 | do not edit manually -->
+<!-- nib-component: v1 | generated: 2026-03-03 | do not edit manually -->
 
 > Triggers an action or event
 
@@ -73,21 +73,21 @@
 {
   "root": {
     "default": {
-      "background": "button.bg.primary",
-      "color": "button.text.primary",
-      "border-radius": "button.radius",
+      "background": "color.interactive.default",
+      "color": "color.text.inverse",
+      "border-radius": "border-radius.md",
       "border-color": "transparent"
     },
     "hover": {
-      "background": "button.bg.primary.hover"
+      "background": "color.interactive.hover"
     },
     "focused": {
-      "outline-color": "color.focus.ring",
+      "outline-color": "color.border.focus",
       "outline-width": "2px"
     },
     "disabled": {
-      "background": "color.surface.disabled",
-      "color": "color.text.disabled"
+      "background": "color.interactive.disabled",
+      "color": "color.text.tertiary"
     }
   }
 }

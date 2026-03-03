@@ -1,5 +1,5 @@
 # Switch
-<!-- nib-component: v1 | generated: 2026-03-02 | do not edit manually -->
+<!-- nib-component: v1 | generated: 2026-03-03 | do not edit manually -->
 
 > A binary on/off toggle control
 
@@ -69,26 +69,26 @@
 {
   "track": {
     "default": {
-      "background": "switch.track.bg",
-      "border-radius": "switch.track.radius"
+      "background": "color.background.secondary",
+      "border-radius": "border-radius.full"
     },
     "on": {
-      "background": "switch.track.bg.on"
+      "background": "color.interactive.default"
     },
     "focused": {
-      "outline-color": "color.focus.ring",
+      "outline-color": "color.border.focus",
       "outline-width": "2px"
     },
     "disabled": {
-      "background": "color.surface.disabled"
+      "background": "color.interactive.disabled"
     }
   },
   "thumb": {
     "default": {
-      "background": "switch.thumb.bg"
+      "background": "color.background.primary"
     },
     "on": {
-      "background": "switch.thumb.bg.on"
+      "background": "color.background.primary"
     }
   }
 }

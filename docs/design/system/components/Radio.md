@@ -1,5 +1,5 @@
 # Radio
-<!-- nib-component: v1 | generated: 2026-03-02 | do not edit manually -->
+<!-- nib-component: v1 | generated: 2026-03-03 | do not edit manually -->
 
 > A single option within a radio group — only one option can be selected at a time
 
@@ -69,21 +69,21 @@
 {
   "radio": {
     "default": {
-      "background": "radio.bg",
-      "border-color": "radio.border",
-      "border-radius": "radio.radius"
+      "background": "color.background.primary",
+      "border-color": "color.border.primary",
+      "border-radius": "border-radius.full"
     },
     "selected": {
-      "background": "radio.bg.selected",
-      "border-color": "radio.border.selected"
+      "background": "color.interactive.default",
+      "border-color": "color.interactive.default"
     },
     "focused": {
-      "outline-color": "color.focus.ring",
+      "outline-color": "color.border.focus",
       "outline-width": "2px"
     },
     "disabled": {
-      "background": "color.surface.disabled",
-      "border-color": "color.border.disabled"
+      "background": "color.interactive.disabled",
+      "border-color": "color.border.secondary"
     }
   }
 }

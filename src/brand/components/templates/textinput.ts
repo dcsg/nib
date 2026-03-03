@@ -97,20 +97,20 @@ export const textinputTemplate: Partial<ComponentContract> = {
   tokens: {
     input: {
       default: {
-        background: "input.bg",
-        "border-color": "input.border",
-        color: "input.text",
-        "border-radius": "input.radius",
+        background: "color.background.primary",
+        "border-color": "color.border.primary",
+        color: "color.text.primary",
+        "border-radius": "border-radius.md",
       },
       focused: {
-        "border-color": "input.border.focus",
-        "outline-color": "color.focus.ring",
+        "border-color": "color.border.focus",
+        "outline-color": "color.border.focus",
         "outline-width": "2px",
       },
       disabled: {
-        background: "color.surface.disabled",
-        color: "color.text.disabled",
-        "border-color": "color.border.disabled",
+        background: "color.interactive.disabled",
+        color: "color.text.tertiary",
+        "border-color": "color.border.secondary",
       },
       invalid: {
         "border-color": "color.feedback.error",

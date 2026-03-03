@@ -5,7 +5,7 @@
       "default": {
         "background": {
           "$type": "color",
-          "$value": "{badge.bg.neutral}",
+          "$value": "{color.background.secondary}",
           "$description": "Badge root background in default state",
           "$extensions": {
             "nib": {
@@ -16,7 +16,7 @@
         },
         "color": {
           "$type": "color",
-          "$value": "{badge.text.neutral}",
+          "$value": "{color.text.secondary}",
           "$description": "Badge root color in default state",
           "$extensions": {
             "nib": {
@@ -26,8 +26,8 @@
           }
         },
         "border-radius": {
-          "$type": "dimension",
-          "$value": "{badge.radius}",
+          "$type": "color",
+          "$value": "{border-radius.full}",
           "$description": "Badge root border-radius in default state",
           "$extensions": {
             "nib": {

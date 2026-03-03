@@ -1,7 +1,7 @@
 {
   "$schema": "https://nibjs.dev/schemas/component-contract.v1.json",
   "name": "Alert",
-  "description": "A persistent inline message that communicates status or guidance — stays visible until the condition changes or the user dismisses it",
+  "description": "A persistent inline message that communicates status or guidance \u2014 stays visible until the condition changes or the user dismisses it",
   "widgetType": "alert",
   "anatomy": {
     "root": "The alert container (role=alert or role=status)",
@@ -41,27 +41,27 @@
       "aria-describedby"
     ],
     "requiredLabel": false,
-    "labelStrategy": "description-text-is-accessible — if icon-only, aria-label on root required"
+    "labelStrategy": "description-text-is-accessible \u2014 if icon-only, aria-label on root required"
   },
   "tokens": {
     "root": {
       "default": {
-        "background": "alert.bg",
-        "border-color": "alert.border",
-        "color": "alert.text",
-        "border-radius": "alert.radius"
+        "background": "color.background.secondary",
+        "border-color": "color.border.primary",
+        "color": "color.text.primary",
+        "border-radius": "border-radius.md"
       }
     }
   },
   "variants": {
-    "info": "Neutral guidance or contextual information — role=status",
-    "success": "Confirmation that an operation succeeded — role=status",
-    "warning": "Caution — user should act but is not blocked — role=alert",
-    "error": "Failure or blocking problem — role=alert"
+    "info": "Neutral guidance or contextual information \u2014 role=status",
+    "success": "Confirmation that an operation succeeded \u2014 role=status",
+    "warning": "Caution \u2014 user should act but is not blocked \u2014 role=alert",
+    "error": "Failure or blocking problem \u2014 role=alert"
   },
   "slots": {
     "description": {
-      "description": "The full alert message — must be understandable without the title",
+      "description": "The full alert message \u2014 must be understandable without the title",
       "required": true,
       "accepts": "text",
       "maxLength": 300,
@@ -75,12 +75,12 @@
       "truncatable": false
     },
     "actions": {
-      "description": "One or two action buttons — keep to a maximum of two",
+      "description": "One or two action buttons \u2014 keep to a maximum of two",
       "required": false,
       "accepts": "component"
     },
     "icon": {
-      "description": "Semantic icon — strongly recommended for all variants",
+      "description": "Semantic icon \u2014 strongly recommended for all variants",
       "required": false,
       "accepts": "icon"
     }

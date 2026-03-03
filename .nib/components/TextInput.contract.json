@@ -64,20 +64,20 @@
   "tokens": {
     "input": {
       "default": {
-        "background": "input.bg",
-        "border-color": "input.border",
-        "color": "input.text",
-        "border-radius": "input.radius"
+        "background": "color.background.primary",
+        "border-color": "color.border.primary",
+        "color": "color.text.primary",
+        "border-radius": "border-radius.md"
       },
       "focused": {
-        "border-color": "input.border.focus",
-        "outline-color": "color.focus.ring",
+        "border-color": "color.border.focus",
+        "outline-color": "color.border.focus",
         "outline-width": "2px"
       },
       "disabled": {
-        "background": "color.surface.disabled",
-        "color": "color.text.disabled",
-        "border-color": "color.border.disabled"
+        "background": "color.interactive.disabled",
+        "color": "color.text.tertiary",
+        "border-color": "color.border.secondary"
       },
       "invalid": {
         "border-color": "color.feedback.error"
@@ -111,7 +111,7 @@
   },
   "slots": {
     "label": {
-      "description": "Visible field label — always required (never use placeholder as a label substitute)",
+      "description": "Visible field label \u2014 always required (never use placeholder as a label substitute)",
       "required": true,
       "accepts": "text"
     },
@@ -123,7 +123,7 @@
       "truncatable": false
     },
     "errorText": {
-      "description": "Error message shown in the invalid state — replaces helperText",
+      "description": "Error message shown in the invalid state \u2014 replaces helperText",
       "required": false,
       "accepts": "text",
       "maxLength": 80,

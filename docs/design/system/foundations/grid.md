@@ -1,5 +1,5 @@
 # Grid System
-<!-- nib-foundation: grid | generated: 2026-03-02 | do not edit manually -->
+<!-- nib-foundation: grid | generated: 2026-03-03 | do not edit manually -->
 
 ## Window Size Classes
 

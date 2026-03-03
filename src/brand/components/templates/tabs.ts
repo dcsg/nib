@@ -80,19 +80,19 @@ export const tabsTemplate: Partial<ComponentContract> = {
   tokens: {
     tab: {
       default: {
-        color: "tab.text",
+        color: "color.text.secondary",
         background: "transparent",
       },
       selected: {
-        color: "tab.text.selected",
-        "border-color": "tab.indicator",
+        color: "color.interactive.default",
+        "border-color": "color.interactive.default",
       },
       focused: {
-        "outline-color": "color.focus.ring",
+        "outline-color": "color.border.focus",
         "outline-width": "2px",
       },
       disabled: {
-        color: "color.text.disabled",
+        color: "color.text.tertiary",
       },
     },
   },

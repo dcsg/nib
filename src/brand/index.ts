@@ -192,13 +192,13 @@ export interface BrandBuildResult {
 export async function brandBuild(options: BrandBuildOptions = {}): Promise<BrandBuildResult> {
   const config = await loadBrandConfig(options.config);
 
-  const [buildResult] = await Promise.all([
-    buildAll(config),
+  // Generate component token files first so buildCss can include them
+  await Promise.all([
+    buildComponentArtifacts(config),
     writeFoundationDocs(config),
   ]);
 
-  // Generate component tokens and docs for all registry entries
-  await buildComponentArtifacts(config);
+  const [buildResult] = await Promise.all([buildAll(config)]);
 
   await updateStatus({
     lastBuild: new Date().toISOString(),

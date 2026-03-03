@@ -5,7 +5,7 @@
       "default": {
         "color": {
           "$type": "color",
-          "$value": "{tab.text}",
+          "$value": "{color.text.secondary}",
           "$description": "Tabs tab color in default state",
           "$extensions": {
             "nib": {
@@ -29,7 +29,7 @@
       "selected": {
         "color": {
           "$type": "color",
-          "$value": "{tab.text.selected}",
+          "$value": "{color.interactive.default}",
           "$description": "Tabs tab color in selected state",
           "$extensions": {
             "nib": {
@@ -39,8 +39,8 @@
           }
         },
         "border-color": {
-          "$type": "dimension",
-          "$value": "{tab.indicator}",
+          "$type": "color",
+          "$value": "{color.interactive.default}",
           "$description": "Tabs tab border-color in selected state",
           "$extensions": {
             "nib": {
@@ -53,7 +53,7 @@
       "focused": {
         "outline-color": {
           "$type": "color",
-          "$value": "{color.focus.ring}",
+          "$value": "{color.border.focus}",
           "$description": "Tabs tab outline-color in focused state",
           "$extensions": {
             "nib": {
@@ -77,7 +77,7 @@
       "disabled": {
         "color": {
           "$type": "color",
-          "$value": "{color.text.disabled}",
+          "$value": "{color.text.tertiary}",
           "$description": "Tabs tab color in disabled state",
           "$extensions": {
             "nib": {

@@ -5,7 +5,7 @@
       "default": {
         "background": {
           "$type": "color",
-          "$value": "{radio.bg}",
+          "$value": "{color.background.primary}",
           "$description": "Radio radio background in default state",
           "$extensions": {
             "nib": {
@@ -16,7 +16,7 @@
         },
         "border-color": {
           "$type": "color",
-          "$value": "{radio.border}",
+          "$value": "{color.border.primary}",
           "$description": "Radio radio border-color in default state",
           "$extensions": {
             "nib": {
@@ -26,8 +26,8 @@
           }
         },
         "border-radius": {
-          "$type": "dimension",
-          "$value": "{radio.radius}",
+          "$type": "color",
+          "$value": "{border-radius.full}",
           "$description": "Radio radio border-radius in default state",
           "$extensions": {
             "nib": {
@@ -40,7 +40,7 @@
       "selected": {
         "background": {
           "$type": "color",
-          "$value": "{radio.bg.selected}",
+          "$value": "{color.interactive.default}",
           "$description": "Radio radio background in selected state",
           "$extensions": {
             "nib": {
@@ -51,7 +51,7 @@
         },
         "border-color": {
           "$type": "color",
-          "$value": "{radio.border.selected}",
+          "$value": "{color.interactive.default}",
           "$description": "Radio radio border-color in selected state",
           "$extensions": {
             "nib": {
@@ -64,7 +64,7 @@
       "focused": {
         "outline-color": {
           "$type": "color",
-          "$value": "{color.focus.ring}",
+          "$value": "{color.border.focus}",
           "$description": "Radio radio outline-color in focused state",
           "$extensions": {
             "nib": {
@@ -88,7 +88,7 @@
       "disabled": {
         "background": {
           "$type": "color",
-          "$value": "{color.surface.disabled}",
+          "$value": "{color.interactive.disabled}",
           "$description": "Radio radio background in disabled state",
           "$extensions": {
             "nib": {
@@ -99,7 +99,7 @@
         },
         "border-color": {
           "$type": "color",
-          "$value": "{color.border.disabled}",
+          "$value": "{color.border.secondary}",
           "$description": "Radio radio border-color in disabled state",
           "$extensions": {
             "nib": {
