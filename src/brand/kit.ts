@@ -227,7 +227,7 @@ function buildButtonOps(id: string, name: string, placement: KitPlacement, varia
     {
       id: `${id}_ico`, type: "icon_font", name: "icon",
       iconFontFamily: "lucide", iconFontName: cfg.iconName,
-      fontSize: 16, textColor: cfg.text,
+      width: 16, height: 16, textColor: cfg.text,
     },
     {
       id: `${id}_lbl`, type: "text", name: "label",
@@ -300,7 +300,7 @@ function buildCheckboxOps(id: string, name: string, placement: KitPlacement, var
   const boxChildren: NibNodeSpec[] = isChecked ? [{
     id: `${id}_check`, type: "icon_font", name: "check-icon",
     iconFontFamily: "lucide", iconFontName: "check",
-    fontSize: 12, textColor: "#ffffff",
+    width: 12, height: 12, textColor: "#ffffff",
   }] : [];
   return specToOps({
     id: `${id}_root`, type: "frame", name: `${name} / ${label}`,
@@ -559,7 +559,7 @@ function buildComboboxOps(id: string, name: string, placement: KitPlacement, var
             // INV-009: Icon glyphs use type:"icon_font" — never empty frames
             id: `${id}_chevron`, type: "icon_font", name: "chevron",
             iconFontFamily: "lucide", iconFontName: "chevrons-up-down",
-            fontSize: 16, textColor: "$--foreground-muted",
+            width: 16, height: 16, textColor: "$--foreground-muted",
           },
         ],
       },
@@ -628,7 +628,7 @@ function buildToastOps(id: string, name: string, placement: KitPlacement, varian
             // INV-009 Rule 12: intent icon uses icon_font with semantic Lucide name
             id: `${id}_icon`, type: "icon_font", name: "icon",
             iconFontFamily: "lucide", iconFontName: cfg.iconName,
-            fontSize: 20, textColor: cfg.iconBg,
+            width: 20, height: 20, textColor: cfg.iconBg,
           },
           {
             id: `${id}_msg`, type: "text", name: "message",
@@ -639,7 +639,7 @@ function buildToastOps(id: string, name: string, placement: KitPlacement, varian
             // INV-009 Rule 13: dismiss icon uses icon_font — not text glyph
             id: `${id}_close`, type: "icon_font", name: "close",
             iconFontFamily: "lucide", iconFontName: "x",
-            fontSize: 16, textColor: "$--foreground-muted",
+            width: 16, height: 16, textColor: "$--foreground-muted",
           },
         ],
       },
@@ -671,7 +671,7 @@ function buildAlertOps(id: string, name: string, placement: KitPlacement, varian
         // INV-009 Rule 12: intent icon uses icon_font with semantic Lucide name
         id: `${id}_icon`, type: "icon_font", name: "icon",
         iconFontFamily: "lucide", iconFontName: cfg.iconName,
-        fontSize: 24, textColor: cfg.iconColor,
+        width: 24, height: 24, textColor: cfg.iconColor,
       },
       {
         id: `${id}_content`, type: "frame", name: "content",
@@ -693,7 +693,7 @@ function buildAlertOps(id: string, name: string, placement: KitPlacement, varian
         // INV-009 Rule 13: dismiss icon uses icon_font — not text glyph
         id: `${id}_close`, type: "icon_font", name: "close",
         iconFontFamily: "lucide", iconFontName: "x",
-        fontSize: 16, textColor: "$--foreground-muted",
+        width: 16, height: 16, textColor: "$--foreground-muted",
       },
     ],
   }, parent);

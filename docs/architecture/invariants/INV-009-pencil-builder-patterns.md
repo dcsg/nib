@@ -220,7 +220,7 @@ intent-appropriate Lucide glyph.
 
 ```typescript
 // Correct:
-{ type: "icon_font", iconFontFamily: "lucide", iconFontName: "info", fontSize: 20, textColor: "$--primary" }
+{ type: "icon_font", iconFontFamily: "lucide", iconFontName: "info", width: 20, height: 20, textColor: "$--primary" }
 
 // Wrong — colored circle communicates nothing:
 { type: "frame", width: 20, height: 20, cornerRadius: [10, 10, 10, 10], backgroundColor: "$--primary" }
@@ -232,7 +232,7 @@ intent-appropriate Lucide glyph.
 
 Close/dismiss affordances must use:
 ```typescript
-{ type: "icon_font", iconFontFamily: "lucide", iconFontName: "x", fontSize: 16, textColor: "$--foreground-muted" }
+{ type: "icon_font", iconFontFamily: "lucide", iconFontName: "x", width: 16, height: 16, textColor: "$--foreground-muted" }
 ```
 
 The text-node approach (`type:"text", textContent:"×"`) is fragile: sizing is controlled by
@@ -242,7 +242,7 @@ always preferred over any text glyph for icon-like UI affordances.
 
 ```typescript
 // Correct:
-{ type: "icon_font", iconFontFamily: "lucide", iconFontName: "x", fontSize: 16 }
+{ type: "icon_font", iconFontFamily: "lucide", iconFontName: "x", width: 16, height: 16 }
 
 // Wrong (ADR-007 original, now superseded):
 { type: "text", textContent: "\u00D7", fontSize: 16 }  // × text glyph
@@ -270,6 +270,26 @@ not push items apart.
 
 ---
 
+### Rule 15: `icon_font` nodes must use `width`/`height` for sizing — `fontSize` is ignored
+
+Pencil renders `icon_font` nodes at `0×0` if `width` and `height` are not explicitly set.
+Setting `fontSize` on an `icon_font` node has no effect on its layout dimensions — Pencil
+silently ignores it. The icon's bounding box is always controlled by `width` and `height`.
+
+```typescript
+// Correct — icon renders at 20×20:
+{ type: "icon_font", iconFontFamily: "lucide", iconFontName: "info", width: 20, height: 20 }
+
+// Wrong — icon renders at 0×0 (invisible), making the parent container collapse:
+{ type: "icon_font", iconFontFamily: "lucide", iconFontName: "info", fontSize: 20 }
+```
+
+This applies to ALL `icon_font` nodes: intent icons, dismiss icons, trailing chevrons,
+and button icon variants. The `pencil-ops.ts` `buildPencilProps` function deliberately
+does **not** pass `fontSize` for `icon_font` nodes to prevent accidental use.
+
+---
+
 ## Enforcement
 
 These rules are verified by:
@@ -277,4 +297,4 @@ These rules are verified by:
 2. Unit tests in `src/brand/pencil-ops.test.ts` (verify correct op string output)
 3. Visual verification via `get_screenshot` after `batch_design` (catch render issues)
 
-New widget builders must be reviewed against all 14 rules before merging.
+New widget builders must be reviewed against all 15 rules before merging.

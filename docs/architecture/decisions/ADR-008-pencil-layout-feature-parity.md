@@ -62,7 +62,7 @@ This table defines the full `NibNodeSpec` → Pencil `batch_design` transformati
 | `clip` | `clip` | frame | Clips overflow to bounds |
 | `textContent` | `content` | text | Text string |
 | `textColor` | `fill` | text, icon_font | NOT `color:` — Pencil ignores `color:` on text |
-| `fontSize` | `fontSize` | text, icon_font | Point size |
+| `fontSize` | `fontSize` | text | Point size. **Not valid for `icon_font`** — use `width`/`height` instead (see INV-009 Rule 15) |
 | `fontWeight` | `fontWeight` | text | e.g. `"500"`, `"600"` |
 | `textAlign` | `textAlign` | text | `"center"`, `"left"`, `"right"` |
 | `textAlignVertical` | `textAlignVertical` | text | `"middle"`, `"top"`, `"bottom"` |
@@ -136,9 +136,11 @@ components (Toast, Alert, Badge, Button) must reference this table.
 | add | `"plus"` | Button with-icon variant |
 | expand/collapse | `"chevrons-up-down"` | Combobox, Select |
 
-Icon nodes must use `type:"icon_font"`, `iconFontFamily:"lucide"`, `fontSize` matching the
-surrounding text size (usually 16–24px), and `textColor` matching the semantic color token.
-Never use `backgroundColor` or `cornerRadius` to create a colored circle as an icon substitute.
+Icon nodes must use `type:"icon_font"`, `iconFontFamily:"lucide"`, explicit `width` and `height`
+matching the desired icon size (usually 16–24px), and `textColor` matching the semantic color
+token. **Do not use `fontSize`** — Pencil ignores it for `icon_font` and the node renders at
+`0×0` (see INV-009 Rule 15). Never use `backgroundColor` or `cornerRadius` to create a colored
+circle as an icon substitute.
 
 ---
 

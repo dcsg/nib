@@ -167,11 +167,11 @@ function buildPencilProps(spec: NibNodeSpec): Record<string, unknown> {
     if (spec.backgroundColor) props["fill"] = spec.backgroundColor;
 
   } else if (spec.type === "icon_font") {
-    // Icon: iconFontFamily + iconFontName + fill from textColor
+    // Icon: iconFontFamily + iconFontName + fill from textColor.
+    // Size is controlled by width/height (set as geometry above) — fontSize is ignored by Pencil for icon_font.
     if (spec.iconFontFamily) props["iconFontFamily"] = spec.iconFontFamily;
     if (spec.iconFontName) props["iconFontName"] = spec.iconFontName;
     if (spec.textColor) props["fill"] = spec.textColor;
-    if (spec.fontSize !== undefined) props["fontSize"] = spec.fontSize;
   }
 
   return props;

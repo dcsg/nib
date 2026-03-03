@@ -305,18 +305,20 @@ describe("toPencilOps — new node types and properties", () => {
     expect(ops[0]).not.toContain("padding:");
   });
 
-  it("type:icon_font emits iconFontFamily, iconFontName, and fill from textColor", () => {
+  it("type:icon_font emits iconFontFamily, iconFontName, fill from textColor, and width/height", () => {
     const ops = toPencilOps(
       { id: "icon", type: "icon_font", name: "check-icon",
         iconFontFamily: "lucide", iconFontName: "check",
-        fontSize: 12, textColor: "#ffffff" },
+        width: 12, height: 12, textColor: "#ffffff" },
       "document",
     );
     expect(ops[0]).toContain('type:"icon_font"');
     expect(ops[0]).toContain('iconFontFamily:"lucide"');
     expect(ops[0]).toContain('iconFontName:"check"');
     expect(ops[0]).toContain('fill:"#ffffff"');
-    expect(ops[0]).toContain("fontSize:12");
+    expect(ops[0]).toContain("width:12");
+    expect(ops[0]).toContain("height:12");
+    expect(ops[0]).not.toContain("fontSize:");
   });
 
   it("type:icon_font does NOT emit layout or gap", () => {
