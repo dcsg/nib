@@ -176,6 +176,9 @@ export function registerBrandTools(server: McpServer): void {
 
         // ── Compute confidence (guides agent on what to confirm with user) ─
         const confidence: Record<string, string> = {};
+        const VALID_PERSONALITIES = ["professional", "playful", "warm", "bold", "minimal", "elegant", "technical", "friendly"];
+        let unrecognizedPersonality: string[] = [];
+
         if (from) {
           confidence["brandName"] = brandName
             ? "overridden"
@@ -194,7 +197,19 @@ export function registerBrandTools(server: McpServer): void {
                 : colorCountInSource > 1
                   ? "medium — multiple colors found, using first"
                   : "missing";
-          confidence["personality"] = personality ? "overridden" : "inferred from text";
+
+          // Check for personality terms in the source that didn't map to a valid trait
+          if (!personality && sourceText) {
+            const { extractRawPersonalityTerms } = await import("../../brand/intake/markdown.js");
+            const rawTerms = extractRawPersonalityTerms(sourceText);
+            unrecognizedPersonality = rawTerms.filter((t) => !VALID_PERSONALITIES.includes(t));
+          }
+
+          confidence["personality"] = personality
+            ? "overridden"
+            : unrecognizedPersonality.length > 0
+              ? `inferred from text — ignored: ${unrecognizedPersonality.join(", ")} (not valid traits; valid: ${VALID_PERSONALITIES.join(", ")})`
+              : "inferred from text";
         }
 
         const missing: string[] = [];
@@ -211,6 +226,12 @@ export function registerBrandTools(server: McpServer): void {
           if (rawInput.colors.primary) nextStepParts.push(`  • Primary color: ${rawInput.colors.primary}`);
           else nextStepParts.push(`  • Primary color: NOT FOUND — ask the user for a hex value`);
           nextStepParts.push(`  • Personality: ${rawInput.personality.join(", ")}`);
+          if (unrecognizedPersonality.length > 0) {
+            nextStepParts.push(
+              `  ⚠ Personality terms not recognized and ignored: ${unrecognizedPersonality.join(", ")}. ` +
+              `Ask the user which valid trait best replaces them. Valid options: ${VALID_PERSONALITIES.join(", ")}.`,
+            );
+          }
           if (rawInput.colors.secondary) nextStepParts.push(`  • Secondary color: ${rawInput.colors.secondary}`);
           if (rawInput.industry) nextStepParts.push(`  • Industry: ${rawInput.industry}`);
           if (missing.length > 0) nextStepParts.push(`Missing required values: ${missing.join(", ")} — ask the user before proceeding.`);

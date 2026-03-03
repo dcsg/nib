@@ -176,6 +176,22 @@ function extractIndustry(text: string): string | null {
   return extractSection(text, "Industry");
 }
 
+/**
+ * Extract the raw personality words written in the source document's Personality
+ * section, before mapping them to valid enum values.
+ *
+ * Used by the MCP preview handler to warn when a term like "trustworthy" appears
+ * in the brief but has no valid BrandPersonality equivalent.
+ */
+export function extractRawPersonalityTerms(text: string): string[] {
+  const section = extractSection(text, "Personality");
+  if (!section) return [];
+  return section
+    .split(/[,\s\/|]+/)
+    .map((t) => t.trim().toLowerCase().replace(/[^\w-]/g, ""))
+    .filter((t) => t.length > 1);
+}
+
 /** Detect personality traits from text content */
 export function detectPersonality(text: string): BrandPersonality[] {
   const lower = text.toLowerCase();
