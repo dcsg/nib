@@ -10,7 +10,7 @@ nib brand init [OPTIONS]
 
 | Flag | Type | Default | Description |
 | --- | --- | --- | --- |
-| `--from` | `string` | | Source: path to `.md`/`.txt`/`.pdf` file, or a URL |
+| `--from` | `string` | | Source: path to `.md`/`.txt`/`.pdf`/`.json` file, or a URL |
 | `--ai` | `string` | `anthropic` | AI provider: `anthropic`, `openai`, `ollama` |
 | `--output` | `string` | `docs/design/system` | Output directory |
 | `--no-ai` | `boolean` | `false` | Skip AI enhancement |
@@ -31,6 +31,9 @@ nib brand init --from https://acme.com
 
 # From a PDF, no AI
 nib brand init --from brand.pdf --no-ai
+
+# From a Tokens Studio JSON export
+nib brand init --from tokens.json --no-ai
 
 # Custom output directory
 nib brand init --from brand.md -o src/design-system
@@ -152,6 +155,35 @@ nib brand audit
 
 # Require AAA compliance
 nib brand audit --level AAA
+```
+
+## brand validate <Badge type="tip" text="New" />
+
+Run 11 automated checks against your token files and component contracts. See the [full guide](/guide/brand-validate) for check details, CI integration, and fixing common issues.
+
+```sh
+nib brand validate [OPTIONS]
+```
+
+| Flag | Type | Default | Description |
+| --- | --- | --- | --- |
+| `--config` | `string` | `.nib/brand.config.json` | Path to brand config |
+| `--tokens-dir` | `string` | from config | Override tokens directory |
+| `--fail-on` | `string` | `all` | Which checks block CI: `schema`, `required`, `a11y`, `components`, `all` |
+
+Exits with code 1 when any errors are present (warnings do not fail).
+
+**Examples:**
+
+```sh
+# Run all 11 checks
+nib brand validate
+
+# Only fail on schema errors (strictest CI gate)
+nib brand validate --fail-on schema
+
+# Validate a custom tokens directory
+nib brand validate --tokens-dir ./custom/tokens
 ```
 
 ## brand import <Badge type="tip" text="New" />

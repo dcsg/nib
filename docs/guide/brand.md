@@ -49,6 +49,9 @@ nib brand init --from https://your-company.com --no-ai
 
 # From a PDF
 nib brand init --from brand-guide.pdf --no-ai
+
+# From a Tokens Studio JSON export (Figma-first teams)
+nib brand init --from tokens.json --no-ai
 ```
 
 ## Creating a Brand Brief
@@ -101,6 +104,7 @@ Ask your agent to interview you: *"Set up a nib brand system. I don't have brand
 | Markdown / text | `--from file.md` | Hex colors, font names, brand name, personality keywords |
 | Website URL | `--from https://...` | CSS colors, font families, Google Fonts, meta tags |
 | PDF | `--from guide.pdf` | Text content, hex colors, font references |
+| Tokens Studio | `--from tokens.json` | All color tokens (ranked by semantic signal), font families, brand name |
 
 ## Output Structure
 
