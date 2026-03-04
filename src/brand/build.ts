@@ -107,7 +107,18 @@ async function writeOutput(path: string, content: string): Promise<void> {
 }
 
 /** Build CSS custom properties from all token files */
-export async function buildCss(tokensDir: string, outputPath: string): Promise<void> {
+/** Wrap a CSS section comment with storybook-design-token @tokens/@presenter annotations */
+function annotated(label: string, presenter: string, annotate: boolean): string {
+  if (!annotate) return `  /* ${label} */`;
+  return [
+    `  /**`,
+    `   * @tokens ${label}`,
+    `   * @presenter ${presenter}`,
+    `   */`,
+  ].join("\n");
+}
+
+export async function buildCss(tokensDir: string, outputPath: string, annotate = false): Promise<void> {
   // Read all token files
   const [primitives, semanticLight, semanticDark, typography, spacing, radius, elevation, motion, sizing, borderWidthFile, opacityFile, zIndexFile, breakpointFile] =
     await Promise.all([
@@ -149,49 +160,49 @@ export async function buildCss(tokensDir: string, outputPath: string): Promise<v
   ];
 
   // Primitives
-  lines.push("  /* Color Primitives */");
+  lines.push(annotated("Color Primitives", "Color", annotate));
   for (const [key, { value }] of Object.entries(flatPrimitives)) {
     lines.push(`  --${key}: ${resolveToCssVar(value)};`);
   }
 
   // Semantic light (default)
   lines.push("");
-  lines.push("  /* Semantic Colors (Light) */");
+  lines.push(annotated("Semantic Colors", "Color", annotate));
   for (const [key, { value }] of Object.entries(flatSemanticLight)) {
     lines.push(`  --${key}: ${resolveToCssVar(value)};`);
   }
 
   // Typography
   lines.push("");
-  lines.push("  /* Typography */");
+  lines.push(annotated("Typography", "FontFamily", annotate));
   for (const [key, { value }] of Object.entries(flatTypography)) {
     lines.push(`  --${key}: ${resolveToCssVar(value)};`);
   }
 
   // Spacing
   lines.push("");
-  lines.push("  /* Spacing */");
+  lines.push(annotated("Spacing", "Spacing", annotate));
   for (const [key, { value }] of Object.entries(flatSpacing)) {
     lines.push(`  --${key}: ${resolveToCssVar(value)};`);
   }
 
   // Border radius
   lines.push("");
-  lines.push("  /* Border Radius */");
+  lines.push(annotated("Border Radius", "BorderRadius", annotate));
   for (const [key, { value }] of Object.entries(flatRadius)) {
     lines.push(`  --${key}: ${resolveToCssVar(value)};`);
   }
 
   // Elevation
   lines.push("");
-  lines.push("  /* Elevation */");
+  lines.push(annotated("Elevation / Shadows", "Shadow", annotate));
   for (const [key, { value }] of Object.entries(flatElevation)) {
     lines.push(`  --${key}: ${resolveToCssVar(value)};`);
   }
 
   // Motion
   lines.push("");
-  lines.push("  /* Motion */");
+  lines.push(annotated("Motion", "Animation", annotate));
   for (const [key, { value }] of Object.entries(flatMotion)) {
     if (Array.isArray(value)) {
       lines.push(`  --${key}: cubic-bezier(${(value as number[]).join(", ")});`);
@@ -202,21 +213,21 @@ export async function buildCss(tokensDir: string, outputPath: string): Promise<v
 
   // Sizing
   lines.push("");
-  lines.push("  /* Sizing */");
+  lines.push(annotated("Sizing", "Spacing", annotate));
   for (const [key, { value }] of Object.entries(flatSizing)) {
     lines.push(`  --${key}: ${resolveToCssVar(value)};`);
   }
 
   // Border Width
   lines.push("");
-  lines.push("  /* Border Width */");
+  lines.push(annotated("Border Width", "Border", annotate));
   for (const [key, { value }] of Object.entries(flatBorderWidth)) {
     lines.push(`  --${key}: ${resolveToCssVar(value)};`);
   }
 
   // Opacity
   lines.push("");
-  lines.push("  /* Opacity */");
+  lines.push(annotated("Opacity", "Opacity", annotate));
   for (const [key, { value }] of Object.entries(flatOpacity)) {
     lines.push(`  --${key}: ${resolveToCssVar(value)};`);
   }
@@ -660,9 +671,10 @@ async function checkRequiredTokens(
 /** Run all platform builds */
 export async function buildAll(config: NibBrandConfig): Promise<BuildResult> {
   const tokensDir = config.tokens;
+  const annotate = config.storybook?.annotations === true;
 
   await Promise.all([
-    buildCss(tokensDir, config.platforms.css),
+    buildCss(tokensDir, config.platforms.css, annotate),
     buildTailwindPreset(tokensDir, config.platforms.tailwind),
     buildPencilVariables(tokensDir, config.platforms.pencil),
   ]);

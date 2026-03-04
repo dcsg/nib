@@ -17,6 +17,7 @@ if (process.argv.includes("--mcp")) {
   const { componentCommand } = await import("./commands/component.js");
   const { kitCommand } = await import("./commands/kit.js");
   const { pencilCommand } = await import("./commands/pencil.js");
+  const { storybookCommand } = await import("./commands/storybook.js");
 
   const main = defineCommand({
     meta: {
@@ -36,6 +37,7 @@ if (process.argv.includes("--mcp")) {
       templates: templatesCommand,
       brand: brandCommand,
       component: componentCommand,
+      storybook: storybookCommand,
       status: statusCommand,
       doctor: doctorCommand,
     },

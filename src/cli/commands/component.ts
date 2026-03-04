@@ -1,12 +1,13 @@
 /**
  * `nib component` — CLI command suite for the component system.
  *
- * Subcommands: init, list
+ * Subcommands: init, list, story
  */
 
 import { defineCommand } from "citty";
 import { initComponentCommand } from "./component/init.js";
 import { listComponentCommand } from "./component/list.js";
+import { storyCommand } from "./component/story.js";
 
 export const componentCommand = defineCommand({
   meta: {
@@ -16,5 +17,6 @@ export const componentCommand = defineCommand({
   subCommands: {
     init: initComponentCommand,
     list: listComponentCommand,
+    story: storyCommand,
   },
 });

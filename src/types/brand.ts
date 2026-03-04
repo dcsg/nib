@@ -244,6 +244,33 @@ export interface NibBrandConfig {
    * Defaults to Pencil / Lucide 0.263 / Inter when omitted.
    */
   renderer?: RendererConfig;
+  /**
+   * Storybook integration configuration.
+   * When present, nib brand build emits @tokens/@presenter annotations in variables.css
+   * and nib storybook init uses these values to configure the token panel.
+   */
+  storybook?: StorybookConfig;
+}
+
+/** Storybook integration configuration (set in brand.config.json → "storybook" key) */
+export interface StorybookConfig {
+  /**
+   * Emit @tokens / @presenter annotation comments in variables.css.
+   * Required for the storybook-design-token panel to populate automatically.
+   * Default: false (no annotation comments — unchanged build output).
+   */
+  annotations?: boolean;
+  /**
+   * Default tab shown in the design token panel.
+   * Must match one of the @tokens group names in variables.css.
+   * Default: "Semantic Colors"
+   */
+  defaultTab?: string;
+  /**
+   * Show search bar in the design token panel.
+   * Default: true
+   */
+  showSearch?: boolean;
 }
 
 /** Options for `nib brand init` */
