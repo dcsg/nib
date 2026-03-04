@@ -26,7 +26,7 @@ export interface HtmlOptions {
 export function generateHtml(doc: DesignDocument, options: HtmlOptions): string {
   const { template: templateName, css, assetLinks, config } = options;
   const title = config?.title ?? "Prototype";
-  const hasThemes = Object.keys(doc.themes.axes).length > 0;
+  const hasThemes = Object.keys(doc.themes?.axes ?? {}).length > 0;
 
   const canvasHtml = doc.canvases
     .map((c, i) => renderCanvas(c, i))

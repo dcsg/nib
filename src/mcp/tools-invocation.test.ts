@@ -776,11 +776,11 @@ describe("nib_kit — batchDesignOps and foundations", () => {
     // Operations use Pencil variable references ($varname) — not {var.xxx} or bare hex values
     expect(button.batchDesignOps).toMatch(/fill:"[^"]*\$[a-z]/);
     expect(button.batchDesignOps).not.toContain("{var.");
-    // Must use I(document, ...) to place root frame on canvas
-    expect(button.batchDesignOps).toContain("I(document,");
+    // Component sections insert into the kit wrapper frame (kit_frame), not directly into document
+    expect(button.batchDesignOps).toContain("I(kit_frame,");
   });
 
-  it("batchDesignOps inserts root frame into document", async () => {
+  it("batchDesignOps inserts component sections into kit wrapper frame", async () => {
     const { client } = await createTestPair();
     const result = await client.callTool({
       name: "nib_kit",
@@ -790,8 +790,12 @@ describe("nib_kit — batchDesignOps and foundations", () => {
     const content = result.content as Array<{ type: string; text: string }>;
     const recipe = JSON.parse(content[0]!.text);
     const button = recipe.components[0] as { batchDesignOps: string };
-
-    expect(button.batchDesignOps).toContain("I(document,");
+    // Sections now nest inside the kit_frame wrapper, not document directly
+    expect(button.batchDesignOps).toContain("I(kit_frame,");
+    // First batch contains the kit wrapper frame creation op
+    const firstBatch = recipe.batches[0] as { ops: string };
+    expect(firstBatch.ops).toContain("kit_frame=I(document,");
+    expect(firstBatch.ops).toContain("placeholder:true");
   });
 
   it("returns foundations with color palette, typography, and spacing ops", async () => {

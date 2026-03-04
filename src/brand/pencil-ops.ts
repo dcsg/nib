@@ -19,6 +19,162 @@
  * See ADR-008 for the full Pencil layout feature reference.
  */
 
+// ── Renderer-safe emit guards (ADR-010 / INV-010) ─────────────────────────────
+
+/**
+ * Thrown when a transformation cannot produce a renderer-safe output.
+ * Currently raised only for icon_font nodes whose iconFontName is not in
+ * PENCIL_LUCIDE_ALLOWLIST and has no entry in PENCIL_LUCIDE_FALLBACK_MAP.
+ * See ADR-010.
+ */
+export class TransformationError extends Error {
+  override readonly name = "TransformationError";
+  constructor(message: string) {
+    super(message);
+  }
+}
+
+/**
+ * Lucide icon names confirmed to render correctly in Pencil's Lucide snapshot 0.263.
+ * Do NOT add names to this set without visual validation in Pencil.
+ * See ADR-010 for the full allowlist and validation methodology.
+ */
+export const PENCIL_LUCIDE_ALLOWLIST: ReadonlySet<string> = new Set([
+  "activity",        "arrow-right",     "arrow-up-down",   "bell",            "building",
+  "calendar",        "check",           "chevron-down",    "chevron-right",   "chevrons-down",
+  "chevrons-up",     "circle",          "circle-alert",    "circle-check",    "circle-x",
+  "code",            "copy",            "credit-card",     "gauge",           "inbox",
+  "info",            "layers",          "layout-dashboard","link",            "list",
+  "lock",            "log-in",          "plus",            "rocket",          "send",
+  "server",          "settings",        "shield",          "shopping-cart",   "sparkles",
+  "trending-up",     "upload",          "user",            "users",           "x",
+  "zap",
+]);
+
+/**
+ * Maps known-broken Pencil Lucide icon names to their nearest working equivalents.
+ * Every value MUST be present in PENCIL_LUCIDE_ALLOWLIST.
+ * See ADR-010 for rationale on each mapping choice.
+ */
+export const PENCIL_LUCIDE_FALLBACK_MAP: Readonly<Record<string, string>> = {
+  "ticket":             "credit-card",
+  "shopping-bag":       "shopping-cart",
+  "cpu":                "server",
+  "building-2":         "building",
+  "layout-grid":        "layout-dashboard",
+  "grid":               "layout-dashboard",
+  "door-open":          "log-in",
+  "layout-template":    "layout-dashboard",
+  "sliders-horizontal": "settings",
+  "sliders":            "settings",
+  "mail":               "inbox",
+  "shield-check":       "shield",
+  "chevrons-up-down":   "arrow-up-down",
+  "chevron-up-down":    "arrow-up-down",
+  "alert-triangle":     "circle-alert",
+  "triangle-alert":     "circle-alert",
+  "alert-circle":       "circle-alert",
+  "filter":             "list",
+  "home":               "layout-dashboard",
+} as const;
+
+/**
+ * Resolve a Lucide icon name to one that is safe to emit in Pencil.
+ *
+ * Resolution order (ADR-010 §2):
+ * 1. Name is in PENCIL_LUCIDE_ALLOWLIST → return unchanged.
+ * 2. Name is in PENCIL_LUCIDE_FALLBACK_MAP → substitute, warn in non-production, return fallback.
+ * 3. Neither → throw TransformationError.
+ *
+ * @throws {TransformationError} if the name is unknown and has no fallback.
+ */
+export function resolveIconName(name: string): string {
+  if (PENCIL_LUCIDE_ALLOWLIST.has(name)) {
+    return name;
+  }
+  const fallback = PENCIL_LUCIDE_FALLBACK_MAP[name];
+  if (fallback !== undefined) {
+    if (process.env["NODE_ENV"] !== "production") {
+      console.warn(
+        `[nib] icon_font: "${name}" is not in Pencil's Lucide snapshot. ` +
+        `Substituting "${fallback}". See ADR-010 for the full allowlist.`,
+      );
+    }
+    return fallback;
+  }
+  throw new TransformationError(
+    `icon_font: "${name}" is not in PENCIL_LUCIDE_ALLOWLIST and has no fallback. ` +
+    `Pencil would render a blank box. Add it to the allowlist after visual validation, ` +
+    `or use a mapped equivalent. See ADR-010.`,
+  );
+}
+
+/** Forbidden Unicode ranges — Inter does not provide glyphs for these blocks. See ADR-010. */
+const INTER_FORBIDDEN_RANGES: ReadonlyArray<readonly [number, number]> = [
+  [0x2300, 0x23ff], // Miscellaneous Technical
+  [0x2400, 0x243f], // Control Pictures
+  [0x2500, 0x257f], // Box Drawing
+  [0x2580, 0x259f], // Block Elements
+  [0x25a0, 0x25ff], // Geometric Shapes (includes ▾ U+25BE)
+  [0x2600, 0x26ff], // Miscellaneous Symbols (includes ✦ U+2726)
+  [0x2700, 0x27bf], // Dingbats
+];
+
+/** Bullet/CTA codepoints — substituted with → (U+2192). */
+const INTER_BULLET_CODEPOINTS = new Set([0x2726, 0x2605]); // ✦ ★
+
+/** Dropdown/sort chevron codepoints — stripped (use icon_font instead). */
+const INTER_DROPDOWN_CODEPOINTS = new Set([0x25be, 0x25b4]); // ▾ ▴
+
+function isForbiddenCodepoint(cp: number): boolean {
+  return INTER_FORBIDDEN_RANGES.some(([lo, hi]) => cp >= lo && cp <= hi);
+}
+
+/**
+ * Sanitise text content for Pencil emit, replacing codepoints outside Inter's
+ * glyph coverage with safe equivalents. Never throws.
+ *
+ * Substitution rules (ADR-010 §3):
+ * - Bullet/CTA markers (✦ U+2726, ★ U+2605) → "→" (U+2192)
+ * - Dropdown chevrons (▾ U+25BE, ▴ U+25B4) → stripped with a warning
+ * - All other forbidden codepoints → stripped with a warning
+ */
+export function sanitiseTextContent(text: string): string {
+  let result = "";
+  for (const char of text) {
+    const cp = char.codePointAt(0)!;
+    if (!isForbiddenCodepoint(cp)) {
+      result += char;
+      continue;
+    }
+    if (INTER_BULLET_CODEPOINTS.has(cp)) {
+      console.warn(
+        `[nib] text: character U+${cp.toString(16).toUpperCase().padStart(4, "0")} ` +
+        `("${char}") is outside Inter's glyph coverage. Replaced with "→". See ADR-010.`,
+      );
+      result += "→";
+      continue;
+    }
+    if (INTER_DROPDOWN_CODEPOINTS.has(cp)) {
+      console.warn(
+        `[nib] text: character U+${cp.toString(16).toUpperCase().padStart(4, "0")} ` +
+        `("${char}") is a dropdown chevron Inter cannot render. ` +
+        `Use an icon_font node with iconFontName:"chevron-down" instead. See ADR-010.`,
+      );
+      // Stripped — no replacement
+      continue;
+    }
+    console.warn(
+      `[nib] text: character U+${cp.toString(16).toUpperCase().padStart(4, "0")} ` +
+      `("${char}") is outside Inter's glyph coverage. Stripped. See ADR-010.`,
+    );
+    // Omitted from result
+  }
+  return result;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export type NibFill = string; // "$var-name" or "#hex"
 export type NibDimension = number | "fill_container";
 
@@ -58,6 +214,8 @@ export interface NibNodeSpec {
   justifyContent?: "center" | "start" | "end" | "space_between";
   /** Clip overflow to frame bounds */
   clip?: boolean;
+  /** Mark as a reusable Pencil component (shows in component picker, can be instanced) */
+  reusable?: boolean;
 
   // icon_font-only properties
   iconFontFamily?: string; // e.g. "lucide"
@@ -148,13 +306,14 @@ function buildPencilProps(spec: NibNodeSpec): Record<string, unknown> {
     if (spec.alignItems) props["alignItems"] = spec.alignItems;
     if (spec.justifyContent) props["justifyContent"] = spec.justifyContent;
     if (spec.clip !== undefined) props["clip"] = spec.clip;
+    if (spec.reusable !== undefined) props["reusable"] = spec.reusable;
     // Inline children recursively — no separate I() ops, Pencil auto-assigns child IDs
     if (spec.children && spec.children.length > 0) {
       props["children"] = spec.children.map(buildPencilProps);
     }
 
   } else if (spec.type === "text") {
-    if (spec.textContent !== undefined) props["content"] = spec.textContent;
+    if (spec.textContent !== undefined) props["content"] = sanitiseTextContent(spec.textContent);
     if (spec.fontSize !== undefined) props["fontSize"] = spec.fontSize;
     if (spec.fontWeight) props["fontWeight"] = spec.fontWeight;
     if (spec.textColor) props["fill"] = spec.textColor; // ← the critical mapping
@@ -170,7 +329,7 @@ function buildPencilProps(spec: NibNodeSpec): Record<string, unknown> {
     // Icon: iconFontFamily + iconFontName + fill from textColor.
     // Size is controlled by width/height (set as geometry above) — fontSize is ignored by Pencil for icon_font.
     if (spec.iconFontFamily) props["iconFontFamily"] = spec.iconFontFamily;
-    if (spec.iconFontName) props["iconFontName"] = spec.iconFontName;
+    if (spec.iconFontName) props["iconFontName"] = resolveIconName(spec.iconFontName);
     if (spec.textColor) props["fill"] = spec.textColor;
   }
 

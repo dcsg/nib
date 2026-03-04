@@ -249,6 +249,7 @@ function buildButtonOps(id: string, name: string, placement: KitPlacement, varia
     cornerRadius: [6, 6, 6, 6],
     backgroundColor: cfg.bg,
     borderColor: cfg.border,
+    reusable: true,
     children,
   }, parent);
 }
@@ -265,6 +266,7 @@ function buildTextInputOps(id: string, name: string, placement: KitPlacement, va
     id: `${id}_root`, type: "frame", name: `${name} / ${label}`,
     x: placement.x, y: placement.y, width: placement.width,
     layout: "vertical", gap: 6, padding: 0,
+    reusable: true,
     children: [
       {
         id: `${id}_lbl`, type: "text", name: "label",
@@ -306,6 +308,7 @@ function buildCheckboxOps(id: string, name: string, placement: KitPlacement, var
     id: `${id}_root`, type: "frame", name: `${name} / ${label}`,
     x: placement.x, y: placement.y, width: placement.width, height: placement.height,
     layout: "horizontal", gap: 8, padding: 0, alignItems: "center",
+    reusable: true,
     children: [
       {
         id: `${id}_box`, type: "frame", name: "checkbox",
@@ -345,6 +348,7 @@ function buildRadioOps(id: string, name: string, placement: KitPlacement, varian
     id: `${id}_root`, type: "frame", name: `${name} / ${label}`,
     x: placement.x, y: placement.y, width: placement.width, height: placement.height,
     layout: "horizontal", gap: 8, padding: 0, alignItems: "center",
+    reusable: true,
     children: [
       {
         id: `${id}_circle`, type: "frame", name: "radio",
@@ -379,6 +383,7 @@ function buildSwitchOps(id: string, name: string, placement: KitPlacement, varia
     id: `${id}_root`, type: "frame", name: `${name} / ${label}`,
     x: placement.x, y: placement.y, width: placement.width, height: placement.height,
     layout: "horizontal", gap: 8, padding: 0, alignItems: "center",
+    reusable: true,
     children: [
       {
         id: `${id}_track`, type: "frame", name: "track",
@@ -411,6 +416,7 @@ function buildTabsOps(id: string, name: string, placement: KitPlacement, parent 
     layout: "horizontal", gap: 4, padding: 4,
     cornerRadius: [8, 8, 8, 8],
     backgroundColor: "#f1f5f9",
+    reusable: true,
     children: [
       {
         id: `${id}_tab1`, type: "frame", name: "tab-active",
@@ -456,6 +462,7 @@ function buildDialogOps(id: string, name: string, placement: KitPlacement, paren
     cornerRadius: [12, 12, 12, 12],
     backgroundColor: "$dialog-bg",
     borderColor: "$--border",
+    reusable: true,
     children: [
       {
         id: `${id}_title`, type: "text", name: "title",
@@ -516,6 +523,7 @@ function buildTooltipOps(id: string, name: string, placement: KitPlacement, vari
     layout: "horizontal", gap: 0, padding: 10,
     cornerRadius: [6, 6, 6, 6],
     backgroundColor: cfg.bg,
+    reusable: true,
     children: [{
       id: `${id}_text`, type: "text", name: "text",
       textContent: "Tooltip message", fontSize: 12, fontWeight: "400",
@@ -535,6 +543,7 @@ function buildComboboxOps(id: string, name: string, placement: KitPlacement, var
     id: `${id}_root`, type: "frame", name: `${name} / ${label}`,
     x: placement.x, y: placement.y, width: placement.width,
     layout: "vertical", gap: 6, padding: 0,
+    reusable: true,
     children: [
       {
         id: `${id}_lbl`, type: "text", name: "label",
@@ -584,6 +593,7 @@ function buildBadgeOps(id: string, name: string, placement: KitPlacement, varian
     alignItems: "center", justifyContent: "center",
     cornerRadius: [14, 14, 14, 14],
     backgroundColor: cfg.bg,
+    reusable: true,
     children: [{
       id: `${id}_lbl`, type: "text", name: "label",
       textContent: label, fontSize: 12, fontWeight: "500",
@@ -611,6 +621,7 @@ function buildToastOps(id: string, name: string, placement: KitPlacement, varian
     cornerRadius: [8, 8, 8, 8],
     backgroundColor: "$toast-bg",
     borderColor: "$--border",
+    reusable: true,
     children: [
       {
         // 4px accent bar on the left (ADR-007 accentBar rule — child frame, not border)
@@ -666,6 +677,7 @@ function buildAlertOps(id: string, name: string, placement: KitPlacement, varian
     cornerRadius: [8, 8, 8, 8],
     backgroundColor: cfg.bg,
     borderColor: cfg.border,
+    reusable: true,
     children: [
       {
         // INV-009 Rule 12: intent icon uses icon_font with semantic Lucide name
@@ -710,6 +722,7 @@ function buildGenericOps(id: string, name: string, contract: ComponentContract, 
     cornerRadius: [6, 6, 6, 6],
     backgroundColor: bgColor,
     borderColor: "$--border",
+    reusable: true,
     children: [{
       id: `${id}_lbl`, type: "text", name: "label",
       textContent: name, fontSize: 14, fontWeight: "500",
@@ -917,11 +930,11 @@ function buildVerification(
       break;
     case "toast":
       visualChecks.push(`Each variant has a 4px accent bar on the left with intent-specific color (ADR-007 accentBar)`);
-      visualChecks.push(`Close button shows \u00D7 glyph (× U+00D7, ascii-safe per ADR-007 constraints)`);
+      visualChecks.push(`Close button uses Lucide "x" icon_font (16×16, INV-009 Rule 13 — no text glyph)`);
       break;
     case "alert":
       visualChecks.push(`Each intent variant has a distinct tinted background and border color`);
-      visualChecks.push(`Close button shows \u00D7 glyph (× U+00D7, ascii-safe per ADR-007 constraints)`);
+      visualChecks.push(`Close button uses Lucide "x" icon_font (16×16, INV-009 Rule 13 — no text glyph)`);
       break;
   }
 
@@ -1210,6 +1223,7 @@ function buildKitComponent(
   contract: ComponentContract,
   pencilVars: Record<string, string>,
   startY: number,
+  kitFrameId = "document",
 ): KitComponent {
   const widgetType = contract.widgetType;
   const frameSize = FRAME_SIZES[widgetType] ?? FRAME_SIZES["generic"]!;
@@ -1255,7 +1269,7 @@ function buildKitComponent(
     states,
     tokenBindings,
     placement,
-    batchDesignOps: buildComponentOps(name, contract, placement, pencilVars),
+    batchDesignOps: buildComponentOps(name, contract, placement, pencilVars, kitFrameId),
     verification: buildVerification(name, contract, pencilVars),
   };
 }
@@ -1337,21 +1351,27 @@ export async function buildKitRecipe(
     }),
   );
 
+  const brandName = config.brand.name;
+
+  // Kit wrapper frame — a single named placeholder frame that contains all component sections.
+  // placeholder:true marks it as a layout container so agents can use it as a parent target.
+  const kitFrameBinding = "kit_frame";
+  const kitFrameOp = `${kitFrameBinding}=I(document, {type:"frame", name:"Component Kit / ${brandName}", x:40, y:40, layout:"vertical", gap:24, padding:32, placeholder:true, cornerRadius:[12,12,12,12], fill:"#ffffff"})`;
+
   // Build components with cumulative y-tracking so rows don't overlap.
   // Each row advances by the actual rendered height (ACTUAL_ROW_HEIGHTS) + ROW_SPACING.
-  let currentY = 80;
+  let currentY = 0; // y is relative inside the wrapper frame (flex layout)
   const components: KitComponent[] = contractEntries
     .filter((e): e is { name: string; contract: ComponentContract } => e.contract !== null)
     .map(({ name, contract }) => {
       const widgetType = contract.widgetType ?? "generic";
-      const comp = buildKitComponent(name, contract, pencilVars, currentY);
+      const comp = buildKitComponent(name, contract, pencilVars, currentY, kitFrameBinding);
       const actualHeight = ACTUAL_ROW_HEIGHTS[widgetType] ?? ACTUAL_ROW_HEIGHTS["generic"]!;
       currentY += actualHeight + ROW_SPACING;
       return comp;
     });
 
   if (components.length === 0) {
-    const brandName = config.brand.name;
     const noComponents = allNames.length === 0;
     throw new Error(
       noComponents
@@ -1366,14 +1386,19 @@ export async function buildKitRecipe(
   const foundationsStartY = currentY + 80;
 
   const { ops: foundationsOps, foundations } = buildFoundationsOps(
-    config.brand.name,
+    brandName,
     pencilVars,
     foundationsStartY,
   );
   // Attach batchDesignOps to the returned foundations object
   const foundationsWithOps: KitFoundations = { ...foundations, batchDesignOps: foundationsOps };
 
+  // Prepend the kit wrapper frame op to the first batch so it is created before
+  // any component section tries to insert into it.
   const batches = packIntoBatches(components);
+  if (batches.length > 0) {
+    batches[0] = { ...batches[0]!, ops: kitFrameOp + "\n" + batches[0]!.ops };
+  }
   const instruction = buildInstruction(components, batches);
 
   return {

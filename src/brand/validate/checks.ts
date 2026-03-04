@@ -279,11 +279,13 @@ export function checkV07(tokens: FlatToken[]): ValidationIssue[] {
   for (const token of tokens) {
     if (!token.$type || !compositeTypes.has(token.$type)) continue;
 
-    if (typeof token.$value === "string") {
+    // DTCG allows composite tokens to reference another token via "{path}" syntax.
+    // Only flag strings that are NOT DTCG references (i.e. raw string values).
+    if (typeof token.$value === "string" && !token.$value.startsWith("{")) {
       issues.push({
         check: "V-07",
         token: token.path,
-        message: `composite type "${token.$type}" must be a structured object, not a string`,
+        message: `composite type "${token.$type}" must be a structured object or a DTCG reference, not a raw string`,
       });
     }
   }

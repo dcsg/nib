@@ -194,6 +194,21 @@ export interface WcagAuditReport {
   results: WcagCheckResult[];
 }
 
+/**
+ * Renderer target configuration — controls which icon allowlist and glyph sanitiser
+ * nib applies at emit time. See ADR-010 for the full validation contract.
+ */
+export interface RendererConfig {
+  /** Target renderer. Currently only "pencil" is supported; extensible to "figma" | "penpot". */
+  target: "pencil";
+  /** Icon font family validated against this renderer's snapshot. */
+  iconFont: "lucide";
+  /** Body font used in this renderer. Affects glyph coverage validation. */
+  bodyFont: "inter" | string;
+  /** Semver of the icon font snapshot that was validated in this renderer. */
+  validatedIconVersion: string;
+}
+
 /** Platform build targets */
 export type BrandPlatform = "css" | "tailwind" | "pencil";
 
@@ -224,6 +239,11 @@ export interface NibBrandConfig {
   };
   /** Component registry — populated by nib component init */
   components?: ComponentRegistry;
+  /**
+   * Renderer target configuration for icon validation and glyph sanitisation (ADR-010).
+   * Defaults to Pencil / Lucide 0.263 / Inter when omitted.
+   */
+  renderer?: RendererConfig;
 }
 
 /** Options for `nib brand init` */

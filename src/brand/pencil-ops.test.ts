@@ -11,8 +11,15 @@
  *   - variable references ($token) pass through unchanged
  */
 
-import { describe, it, expect } from "bun:test";
-import { toPencilOps, specToOps } from "./pencil-ops.js";
+import { describe, it, expect, spyOn, beforeEach, afterEach } from "bun:test";
+import {
+  toPencilOps, specToOps,
+  TransformationError,
+  PENCIL_LUCIDE_ALLOWLIST,
+  PENCIL_LUCIDE_FALLBACK_MAP,
+  resolveIconName,
+  sanitiseTextContent,
+} from "./pencil-ops.js";
 
 describe("toPencilOps — frame", () => {
   it("frame with backgroundColor emits fill: not color:", () => {
@@ -427,5 +434,132 @@ describe("toPencilOps — op string format", () => {
     );
     // Same regex as tools-invocation.test.ts line 777
     expect(ops[0]).toMatch(/fill:"[^"]*\$[a-z]/);
+  });
+});
+
+// ── INV-010: Renderer-safe emit guards ────────────────────────────────────────
+
+describe("resolveIconName — unit tests (INV-010)", () => {
+  let warnSpy: ReturnType<typeof spyOn<Console, "warn">>;
+  beforeEach(() => {
+    warnSpy = spyOn(console, "warn").mockImplementation(() => {});
+  });
+  afterEach(() => {
+    warnSpy.mockRestore();
+  });
+
+  it("returns name unchanged for known-good icon in allowlist, no warning emitted", () => {
+    const result = resolveIconName("check");
+    expect(result).toBe("check");
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it("is exported and PENCIL_LUCIDE_ALLOWLIST has expected entries", () => {
+    expect(PENCIL_LUCIDE_ALLOWLIST.has("check")).toBe(true);
+    expect(PENCIL_LUCIDE_ALLOWLIST.has("x")).toBe(true);
+    expect(PENCIL_LUCIDE_ALLOWLIST.has("inbox")).toBe(true);
+    // Known-broken names must NOT be in the allowlist
+    expect(PENCIL_LUCIDE_ALLOWLIST.has("mail")).toBe(false);
+    expect(PENCIL_LUCIDE_ALLOWLIST.has("triangle-alert")).toBe(false);
+  });
+
+  it("substitutes fallback name and emits console.warn for names in PENCIL_LUCIDE_FALLBACK_MAP", () => {
+    const result = resolveIconName("mail");
+    expect(result).toBe("inbox");
+    expect(result).toBe(PENCIL_LUCIDE_FALLBACK_MAP["mail"] ?? "");
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    const warnMsg = String(warnSpy.mock.calls[0]?.[0] ?? "");
+    expect(warnMsg).toContain("mail");
+    expect(warnMsg).toContain("inbox");
+  });
+
+  it("maps all fallback values to names that exist in the allowlist", () => {
+    for (const [from, to] of Object.entries(PENCIL_LUCIDE_FALLBACK_MAP)) {
+      if (!PENCIL_LUCIDE_ALLOWLIST.has(to)) {
+        throw new Error(
+          `PENCIL_LUCIDE_FALLBACK_MAP["${from}"] = "${to}" is not in PENCIL_LUCIDE_ALLOWLIST`,
+        );
+      }
+    }
+  });
+
+  it("throws TransformationError for names in neither allowlist nor fallback map", () => {
+    let thrown: unknown;
+    try {
+      resolveIconName("totally-unknown-icon");
+    } catch (err) {
+      thrown = err;
+    }
+    expect(thrown).toBeInstanceOf(TransformationError);
+    expect((thrown as TransformationError).message).toContain("totally-unknown-icon");
+    expect((thrown as TransformationError).name).toBe("TransformationError");
+  });
+});
+
+describe("sanitiseTextContent — unit tests (INV-010)", () => {
+  let warnSpy: ReturnType<typeof spyOn<Console, "warn">>;
+  beforeEach(() => {
+    warnSpy = spyOn(console, "warn").mockImplementation(() => {});
+  });
+  afterEach(() => {
+    warnSpy.mockRestore();
+  });
+
+  it("returns string unchanged when no forbidden codepoints present", () => {
+    const result = sanitiseTextContent("Hello world");
+    expect(result).toBe("Hello world");
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it("replaces ✦ (U+2726) with → and emits console.warn containing U+2726", () => {
+    const result = sanitiseTextContent("✦ Feature");
+    expect(result).toBe("→ Feature");
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(String(warnSpy.mock.calls[0]?.[0])).toContain("U+2726");
+  });
+
+  it("strips ▾ (U+25BE) and warns to use icon_font instead", () => {
+    const result = sanitiseTextContent("Select ▾");
+    expect(result).toBe("Select ");
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    const warnMsg = String(warnSpy.mock.calls[0]?.[0]);
+    expect(warnMsg).toContain("U+25BE");
+    expect(warnMsg).toContain("icon_font");
+  });
+
+  it("replaces only forbidden characters in mixed safe+forbidden string", () => {
+    const result = sanitiseTextContent("Safe ✦ safe");
+    expect(result).toBe("Safe → safe");
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("buildPencilProps integration — INV-010 wiring", () => {
+  let warnSpy: ReturnType<typeof spyOn<Console, "warn">>;
+  beforeEach(() => {
+    warnSpy = spyOn(console, "warn").mockImplementation(() => {});
+  });
+  afterEach(() => {
+    warnSpy.mockRestore();
+  });
+
+  it("icon_font node with iconFontName 'mail' emits iconFontName 'inbox' in output", () => {
+    const ops = toPencilOps(
+      { id: "ic", type: "icon_font", name: "mail-icon", iconFontFamily: "lucide", iconFontName: "mail", width: 16, height: 16 },
+      "document",
+    );
+    expect(ops[0]).toContain('iconFontName:"inbox"');
+    expect(ops[0]).not.toContain('iconFontName:"mail"');
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("text node with content containing ✦ (U+2726) emits sanitised content", () => {
+    const ops = toPencilOps(
+      { id: "hero", type: "text", name: "hero-text", textContent: "✦ Hero" },
+      "document",
+    );
+    expect(ops[0]).toContain('content:"→ Hero"');
+    expect(ops[0]).not.toContain("✦");
+    expect(warnSpy).toHaveBeenCalledTimes(1);
   });
 });
