@@ -243,6 +243,125 @@ nib kit --recipe [--component Button,Dialog] [--json]
 
 ---
 
+## component init <Badge type="tip" text="New" />
+
+Scaffold a component contract with WAI-ARIA keyboard patterns pre-filled. Writes the contract JSON, generates component docs, and registers the component in `brand.config.json`. See the [full guide](/guide/component-story#workflow-contract--story--component) for the complete workflow.
+
+```sh
+nib component init <name> [OPTIONS]
+```
+
+| Flag | Type | Default | Description |
+| --- | --- | --- | --- |
+| `--widget-type` | `string` | auto-detected | Force widget type: `button`, `textinput`, `checkbox`, `radio`, `switch`, `tabs`, `dialog`, `combobox`, `tooltip`, `generic` |
+| `--variants` | `string` | | Comma-separated variant names (e.g., `primary,secondary,ghost`) |
+| `--sizes` | `string` | | Comma-separated size names (e.g., `sm,md,lg`) |
+| `--config` | `string` | `.nib/brand.config.json` | Path to brand config |
+
+**Examples:**
+
+```sh
+# Scaffold a Button with auto-detected widget type
+nib component init Button
+
+# Specify variants and sizes upfront
+nib component init Button --variants primary,secondary,ghost --sizes sm,md,lg
+
+# Force a widget type
+nib component init SearchBox --widget-type textinput
+
+# Overwrite an existing contract
+nib component init Button --overwrite
+```
+
+---
+
+## component list <Badge type="tip" text="New" />
+
+List all registered component contracts.
+
+```sh
+nib component list [OPTIONS]
+```
+
+| Flag | Type | Default | Description |
+| --- | --- | --- | --- |
+| `--config` | `string` | `.nib/brand.config.json` | Path to brand config |
+
+**Example output:**
+
+```
+  Button        button      draft     2026-03-04
+  TextInput     textinput   draft     2026-03-04
+  Dialog        dialog      draft     2026-03-04
+```
+
+---
+
+## component story <Badge type="tip" text="New" />
+
+Generate a `.stories.ts` scaffold from a component contract — variant controls, size controls, state stories, and a11y metadata wired automatically. See the [full guide](/guide/component-story).
+
+```sh
+nib component story <name> [OPTIONS]
+```
+
+| Flag | Type | Default | Description |
+| --- | --- | --- | --- |
+| `--output`, `-o` | `string` | `src/stories/<Name>.stories.ts` | Output path |
+| `--framework` | `string` | auto-detected | Override framework: `react`, `vue3`, `svelte`, `web-components` |
+| `--overwrite` | `boolean` | `false` | Replace an existing story file |
+
+**Examples:**
+
+```sh
+# Generate a story for the Button component
+nib component story Button
+
+# Overwrite after updating the contract
+nib component story Button --overwrite
+
+# Target a specific framework
+nib component story Button --framework vue3
+
+# Write to a custom path
+nib component story Button --output src/ui/Button.stories.ts
+```
+
+---
+
+## storybook init <Badge type="tip" text="New" />
+
+Wire your nib brand tokens into Storybook — design token panel, light/dark theme switcher, and `[data-theme]` decorator. Creates or patches `.storybook/main.ts`, `.storybook/preview.ts`, `nib-theme-decorator.ts`, and `src/stories/DesignTokens.mdx`. Safe to re-run. See the [full guide](/guide/storybook).
+
+```sh
+nib storybook init [cwd]
+```
+
+Requires:
+- `brand.config.json` must exist (run `nib brand init` first)
+- `variables.css` must be built (run `nib brand build` first)
+
+**Example:**
+
+```sh
+# Wire Storybook in the current directory
+nib storybook init
+
+# Wire Storybook in a subdirectory
+nib storybook init ./packages/ui
+```
+
+After running, install the addons nib recommends (the exact command is printed):
+
+```sh
+npm install @storybook/addon-themes storybook-design-token
+```
+
+Then enable the token panel — set `"storybook": { "annotations": true }` in `.nib/brand.config.json` and run `nib brand build`.
+
+---
+
 ## pencil open <Badge type="tip" text="New" />
 
 Open a `.pen` file in Pencil from the terminal. Pass `new` to create a blank canvas.

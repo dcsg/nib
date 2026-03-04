@@ -72,6 +72,7 @@ export default defineConfig({
           items: [
             { text: "Brand System", link: "/guide/brand" },
             { text: "Brand Validate", link: "/guide/brand-validate" },
+            { text: "Storybook", link: "/guide/storybook" },
             { text: "Component Story", link: "/guide/component-story" },
             { text: "Theming & Dark Mode", link: "/guide/theming" },
             { text: "Prototypes", link: "/guide/prototypes" },
