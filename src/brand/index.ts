@@ -386,7 +386,65 @@ export async function brandStyle(options: BrandStyleOptions = {}): Promise<{
 }
 
 /**
+ * Write auditStatus back to $extensions.nib.auditStatus in a token file (ADR-008 §2).
+ *
+ * Only tokens referenced by the audit results are updated — tokens not in any
+ * audited pair keep their existing auditStatus.
+ */
+async function writeAuditStatusBack(
+  tokenFilePath: string,
+  auditedTokens: Map<string, "pass" | "fail">,
+): Promise<void> {
+  let raw: Record<string, unknown>;
+  try {
+    raw = JSON.parse(await readFile(tokenFilePath, "utf-8")) as Record<string, unknown>;
+  } catch {
+    return; // file unreadable — skip silently
+  }
+
+  let mutated = false;
+
+  function setAuditStatus(obj: Record<string, unknown>, path: string): Record<string, unknown> {
+    if ("$value" in obj) {
+      const status = auditedTokens.get(path);
+      if (status !== undefined) {
+        const existing = (obj.$extensions as Record<string, unknown> | undefined) ?? {};
+        const existingNib = (existing["nib"] as Record<string, unknown> | undefined) ?? {};
+        if (existingNib["auditStatus"] !== status) {
+          mutated = true;
+          return {
+            ...obj,
+            $extensions: { ...existing, nib: { ...existingNib, auditStatus: status } },
+          };
+        }
+      }
+      return obj;
+    }
+    const result: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(obj)) {
+      if (key.startsWith("$")) {
+        result[key] = val;
+      } else if (val !== null && typeof val === "object" && !Array.isArray(val)) {
+        const childPath = path ? `${path}.${key}` : key;
+        result[key] = setAuditStatus(val as Record<string, unknown>, childPath);
+      } else {
+        result[key] = val;
+      }
+    }
+    return result;
+  }
+
+  const updated = setAuditStatus(raw, "");
+  if (mutated) {
+    await writeFile(tokenFilePath, JSON.stringify(updated, null, 2) + "\n");
+  }
+}
+
+/**
  * `nib brand audit` — check WCAG contrast compliance.
+ *
+ * After running the audit, writes auditStatus back to $extensions.nib on the
+ * audited semantic color tokens (ADR-008 §2).
  */
 export async function brandAudit(options: BrandAuditOptions = {}): Promise<WcagAuditReport> {
   const config = await loadBrandConfig(options.config);
@@ -402,6 +460,20 @@ export async function brandAudit(options: BrandAuditOptions = {}): Promise<WcagA
   ]);
 
   const report = auditTokens(semanticLight, primitives);
+
+  // Write auditStatus back to $extensions.nib (ADR-008 §2)
+  const auditedTokens = new Map<string, "pass" | "fail">();
+  for (const result of report.results) {
+    // foregroundToken is "color.text.primary" — the path into semantic-light.tokens.json
+    const fgStatus = result.passAA ? "pass" : "fail";
+    // A token passes only if all pairs it participates in pass
+    const existing = auditedTokens.get(result.foregroundToken);
+    auditedTokens.set(result.foregroundToken, existing === "fail" ? "fail" : fgStatus);
+  }
+  await writeAuditStatusBack(
+    join(tokensDir, "color", "semantic-light.tokens.json"),
+    auditedTokens,
+  );
 
   await updateStatus({
     lastAudit: {

@@ -3,10 +3,22 @@
     "$type": "shadow",
     "none": {
       "$value": {
-        "offsetX": "0px",
-        "offsetY": "0px",
-        "blur": "0px",
-        "spread": "0px",
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 0,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 0,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        },
         "color": "transparent"
       },
       "$extensions": {
@@ -15,16 +27,28 @@
           "owner": "design-systems",
           "deprecated": false,
           "migrateTo": null,
-          "generatedAt": "2026-03-02T01:55:34.312Z"
+          "generatedAt": "2026-03-04T10:50:10.508Z"
         }
       }
     },
     "sm": {
       "$value": {
-        "offsetX": "0px",
-        "offsetY": "1px",
-        "blur": "2px",
-        "spread": "0px",
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 1,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 2,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        },
         "color": "rgba(0,0,0,0.05)"
       },
       "$extensions": {
@@ -33,16 +57,28 @@
           "owner": "design-systems",
           "deprecated": false,
           "migrateTo": null,
-          "generatedAt": "2026-03-02T01:55:34.312Z"
+          "generatedAt": "2026-03-04T10:50:10.508Z"
         }
       }
     },
     "md": {
       "$value": {
-        "offsetX": "0px",
-        "offsetY": "4px",
-        "blur": "6px",
-        "spread": "-1px",
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 4,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 6,
+          "unit": "px"
+        },
+        "spread": {
+          "value": -1,
+          "unit": "px"
+        },
         "color": "rgba(0,0,0,0.1)"
       },
       "$extensions": {
@@ -51,16 +87,28 @@
           "owner": "design-systems",
           "deprecated": false,
           "migrateTo": null,
-          "generatedAt": "2026-03-02T01:55:34.312Z"
+          "generatedAt": "2026-03-04T10:50:10.508Z"
         }
       }
     },
     "lg": {
       "$value": {
-        "offsetX": "0px",
-        "offsetY": "10px",
-        "blur": "15px",
-        "spread": "-3px",
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 10,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 15,
+          "unit": "px"
+        },
+        "spread": {
+          "value": -3,
+          "unit": "px"
+        },
         "color": "rgba(0,0,0,0.1)"
       },
       "$extensions": {
@@ -69,16 +117,28 @@
           "owner": "design-systems",
           "deprecated": false,
           "migrateTo": null,
-          "generatedAt": "2026-03-02T01:55:34.312Z"
+          "generatedAt": "2026-03-04T10:50:10.508Z"
         }
       }
     },
     "xl": {
       "$value": {
-        "offsetX": "0px",
-        "offsetY": "20px",
-        "blur": "25px",
-        "spread": "-5px",
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 20,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 25,
+          "unit": "px"
+        },
+        "spread": {
+          "value": -5,
+          "unit": "px"
+        },
         "color": "rgba(0,0,0,0.1)"
       },
       "$extensions": {
@@ -87,7 +147,7 @@
           "owner": "design-systems",
           "deprecated": false,
           "migrateTo": null,
-          "generatedAt": "2026-03-02T01:55:34.312Z"
+          "generatedAt": "2026-03-04T10:50:10.508Z"
         }
       }
     }

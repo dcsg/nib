@@ -4,25 +4,25 @@
 
 import type { DtcgTokenFile } from "../../types/brand.js";
 
-/** Build elevation/shadow tokens */
+/** Build elevation/shadow tokens (ADR-008: structured ShadowValue objects) */
 export function buildElevationTokens(): DtcgTokenFile {
   return {
     elevation: {
       $type: "shadow",
       none: {
-        $value: { offsetX: "0px", offsetY: "0px", blur: "0px", spread: "0px", color: "transparent" },
+        $value: { offsetX: { value: 0, unit: "px" }, offsetY: { value: 0, unit: "px" }, blur: { value: 0, unit: "px" }, spread: { value: 0, unit: "px" }, color: "transparent" },
       },
       sm: {
-        $value: { offsetX: "0px", offsetY: "1px", blur: "2px", spread: "0px", color: "rgba(0,0,0,0.05)" },
+        $value: { offsetX: { value: 0, unit: "px" }, offsetY: { value: 1, unit: "px" }, blur: { value: 2, unit: "px" }, spread: { value: 0, unit: "px" }, color: "rgba(0,0,0,0.05)" },
       },
       md: {
-        $value: { offsetX: "0px", offsetY: "4px", blur: "6px", spread: "-1px", color: "rgba(0,0,0,0.1)" },
+        $value: { offsetX: { value: 0, unit: "px" }, offsetY: { value: 4, unit: "px" }, blur: { value: 6, unit: "px" }, spread: { value: -1, unit: "px" }, color: "rgba(0,0,0,0.1)" },
       },
       lg: {
-        $value: { offsetX: "0px", offsetY: "10px", blur: "15px", spread: "-3px", color: "rgba(0,0,0,0.1)" },
+        $value: { offsetX: { value: 0, unit: "px" }, offsetY: { value: 10, unit: "px" }, blur: { value: 15, unit: "px" }, spread: { value: -3, unit: "px" }, color: "rgba(0,0,0,0.1)" },
       },
       xl: {
-        $value: { offsetX: "0px", offsetY: "20px", blur: "25px", spread: "-5px", color: "rgba(0,0,0,0.1)" },
+        $value: { offsetX: { value: 0, unit: "px" }, offsetY: { value: 20, unit: "px" }, blur: { value: 25, unit: "px" }, spread: { value: -5, unit: "px" }, color: "rgba(0,0,0,0.1)" },
       },
     },
   };

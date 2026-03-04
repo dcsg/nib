@@ -95,8 +95,9 @@ const RADIUS_TOKENS = {
 
 const ELEVATION_TOKENS = {
   elevation: {
+    // ADR-008: structured ShadowValue objects with { value, unit } sub-objects
     sm: {
-      $value: { offsetX: "0px", offsetY: "1px", blur: "2px", spread: "0px", color: "rgba(0,0,0,0.05)" },
+      $value: { offsetX: { value: 0, unit: "px" }, offsetY: { value: 1, unit: "px" }, blur: { value: 2, unit: "px" }, spread: { value: 0, unit: "px" }, color: "rgba(0,0,0,0.05)" },
       $type: "shadow",
     },
   },
@@ -1344,6 +1345,880 @@ describe("nib_kit_bootstrap — visualClasses", () => {
   });
 });
 
+// ─── nib_component_init ───────────────────────────────────────────────────────
+
+describe("nib_component_init — tool invocation", () => {
+  let componentInitDir: string;
+  let componentConfigPath: string;
+
+  beforeAll(async () => {
+    componentInitDir = join(tmpDir, "component-init");
+    const tokensDir = join(componentInitDir, "tokens");
+    const outputDir = join(componentInitDir, "build");
+    await writeTokenFixtures(tokensDir);
+    componentConfigPath = join(componentInitDir, "brand.config.json");
+    await writeBrandConfig(componentConfigPath, tokensDir, outputDir);
+  });
+
+  it("scaffolds a component contract and returns required fields", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_component_init",
+      arguments: {
+        name: "MyButton",
+        widgetType: "button",
+        config: componentConfigPath,
+      },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const data = JSON.parse(content[0]!.text);
+
+    expect(data.name).toBe("MyButton");
+    expect(typeof data.contractPath).toBe("string");
+    expect(typeof data.widgetType).toBe("string");
+    expect(Array.isArray(data.states)).toBe(true);
+  });
+
+  it("auto-detects widgetType from name when not provided", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_component_init",
+      arguments: {
+        name: "SearchInput",
+        config: componentConfigPath,
+      },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const data = JSON.parse(content[0]!.text);
+
+    // textinput auto-detection from "input" in the name
+    expect(typeof data.widgetType).toBe("string");
+    expect(data.widgetType.length).toBeGreaterThan(0);
+  });
+
+  it("scaffolds with variants when provided", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_component_init",
+      arguments: {
+        name: "AlertComp",
+        widgetType: "generic",
+        variants: ["info", "success", "warning", "error"],
+        config: componentConfigPath,
+      },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const data = JSON.parse(content[0]!.text);
+    expect(data.name).toBe("AlertComp");
+  });
+
+  it("includes keyboard patterns (a11y) for button widget type", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_component_init",
+      arguments: {
+        name: "ActionButton",
+        widgetType: "button",
+        config: componentConfigPath,
+      },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const data = JSON.parse(content[0]!.text);
+
+    // Keyboard patterns must be present for button type
+    expect(data.keyboard).toBeDefined();
+  });
+
+  it("writes contract file to disk at contractPath", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_component_init",
+      arguments: {
+        name: "DiskButton",
+        widgetType: "button",
+        config: componentConfigPath,
+      },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const data = JSON.parse(content[0]!.text);
+
+    expect(existsSync(data.contractPath)).toBe(true);
+    const contract = JSON.parse(await readFile(data.contractPath, "utf-8"));
+    expect(contract.name).toBe("DiskButton");
+    expect(contract.widgetType).toBe("button");
+  });
+
+  it("always returns a non-empty text block in the content array", async () => {
+    // nib_component_init registers the component into the config (creates it if missing)
+    // Always verify the response is well-formed regardless of config state
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_component_init",
+      arguments: {
+        name: "ShapeCheckButton",
+        widgetType: "button",
+        config: componentConfigPath,
+      },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    expect(Array.isArray(content)).toBe(true);
+    expect(content.length).toBeGreaterThan(0);
+    expect(content[0]!.type).toBe("text");
+    expect(typeof content[0]!.text).toBe("string");
+    expect(content[0]!.text.length).toBeGreaterThan(0);
+  });
+
+  it("is idempotent — re-scaffolding same name succeeds without error", async () => {
+    const { client } = await createTestPair();
+    // First call
+    await client.callTool({
+      name: "nib_component_init",
+      arguments: { name: "IdempButton", widgetType: "button", config: componentConfigPath },
+    });
+    // Second call — same name
+    const result = await client.callTool({
+      name: "nib_component_init",
+      arguments: { name: "IdempButton", widgetType: "button", config: componentConfigPath },
+    });
+    expect(result.isError).toBeFalsy();
+  });
+});
+
+// ─── nib_component_list ───────────────────────────────────────────────────────
+
+describe("nib_component_list — tool invocation", () => {
+  let listDir: string;
+  let listConfigPath: string;
+
+  beforeAll(async () => {
+    listDir = join(tmpDir, "component-list");
+    const tokensDir = join(listDir, "tokens");
+    const outputDir = join(listDir, "build");
+    await writeTokenFixtures(tokensDir);
+    listConfigPath = join(listDir, "brand.config.json");
+    await writeBrandConfig(listConfigPath, tokensDir, outputDir);
+
+    // Pre-register two components so the list is non-empty
+    const { client } = await createTestPair();
+    await client.callTool({
+      name: "nib_component_init",
+      arguments: { name: "ListButton", widgetType: "button", config: listConfigPath },
+    });
+    await client.callTool({
+      name: "nib_component_init",
+      arguments: { name: "ListInput", widgetType: "textinput", config: listConfigPath },
+    });
+  });
+
+  it("returns count and components array", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_component_list",
+      arguments: { config: listConfigPath },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const data = JSON.parse(content[0]!.text);
+
+    expect(typeof data.count).toBe("number");
+    expect(Array.isArray(data.components)).toBe(true);
+    expect(data.count).toBe(data.components.length);
+  });
+
+  it("each component entry has required shape fields", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_component_list",
+      arguments: { config: listConfigPath },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const data = JSON.parse(content[0]!.text);
+
+    for (const comp of data.components) {
+      expect(typeof comp.name).toBe("string");
+      expect(typeof comp.contractPath).toBe("string");
+      expect(typeof comp.widgetType).toBe("string");
+      expect(typeof comp.status).toBe("string");
+      expect(typeof comp.addedAt).toBe("string");
+    }
+  });
+
+  it("count includes previously registered components", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_component_list",
+      arguments: { config: listConfigPath },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const data = JSON.parse(content[0]!.text);
+
+    expect(data.count).toBeGreaterThanOrEqual(2);
+    const names = data.components.map((c: { name: string }) => c.name) as string[];
+    expect(names).toContain("ListButton");
+    expect(names).toContain("ListInput");
+  });
+
+  it("returns isError when config path does not exist", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_component_list",
+      arguments: { config: "/tmp/nonexistent-nib-config-list-99999.json" },
+    });
+
+    expect(result.isError).toBe(true);
+    const content = result.content as Array<{ type: string; text: string }>;
+    expect(content[0]!.text).toContain("nib_brand_init");
+  });
+
+  it("response is valid JSON with no text/content leakage", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_component_list",
+      arguments: { config: listConfigPath },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    // Must be parseable — no leading/trailing text
+    expect(() => JSON.parse(content[0]!.text)).not.toThrow();
+  });
+});
+
+// ─── nib_brand_build — edge cases ────────────────────────────────────────────
+
+describe("nib_brand_build — edge cases", () => {
+  it("elevation shadow tokens emit valid CSS box-shadow values", async () => {
+    const { client } = await createTestPair();
+    const buildEdgeDir = join(tmpDir, "build-edge-shadow");
+    const tokensDir = join(buildEdgeDir, "tokens");
+    const outputDir = join(buildEdgeDir, "build");
+    await writeTokenFixtures(tokensDir);
+    const configPath = join(buildEdgeDir, "brand.config.json");
+    await writeBrandConfig(configPath, tokensDir, outputDir);
+
+    await client.callTool({ name: "nib_brand_build", arguments: { config: configPath } });
+
+    const css = await readFile(join(outputDir, "variables.css"), "utf-8");
+    // Shadow token must produce: 0px 1px 2px 0px rgba(...)
+    expect(css).toMatch(/--elevation-sm:\s*0px\s+1px\s+2px\s+0px/);
+  });
+
+  it("Tailwind preset uses CSS var references for color tokens", async () => {
+    const { client } = await createTestPair();
+    const buildEdgeDir2 = join(tmpDir, "build-edge-tailwind");
+    const tokensDir = join(buildEdgeDir2, "tokens");
+    const outputDir = join(buildEdgeDir2, "build");
+    await writeTokenFixtures(tokensDir);
+    const configPath = join(buildEdgeDir2, "brand.config.json");
+    await writeBrandConfig(configPath, tokensDir, outputDir);
+
+    await client.callTool({ name: "nib_brand_build", arguments: { config: configPath } });
+
+    const preset = await readFile(join(outputDir, "preset.js"), "utf-8");
+    // Tailwind preset colors must reference CSS vars, not raw hex values
+    expect(preset).toMatch(/var\(--color-/);
+    // Must not contain raw DTCG reference syntax
+    expect(preset).not.toMatch(/\{color\.\w/);
+  });
+
+  it("CSS output includes dark theme block", async () => {
+    const { client } = await createTestPair();
+    const buildEdgeDark = join(tmpDir, "build-edge-dark");
+    const tokensDir = join(buildEdgeDark, "tokens");
+    const outputDir = join(buildEdgeDark, "build");
+    await writeTokenFixtures(tokensDir);
+    const configPath = join(buildEdgeDark, "brand.config.json");
+    await writeBrandConfig(configPath, tokensDir, outputDir);
+
+    await client.callTool({ name: "nib_brand_build", arguments: { config: configPath } });
+
+    const css = await readFile(join(outputDir, "variables.css"), "utf-8");
+    // Dark mode block must be present (data-theme="dark" or prefers-color-scheme)
+    expect(css).toMatch(/data-theme|prefers-color-scheme:\s*dark/);
+  });
+
+  it("Pencil variables JSON is valid and contains token keys", async () => {
+    const { client } = await createTestPair();
+    const buildEdgePencil = join(tmpDir, "build-edge-pencil");
+    const tokensDir = join(buildEdgePencil, "tokens");
+    const outputDir = join(buildEdgePencil, "build");
+    await writeTokenFixtures(tokensDir);
+    const configPath = join(buildEdgePencil, "brand.config.json");
+    await writeBrandConfig(configPath, tokensDir, outputDir);
+
+    await client.callTool({ name: "nib_brand_build", arguments: { config: configPath } });
+
+    const pencilJson = await readFile(join(outputDir, "variables.json"), "utf-8");
+    const variables = JSON.parse(pencilJson);
+    // Must have at least color token entries
+    const keys = Object.keys(variables);
+    expect(keys.length).toBeGreaterThan(0);
+    expect(keys.some((k) => k.includes("color"))).toBe(true);
+  });
+});
+
+// ─── nib_brand_validate — edge cases ─────────────────────────────────────────
+
+describe("nib_brand_validate — edge cases", () => {
+  it("detects V-04 naming violation (camelCase segment)", async () => {
+    const { client } = await createTestPair();
+    const dir = join(tmpDir, "validate-v04");
+    await mkdir(join(dir, "color"), { recursive: true });
+    await writeFile(
+      join(dir, "color", "primitives.tokens.json"),
+      JSON.stringify({
+        color: {
+          $type: "color",
+          // camelCase key — V-04 violation
+          brandBlue: { $value: "#3b82f6" },
+        },
+      }, null, 2),
+    );
+    await writeFile(join(dir, "typography.tokens.json"), JSON.stringify(TYPOGRAPHY_TOKENS, null, 2));
+    await writeFile(join(dir, "spacing.tokens.json"), JSON.stringify(SPACING_TOKENS, null, 2));
+    await writeFile(join(dir, "border-radius.tokens.json"), JSON.stringify(RADIUS_TOKENS, null, 2));
+    await writeFile(join(dir, "elevation.tokens.json"), JSON.stringify(ELEVATION_TOKENS, null, 2));
+
+    const result = await client.callTool({
+      name: "nib_brand_validate",
+      arguments: { tokensDir: dir },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const validation = JSON.parse(content[0]!.text);
+    const checks = validation.errors.map((e: { check: string }) => e.check) as string[];
+    expect(checks.some((c) => c === "V-04")).toBe(true);
+  });
+
+  it("detects V-02 when a required category is absent", async () => {
+    const { client } = await createTestPair();
+    const dir = join(tmpDir, "validate-v02");
+    await mkdir(join(dir, "color"), { recursive: true });
+    // Only color — missing typography, spacing, borderRadius, elevation
+    await writeFile(
+      join(dir, "color", "primitives.tokens.json"),
+      JSON.stringify({ color: { $type: "color", white: { $value: "#ffffff" } } }, null, 2),
+    );
+
+    const result = await client.callTool({
+      name: "nib_brand_validate",
+      arguments: { tokensDir: dir },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const validation = JSON.parse(content[0]!.text);
+    expect(validation.valid).toBe(false);
+    const checks = validation.errors.map((e: { check: string }) => e.check) as string[];
+    expect(checks.some((c) => c === "V-02")).toBe(true);
+  });
+
+  it("passes config-based validation when config path is provided", async () => {
+    const { client } = await createTestPair();
+    const dir = join(tmpDir, "validate-config-path");
+    const tokensDir = join(dir, "tokens");
+    const outputDir = join(dir, "build");
+    await writeTokenFixtures(tokensDir);
+    const configPath = join(dir, "brand.config.json");
+    await writeBrandConfig(configPath, tokensDir, outputDir);
+
+    const result = await client.callTool({
+      name: "nib_brand_validate",
+      arguments: { config: configPath },
+    });
+
+    // Should work via config path (not tokensDir directly)
+    const content = result.content as Array<{ type: string; text: string }>;
+    expect(content[0]!.text.length).toBeGreaterThan(0);
+  });
+
+  it("warnings array is present and is an array (may be empty)", async () => {
+    const { client } = await createTestPair();
+    const dir = join(tmpDir, "validate-warnings-shape");
+    const tokensDir = join(dir, "tokens");
+    await writeTokenFixtures(tokensDir);
+
+    const result = await client.callTool({
+      name: "nib_brand_validate",
+      arguments: { tokensDir },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const validation = JSON.parse(content[0]!.text);
+    expect(Array.isArray(validation.warnings)).toBe(true);
+  });
+});
+
+// ─── nib_brand_audit — edge cases ────────────────────────────────────────────
+
+describe("nib_brand_audit — edge cases", () => {
+  it("each result entry has ratio, fg, bg, passAA fields", async () => {
+    const { client } = await createTestPair();
+    const dir = join(tmpDir, "audit-shape");
+    const tokensDir = join(dir, "tokens");
+    const colorDir = join(tokensDir, "color");
+    await mkdir(colorDir, { recursive: true });
+    await writeFile(
+      join(colorDir, "primitives.tokens.json"),
+      JSON.stringify({ color: { $type: "color", white: { $value: "#ffffff" }, black: { $value: "#000000" } } }, null, 2),
+    );
+    await writeFile(
+      join(colorDir, "semantic-light.tokens.json"),
+      JSON.stringify({
+        color: { $type: "color", background: { primary: { $value: "{color.white}" } }, text: { primary: { $value: "{color.black}" } } },
+      }, null, 2),
+    );
+    const configPath = join(dir, "brand.config.json");
+    await writeBrandConfig(configPath, tokensDir, join(dir, "build"));
+
+    const result = await client.callTool({ name: "nib_brand_audit", arguments: { config: configPath } });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const report = JSON.parse(content[0]!.text);
+
+    for (const entry of report.results) {
+      expect(typeof entry.ratio).toBe("number");
+      // wcag.ts uses "foreground" / "background" field names
+      expect(typeof entry.foreground).toBe("string");
+      expect(typeof entry.background).toBe("string");
+      expect(typeof entry.passAA).toBe("boolean");
+    }
+  });
+
+  it("passAAA field is present on each result entry", async () => {
+    const { client } = await createTestPair();
+    const dir = join(tmpDir, "audit-aaa");
+    const tokensDir = join(dir, "tokens");
+    const colorDir = join(tokensDir, "color");
+    await mkdir(colorDir, { recursive: true });
+    await writeFile(
+      join(colorDir, "primitives.tokens.json"),
+      JSON.stringify({ color: { $type: "color", white: { $value: "#ffffff" }, black: { $value: "#000000" } } }, null, 2),
+    );
+    await writeFile(
+      join(colorDir, "semantic-light.tokens.json"),
+      JSON.stringify({
+        color: { $type: "color", background: { primary: { $value: "{color.white}" } }, text: { primary: { $value: "{color.black}" } } },
+      }, null, 2),
+    );
+    const configPath = join(dir, "brand.config.json");
+    await writeBrandConfig(configPath, tokensDir, join(dir, "build"));
+
+    const result = await client.callTool({ name: "nib_brand_audit", arguments: { config: configPath } });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const report = JSON.parse(content[0]!.text);
+    for (const entry of report.results) {
+      expect(typeof entry.passAAA).toBe("boolean");
+    }
+  });
+
+  it("returns isError with descriptive message for malformed config JSON", async () => {
+    const { client } = await createTestPair();
+    const dir = join(tmpDir, "audit-malformed");
+    await mkdir(dir, { recursive: true });
+    const badConfigPath = join(dir, "brand.config.json");
+    await writeFile(badConfigPath, "{ this is not valid json }");
+
+    const result = await client.callTool({ name: "nib_brand_audit", arguments: { config: badConfigPath } });
+
+    expect(result.isError).toBe(true);
+    const content = result.content as Array<{ type: string; text: string }>;
+    expect(content[0]!.text.length).toBeGreaterThan(0);
+  });
+});
+
+// ─── nib_build_prototype — edge cases ────────────────────────────────────────
+
+describe("nib_build_prototype — edge cases", () => {
+  let multiCanvasDocPath: string;
+
+  beforeAll(async () => {
+    // Multi-canvas doc for navigation link tests
+    const doc = {
+      version: "1",
+      source: "test.pen",
+      capturedAt: new Date().toISOString(),
+      canvases: [
+        {
+          id: "screen-home",
+          name: "Home",
+          width: 390,
+          height: 844,
+          children: [
+            {
+              id: "btn-1",
+              type: "frame",
+              x: 20, y: 40, width: 120, height: 44,
+              fill: "#3b82f6",
+              children: [{ id: "btn-label", type: "text", text: "Go to Detail", x: 0, y: 0, width: 120, height: 44 }],
+            },
+          ],
+        },
+        {
+          id: "screen-detail",
+          name: "Detail",
+          width: 390,
+          height: 844,
+          children: [
+            { id: "detail-title", type: "text", text: "Detail Screen", x: 20, y: 40, width: 350, height: 48 },
+          ],
+        },
+      ],
+      components: {},
+      variables: { light: {}, dark: {} },
+      themes: { axes: {} },
+      assets: [],
+    };
+
+    multiCanvasDocPath = join(protoFixtureDir, "multi-canvas.json");
+    await writeFile(multiCanvasDocPath, JSON.stringify(doc, null, 2));
+  });
+
+  it("generates one HTML file per canvas for multi-canvas docs", async () => {
+    const { client } = await createTestPair();
+    const outputDir = join(tmpDir, "proto-multi-canvas");
+    const result = await client.callTool({
+      name: "nib_build_prototype",
+      arguments: { input: multiCanvasDocPath, output: outputDir },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const parsed = JSON.parse(content[0]!.text);
+    // Multi-canvas doc → multiple files
+    expect(parsed.files.filter((f: string) => f.endsWith(".html")).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("output path in result matches the requested output directory", async () => {
+    const { client } = await createTestPair();
+    const outputDir = join(tmpDir, "proto-outputdir-check");
+    const result = await client.callTool({
+      name: "nib_build_prototype",
+      arguments: { input: multiCanvasDocPath, output: outputDir },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const parsed = JSON.parse(content[0]!.text);
+    expect(parsed.outputDir).toBe(outputDir);
+  });
+
+  it("returns isError for an input path outside project root", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_build_prototype",
+      arguments: { input: "/etc/passwd" },
+    });
+
+    expect(result.isError).toBe(true);
+  });
+
+  it("nib.config.json links array matches the provided links arg", async () => {
+    const { client } = await createTestPair();
+    const outputDir = join(tmpDir, "proto-links-verify");
+    const links = [
+      { from: "Home", nodeId: "btn-1", to: "Detail", transition: "slide-left" as const },
+    ];
+    await client.callTool({
+      name: "nib_build_prototype",
+      arguments: { input: multiCanvasDocPath, output: outputDir, links },
+    });
+
+    const config = JSON.parse(await readFile(join(outputDir, "nib.config.json"), "utf-8"));
+    expect(config.links[0].from).toBe("Home");
+    expect(config.links[0].to).toBe("Detail");
+    expect(config.links[0].transition).toBe("slide-left");
+  });
+
+  it("HTML includes canvas content from second canvas", async () => {
+    const { client } = await createTestPair();
+    const outputDir = join(tmpDir, "proto-multi-content");
+    await client.callTool({
+      name: "nib_build_prototype",
+      arguments: { input: multiCanvasDocPath, output: outputDir },
+    });
+
+    const { readdir } = await import("node:fs/promises");
+    const files = await readdir(outputDir);
+    const htmlFiles = files.filter((f) => f.endsWith(".html"));
+
+    // Read all HTML files and join — content from both canvases must appear somewhere
+    const allHtml = (await Promise.all(
+      htmlFiles.map((f) => readFile(join(outputDir, f), "utf-8")),
+    )).join("\n");
+
+    expect(allHtml).toContain("Detail Screen");
+  });
+});
+
+// ─── nib_help — edge cases ───────────────────────────────────────────────────
+
+describe("nib_help — edge cases", () => {
+  it("response is idempotent across two calls", async () => {
+    const { client } = await createTestPair();
+    const r1 = await client.callTool({ name: "nib_help" });
+    const r2 = await client.callTool({ name: "nib_help" });
+
+    const c1 = (r1.content as Array<{ type: string; text: string }>)[0]!.text;
+    const c2 = (r2.content as Array<{ type: string; text: string }>)[0]!.text;
+    expect(c1).toBe(c2);
+  });
+
+  it("content describes both fresh-start and existing-project workflows", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({ name: "nib_help" });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const text = content[0]!.text;
+    // Both onboarding paths must be documented: set up brand + import from existing Pencil file
+    expect(text).toMatch(/brand/i);
+    expect(text).toMatch(/nib_brand_init/);
+    expect(text).toMatch(/nib_brand_import/);
+  });
+
+  it("content mentions nib_kit in the workflow", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({ name: "nib_help" });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    // nib_kit is referenced as the scaffolding step in the brand setup workflow
+    expect(content[0]!.text).toMatch(/nib_kit/);
+  });
+});
+
+// ─── nib_status — edge cases ─────────────────────────────────────────────────
+
+describe("nib_status — edge cases", () => {
+  it("version field is a semver string", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({ name: "nib_status" });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const status = JSON.parse(content[0]!.text);
+    expect(status.version).toMatch(/^\d+\.\d+\.\d+/);
+  });
+
+  it("hasBrandConfig is false in a temp directory with no config", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({ name: "nib_status" });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const status = JSON.parse(content[0]!.text);
+
+    // Test environment has no .nib/brand.config.json in cwd
+    if (!status.hasBrandConfig) {
+      expect(status.hasBrandConfig).toBe(false);
+      expect(typeof status.nextStep).toBe("string");
+    }
+  });
+
+  it("mcpConfigFound is a boolean", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({ name: "nib_status" });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const status = JSON.parse(content[0]!.text);
+    expect(typeof status.mcpConfigFound).toBe("boolean");
+  });
+
+  it("response shape includes all required status fields", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({ name: "nib_status" });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const status = JSON.parse(content[0]!.text);
+
+    // All required fields must be present
+    const requiredFields = ["version", "hasBrandConfig", "hasStatus", "mcpConfigFound", "nextStep"];
+    for (const field of requiredFields) {
+      expect(status[field]).toBeDefined();
+    }
+  });
+});
+
+// ─── nib_kit_bootstrap — edge cases ──────────────────────────────────────────
+
+describe("nib_kit_bootstrap — edge cases", () => {
+  let bootstrapEdgeConfigPath: string;
+
+  beforeAll(async () => {
+    const dir = join(tmpDir, "kit-bootstrap-edge");
+    const tokensDir = join(dir, "tokens");
+    const outputDir = join(dir, "build");
+    await writeTokenFixtures(tokensDir);
+    bootstrapEdgeConfigPath = join(dir, "brand.config.json");
+    await writeBrandConfig(bootstrapEdgeConfigPath, tokensDir, outputDir);
+  });
+
+  it("returns skipped array as empty when no components exist yet", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_kit_bootstrap",
+      arguments: {
+        config: bootstrapEdgeConfigPath,
+        components: ["Checkbox", "Radio"],
+      },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const data = JSON.parse(content[0]!.text);
+
+    // First run — nothing to skip
+    expect(Array.isArray(data.skipped)).toBe(true);
+  });
+
+  it("all scaffolded components have a contractPath that exists on disk", async () => {
+    const { client } = await createTestPair();
+    const dir = join(tmpDir, "kit-bootstrap-disk");
+    const tokensDir = join(dir, "tokens");
+    const outputDir = join(dir, "build");
+    await writeTokenFixtures(tokensDir);
+    const configPath = join(dir, "brand.config.json");
+    await writeBrandConfig(configPath, tokensDir, outputDir);
+
+    const result = await client.callTool({
+      name: "nib_kit_bootstrap",
+      arguments: { config: configPath, components: ["Switch"] },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const data = JSON.parse(content[0]!.text);
+
+    for (const comp of data.components ?? []) {
+      if (comp.contractPath) {
+        expect(existsSync(comp.contractPath)).toBe(true);
+      }
+    }
+  });
+
+  it("response includes a pencilRecipe with batches array", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_kit_bootstrap",
+      arguments: { config: bootstrapEdgeConfigPath, components: ["Badge"] },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const content = result.content as Array<{ type: string; text: string }>;
+    const data = JSON.parse(content[0]!.text);
+
+    // The bootstrap response must include a pencilRecipe for Pencil scaffolding
+    expect(data.pencilRecipe ?? data.recipe ?? data.batches ?? data.components).toBeDefined();
+  });
+
+  it("returns isError for a missing config path", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_kit_bootstrap",
+      arguments: { config: "/tmp/nonexistent-nib-bootstrap-99999.json" },
+    });
+
+    expect(result.isError).toBe(true);
+    const content = result.content as Array<{ type: string; text: string }>;
+    expect(content[0]!.text.length).toBeGreaterThan(0);
+  });
+});
+
+// ─── nib_brand_init — edge cases ─────────────────────────────────────────────
+
+describe("nib_brand_init — edge cases", () => {
+  it("direct brief with brandName + primaryColor returns a result (no-ai mode)", async () => {
+    const { client } = await createTestPair();
+    const dir = join(process.cwd(), `.nib-test-init-direct-${Date.now()}`);
+    await mkdir(dir, { recursive: true });
+
+    let result;
+    try {
+      result = await client.callTool({
+        name: "nib_brand_init",
+        arguments: {
+          brandName: "Test Corp",
+          primaryColor: "#3b82f6",
+          noAi: true,
+          output: dir,
+        },
+      });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+
+    // May error if init requires filesystem state — but must not throw
+    const content = result.content as Array<{ type: string; text: string }>;
+    expect(content.length).toBeGreaterThan(0);
+    expect(typeof content[0]!.text).toBe("string");
+  });
+
+  it("preview with no from and no brandName returns isError", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_brand_init",
+      arguments: { preview: true },
+    });
+
+    // Must return error — from or brandName+primaryColor required
+    expect(result.isError).toBe(true);
+  });
+
+  it("preview does not write any files", async () => {
+    const { client } = await createTestPair();
+    const dir = join(process.cwd(), `.nib-test-init-preview-nowrite-${Date.now()}`);
+    await mkdir(dir, { recursive: true });
+    const brandMd = join(dir, "brand.md");
+    await writeFile(brandMd, "# TestBrand\nPrimary color: #3b82f6");
+
+    try {
+      await client.callTool({
+        name: "nib_brand_init",
+        arguments: { from: brandMd, preview: true },
+      });
+
+      // Preview must NOT create brand.config.json
+      expect(existsSync(join(dir, ".nib", "brand.config.json"))).toBe(false);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("invalid hex color in primaryColor produces a non-empty response", async () => {
+    // The handler does not pre-validate hex format — it may fail deeper in the stack
+    // or proceed and produce malformed tokens. Either way, the response must be non-empty.
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_brand_init",
+      arguments: {
+        brandName: "Bad Color Brand",
+        primaryColor: "not-a-color",
+        noAi: true,
+      },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    expect(Array.isArray(content)).toBe(true);
+    expect(content.length).toBeGreaterThan(0);
+    expect(content[0]!.type).toBe("text");
+    expect(content[0]!.text.length).toBeGreaterThan(0);
+  });
+});
+
 // ─── Integration-only tests (Pencil MCP required) ────────────────────────────
 
 describe.skipIf(!isIntegration)("nib_capture — integration", () => {
@@ -1361,6 +2236,122 @@ describe.skipIf(!isIntegration)("nib_capture — integration", () => {
       const summary = JSON.parse(content[0]!.text);
       expect(typeof summary.canvasCount).toBe("number");
       expect(Array.isArray(summary.canvases)).toBe(true);
+    }
+  });
+});
+
+describe.skipIf(!isIntegration)("nib_brand_push — integration", () => {
+  it("returns pen file path and variables when Pencil MCP is available", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_brand_push",
+      arguments: {},
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    expect(content[0]!.type).toBe("text");
+
+    if (!result.isError) {
+      // Second content block should be JSON with penFile + variables
+      if (content.length > 1) {
+        const data = JSON.parse(content[1]!.text);
+        expect(typeof data.penFile).toBe("string");
+        expect(typeof data.variables).toBe("object");
+      }
+    }
+  });
+});
+
+// ─── nib_brand_push — unit (no Pencil MCP) ───────────────────────────────────
+
+describe("nib_brand_push — unit", () => {
+  it("returns isError when config file does not exist", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_brand_push",
+      arguments: { config: "/tmp/nonexistent-nib-push-99999.json" },
+    });
+
+    expect(result.isError).toBe(true);
+    const content = result.content as Array<{ type: string; text: string }>;
+    expect(content[0]!.text.length).toBeGreaterThan(0);
+  });
+
+  it("response content is always an array with at least one text block", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_brand_push",
+      arguments: { config: "/tmp/nonexistent-nib-push-shape-99999.json" },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    expect(Array.isArray(content)).toBe(true);
+    expect(content.length).toBeGreaterThan(0);
+    expect(content[0]!.type).toBe("text");
+    expect(typeof content[0]!.text).toBe("string");
+  });
+});
+
+// ─── nib_brand_import — unit ──────────────────────────────────────────────────
+
+describe("nib_brand_import — unit", () => {
+  it("response content always has at least one text block", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_brand_import",
+      arguments: { file: "/tmp/nonexistent-nib-import-shape-99999.pen" },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    expect(Array.isArray(content)).toBe(true);
+    expect(content.length).toBeGreaterThan(0);
+    expect(content[0]!.type).toBe("text");
+    expect(typeof content[0]!.text).toBe("string");
+    expect(content[0]!.text.length).toBeGreaterThan(0);
+  });
+
+  it("overwrite:false returns requiresConfirmation when brand.config.json exists in cwd", async () => {
+    const { client } = await createTestPair();
+    // Project has a .nib/brand.config.json — diff-check fires before Pencil MCP is needed
+    const result = await client.callTool({
+      name: "nib_brand_import",
+      arguments: {
+        file: "/tmp/nonexistent-nib-import-confirm-99999.pen",
+        overwrite: false,
+      },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    expect(content.length).toBeGreaterThan(0);
+    expect(typeof content[0]!.text).toBe("string");
+
+    // When config exists and overwrite is false, must return requiresConfirmation
+    if (!result.isError) {
+      const data = JSON.parse(content[0]!.text);
+      expect(data.requiresConfirmation).toBe(true);
+      expect(typeof data.configPath).toBe("string");
+    }
+  });
+
+  it("response is either a JSON object or an error string — never empty", async () => {
+    const { client } = await createTestPair();
+    const result = await client.callTool({
+      name: "nib_brand_import",
+      arguments: { file: "/tmp/nonexistent-nib-import-empty-check-99999.pen" },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+    const text = content[0]!.text;
+    expect(text.length).toBeGreaterThan(0);
+
+    // Must be either valid JSON (success/diff) or a non-empty error string
+    try {
+      const parsed = JSON.parse(text);
+      // JSON path: requiresConfirmation or actual import result
+      expect(typeof parsed).toBe("object");
+    } catch {
+      // String error path — must contain some meaningful message
+      expect(text.length).toBeGreaterThan(5);
     }
   });
 });

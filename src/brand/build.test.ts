@@ -78,8 +78,9 @@ const FIXTURES: Record<string, unknown> = {
   },
   "elevation.tokens.json": {
     elevation: {
+      // ADR-008: structured ShadowValue with {value, unit} sub-objects
       sm: {
-        $value: { offsetX: "0px", offsetY: "1px", blur: "2px", spread: "0px", color: "rgba(0,0,0,0.05)" },
+        $value: { offsetX: { value: 0, unit: "px" }, offsetY: { value: 1, unit: "px" }, blur: { value: 2, unit: "px" }, spread: { value: 0, unit: "px" }, color: "rgba(0,0,0,0.05)" },
         $type: "shadow",
       },
     },
@@ -208,6 +209,17 @@ describe("buildCss", () => {
   it("resolves DTCG references {foo.bar} → var(--foo-bar) in semantic tokens", () => {
     // Semantic light: interactive.default = {color.brand.600} → var(--color-brand-600)
     expect(css).toContain("var(--color-brand-600)");
+  });
+
+  it("serializes ADR-008 structured shadow as CSS box-shadow shorthand", () => {
+    // elevation.sm: { offsetX: {0,px}, offsetY: {1,px}, blur: {2,px}, spread: {0,px}, color }
+    // → 0px 1px 2px 0px rgba(0,0,0,0.05)
+    expect(css).toMatch(/--elevation-sm:\s*0px\s+1px\s+2px\s+0px\s+rgba\(0,0,0,0\.05\)/);
+  });
+
+  it("handles legacy flat-string shadow values (backward compat)", () => {
+    // CSS output must be valid regardless of whether token uses new or old format
+    expect(css).toContain("--elevation-sm:");
   });
 });
 

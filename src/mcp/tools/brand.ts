@@ -123,6 +123,32 @@ export function registerBrandTools(server: McpServer): void {
                 description: pdfResult.description ?? null,
                 industry: pdfResult.industry ?? null,
               };
+            } else if (from.endsWith(".json")) {
+              // Tokens Studio format
+              const { tokensStudioPreview, tokensStudioIntake } = await import("../../brand/intake/tokens-studio.js");
+              if (preview) {
+                const detected = await tokensStudioPreview(path);
+                rawInput = {
+                  name: detected.brandName,
+                  colors: { primary: detected.primaryColor, secondary: detected.secondaryColor ?? undefined, accent: detected.accentColor ?? undefined },
+                  fonts: detected.fontFamily ? [detected.fontFamily] : [],
+                  personality: ["professional"],
+                  description: null,
+                  industry: null,
+                };
+                // Inject token count into source text for confidence reporting
+                sourceText = `tokens:${detected.tokenCount} colors:${detected.colorCount}`;
+              } else {
+                const tsResult = await tokensStudioIntake(path);
+                rawInput = {
+                  name: tsResult.name,
+                  colors: { primary: tsResult.colors.primary, secondary: tsResult.colors.secondary, accent: tsResult.colors.accent },
+                  fonts: tsResult.typography.fontFamily ? [tsResult.typography.fontFamily] : [],
+                  personality: tsResult.personality ?? ["professional"],
+                  description: tsResult.description ?? null,
+                  industry: tsResult.industry ?? null,
+                };
+              }
             } else {
               // Markdown/text — use extraction helpers for both preview and full init
               const {

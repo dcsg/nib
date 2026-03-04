@@ -64,6 +64,11 @@ const initCommand = defineCommand({
       if (!json) console.log(pc.cyan("nib brand init"), pc.dim(`from ${from}`));
       const { pdfIntake } = await import("../../brand/intake/pdf.js");
       input = await pdfIntake(from);
+    } else if (from.endsWith(".json")) {
+      // Tokens Studio format
+      if (!json) console.log(pc.cyan("nib brand init"), pc.dim(`from ${from} (Tokens Studio)`));
+      const { tokensStudioIntake } = await import("../../brand/intake/tokens-studio.js");
+      input = await tokensStudioIntake(from);
     } else {
       // Markdown/text mode
       if (!json) console.log(pc.cyan("nib brand init"), pc.dim(`from ${from}`));

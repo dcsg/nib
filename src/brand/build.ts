@@ -48,14 +48,33 @@ function flattenTokens(
   return result;
 }
 
+/** Serialize a DTCG dimension field to a CSS string.
+ *  Handles both legacy flat strings ("1px") and ADR-008 structured objects ({ value, unit }).
+ */
+function serializeDimension(
+  field: string | number | { value: number; unit: string } | undefined,
+  fallback: string,
+): string {
+  if (field === undefined || field === null) return fallback;
+  if (typeof field === "string") return field;
+  if (typeof field === "number") return `${field}px`;
+  // Structured { value, unit } form per ADR-008
+  return `${field.value}${field.unit}`;
+}
+
 /** Resolve DTCG references {foo.bar} → var(--foo-bar) for CSS output */
 function resolveToCssVar(value: string | number | Record<string, unknown>): string {
   if (typeof value === "number") return String(value);
 
   if (typeof value === "object") {
-    // Shadow values
-    const shadow = value as Record<string, string>;
-    return `${shadow.offsetX ?? "0px"} ${shadow.offsetY ?? "0px"} ${shadow.blur ?? "0px"} ${shadow.spread ?? "0px"} ${shadow.color ?? "transparent"}`;
+    // Shadow values — support both legacy flat strings and ADR-008 structured {value, unit} objects
+    const shadow = value as Record<string, string | number | { value: number; unit: string }>;
+    const offsetX = serializeDimension(shadow.offsetX, "0px");
+    const offsetY = serializeDimension(shadow.offsetY, "0px");
+    const blur    = serializeDimension(shadow.blur,    "0px");
+    const spread  = serializeDimension(shadow.spread,  "0px");
+    const color   = typeof shadow.color === "string" ? shadow.color : "transparent";
+    return `${offsetX} ${offsetY} ${blur} ${spread} ${color}`;
   }
 
   // Replace {foo.bar.baz} with var(--foo-bar-baz)
