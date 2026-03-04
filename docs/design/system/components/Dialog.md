@@ -1,5 +1,5 @@
 # Dialog
-<!-- nib-component: v1 | generated: 2026-03-03 | do not edit manually -->
+<!-- nib-component: v1 | generated: 2026-03-04 | do not edit manually -->
 
 > A modal overlay that requires user interaction before the rest of the UI becomes accessible
 

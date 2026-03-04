@@ -1,5 +1,5 @@
 # Color System
-<!-- nib-foundation: color-system | generated: 2026-03-03 | do not edit manually -->
+<!-- nib-foundation: color-system | generated: 2026-03-04 | do not edit manually -->
 
 ## Overview
 

@@ -1,5 +1,5 @@
 # Component System
-<!-- nib-components-index: v1 | generated: 2026-03-03 | do not edit manually -->
+<!-- nib-components-index: v1 | generated: 2026-03-04 | do not edit manually -->
 
 ## Registry
 
