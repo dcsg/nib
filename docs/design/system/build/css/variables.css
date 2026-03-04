@@ -82,7 +82,7 @@
   --color-secondary-900: #10445c;
   --color-secondary-950: #0d2936;
 
-  /* Semantic Colors (Light) */
+  /* Semantic Colors */
   --color-background-primary: var(--color-white);
   --color-background-secondary: var(--color-neutral-50);
   --color-background-tertiary: var(--color-neutral-100);
@@ -173,7 +173,7 @@
   --border-radius-2xl: 24px;
   --border-radius-full: 9999px;
 
-  /* Elevation */
+  /* Elevation / Shadows */
   --elevation-none: 0px 0px 0px 0px transparent;
   --elevation-sm: 0px 1px 2px 0px rgba(0,0,0,0.05);
   --elevation-md: 0px 4px 6px -1px rgba(0,0,0,0.1);
