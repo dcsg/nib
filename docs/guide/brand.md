@@ -304,7 +304,7 @@ When you push tokens to a `.pen` file, nib automatically creates **`--` standard
 Pencil style guides reference standard `--` variables (e.g., `--background`, `--primary`, `--foreground`) in their component fills and strokes. When nib pushes tokens, it maps your semantic tokens to these standard names so designs "just work" with your brand.
 
 ::: tip Variable naming convention
-Variable **key names** are plain strings without a `$` prefix: `--background`, `--primary`, etc. The `$` is only used in design property **values** as a reference sigil — e.g. a fill set to `"$--background"` looks up the variable named `--background`. See [ADR-005](../architecture/decisions/ADR-005-pencil-variable-naming.md) for the full convention.
+Variable **key names** are plain strings without a `$` prefix: `--background`, `--primary`, etc. The `$` is only used in design property **values** as a reference sigil — e.g. a fill set to `"$--background"` looks up the variable named `--background`. See ADR-005 in `docs/architecture/decisions/` for the full convention.
 :::
 
 ### Key Mappings

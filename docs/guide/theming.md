@@ -300,4 +300,4 @@ If your product is light-only, remove the `@media` and `[data-theme]` blocks fro
 
 Today nib supports one brand per project. A future release (GAP 15) will add a `brand` axis to the Pencil variable system, enabling a single `.pen` file to hold multiple brand variants (e.g. `{mode: "light", brand: "acme"}` vs `{mode: "light", brand: "beta-corp"}`). This unlocks white-label workflows and agency multi-client design without separate `.pen` files per client.
 
-See the [Multi-Brand Theming PRD](../../.dof/product/prd-multi-brand-theming.md) for the full design.
+See the Multi-Brand Theming PRD in `.dof/product/` for the full design.

@@ -55,7 +55,7 @@ Tell the agent which mode you want:
 
 **Hybrid mode** (skip `nib_kit_bootstrap` components): Claude draws components directly in Pencil using `batch_design` with brand-specific copy, multiple variants (e.g. a green eco CTA alongside the primary blue one), and product-realistic content. Requires more calls but produces stakeholder-ready output.
 
-**The sweet spot:** run `nib_kit_bootstrap` once for the foundations (color palette, type scale, spacing scale), then skip its component ops and design components manually. See [ADR-009](/guide/adr-009) for the full two-mode workflow decision.
+**The sweet spot:** run `nib_kit_bootstrap` once for the foundations (color palette, type scale, spacing scale), then skip its component ops and design components manually. See ADR-009 in `docs/architecture/decisions/` for the full two-mode workflow decision.
 
 **Step 4 — Design your screens.**
 
